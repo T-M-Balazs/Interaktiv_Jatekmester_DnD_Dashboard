@@ -1,0 +1,59 @@
+<div class="outer-scroll-container">
+  <div class="widget-box">
+    <div class="editor-header">
+      <div class="header-top">
+        <input class="title-input" [(ngModel)]="title" placeholder="Jegyzet címe..." />
+        
+        <div class="search-container">
+          <input 
+            class="search-input" 
+            [(ngModel)]="searchTerm" 
+            placeholder="Keresés..."
+            (focus)="showResults = true"
+            (blur)="hideResultsWithDelay()"
+          />
+          <div class="search-results" *ngIf="showResults && filteredNotes.length > 0">
+            <div *ngFor="let note of filteredNotes" class="search-item" (click)="openNote(note)">
+              {{ note.title }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="tool-group">
+          <button class="tool-btn" (mousedown)="$event.preventDefault()" (click)="format('bold')">B</button>
+          <button class="tool-btn" (mousedown)="$event.preventDefault()" (click)="format('italic')">I</button>
+          <button class="tool-btn" (mousedown)="$event.preventDefault()" (click)="format('underline')">U</button>
+          <button class="tool-btn" (mousedown)="$event.preventDefault()" (click)="format('insertUnorderedList')">• Lista</button>
+          <button class="tool-btn" (mousedown)="$event.preventDefault()" (click)="format('insertOrderedList')">1. Lista</button>
+        </div>
+        
+        <!-- A divider eltűnik, ha a színek új sorba kerülnek -->
+        <div class="divider"></div>
+
+        <div class="color-palette">
+          <button
+            *ngFor="let color of colors"
+            class="color-dot"
+            [style.background]="color"
+            [class.active]="selectedColor === color"
+            (mousedown)="$event.preventDefault()"
+            (click)="changeColor(color)"
+          ></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="editor-area" contenteditable="true" (input)="onEditorInput($event)" (mouseup)="saveSelection()"></div>
+
+    <div class="bottom-bar">
+      <span class="char-count">{{ characterCount }} karakter</span>
+      <div class="btn-group">
+        <button class="tool-btn danger" (click)="deleteCurrent()" [disabled]="!selectedNoteId">Törlés</button>
+        <button class="tool-btn" (click)="createNew()">Új</button>
+        <button class="save-btn" (click)="saveText()" [disabled]="!title || title.trim() === ''">Mentés</button>
+      </div>
+    </div>
+  </div>
+</div>

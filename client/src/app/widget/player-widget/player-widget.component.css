@@ -1,0 +1,230 @@
+/* Fő konténer - Arany/Sötét stílus */
+.widget-box {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: rgba(18, 18, 18, 0.98);
+  color: #eee;
+  padding: 16px;
+  border-radius: 12px;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', sans-serif;
+  gap: 15px;
+}
+
+/* 1. Playlist választó */
+.header select {
+  width: 100%;
+  background: #252525;
+  color: #ffd700;
+  border: 1px solid #444;
+  padding: 8px 12px;
+  border-radius: 6px;
+  outline: none;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.header select:focus {
+  border-color: #ffd700;
+}
+
+/* 2. Vezérlő gombok */
+.buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 25px;
+  width: 100%;
+}
+
+.buttons button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.buttons button:hover:not(:disabled) {
+  transform: scale(1.2);
+  color: #ffd700;
+}
+
+.buttons button:disabled {
+  opacity: 0.2;
+  cursor: default;
+}
+
+/* Arany Play/Pause kör */
+.main-btn {
+  background: linear-gradient(135deg, #ffd700 0%, #c9a84c 100%) !important;
+  color: #000 !important;
+  width: 50px;
+  height: 50px;
+  border-radius: 50% !important;
+  box-shadow: 0 4px 15px rgba(201, 168, 76, 0.3);
+}
+
+.main-btn:hover {
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+/* 3. Csúszkák (Idő és Hangerő) */
+.sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.slider-row span {
+  font-size: 14px;
+  min-width: 20px;
+}
+
+input[type="range"] {
+  flex: 1;
+  height: 4px;
+  -webkit-appearance: none;
+  background: #333;
+  border-radius: 2px;
+  outline: none;
+}
+
+/* Arany csúszka fej */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #ffd700;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+
+/* 4. Zenelista és Scrollbar */
+.track-list {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 100px;
+  border-top: 1px solid #333;
+  padding-top: 10px;
+  
+  /* Firefox Scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: #c9a84c #1a1a1a;
+}
+
+/* Chrome Scrollbar */
+.track-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.track-list::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 10px;
+}
+
+.track-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ffd700 0%, #c9a84c 100%);
+  border-radius: 10px;
+}
+
+.track-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.track-list li {
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  transition: background 0.2s;
+}
+
+.track-list li:hover {
+  background: rgba(255, 215, 0, 0.05);
+}
+
+.track-list li.active {
+  background: rgba(255, 215, 0, 0.1);
+  color: #ffd700;
+  font-weight: 600;
+}
+
+.empty-msg {
+  text-align: center;
+  color: #666;
+  font-size: 12px;
+  padding: 20px;
+}
+select option {
+  background-color: #1a1a1a;
+  color: #eee;
+  padding: 8px;
+}
+
+/* Amikor egy elem ki van választva */
+select option:checked {
+  background-color: #c9a84c !important;
+  color: #000 !important;
+}
+.buttons button .material-icons {
+  font-size: 28px; /* A léptető gombok mérete */
+  color: #eee;
+  transition: color 0.2s;
+}
+
+.buttons button:hover .material-icons {
+  color: #ffd700; /* Hovernél arany lesz az ikon */
+}
+
+.main-btn .material-icons {
+  font-size: 36px; /* A középső gomb ikonja nagyobb */
+  color: #000;    /* Az arany alapon fekete ikon jól mutat */
+}
+/* Közös csúszka alapstílus */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 6px; /* Kicsit vastagabb, hogy jobban látszódjon a szín */
+  background: #333; /* Ez a sáv még le nem játszott része */
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+  overflow: hidden; /* Ez kell a "kitöltés" trükkhöz */
+}
+
+/* A csúszka gombja (a bogyó) */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border-radius: 50%;
+  /* A trükk: egy hatalmas árnyékot vetünk balra, ami kitölti a sávot arannyal */
+  box-shadow: -407px 0 0 400px #ffd700; 
+  border: 2px solid #ffd700;
+}
+
+/* Firefox-hoz is, hogy ott is ugyanilyen legyen */
+input[type="range"]::-moz-range-progress {
+  background-color: #ffd700; 
+}

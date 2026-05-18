@@ -1,0 +1,231 @@
+<ng-container *ngIf="parent.selectedContentType === 'item'">
+  <div class="editor-section">
+    <h3 class="section-title">Item alapadatok</h3>
+
+    <div class="form-grid three">
+      <label>
+        <span class="field-label" title="Name">Name</span>
+        <input type="text" [(ngModel)]="parent.itemModel.name">
+      </label>
+
+      <label>
+        <span class="field-label" title="Category">Category</span>
+        <select [(ngModel)]="parent.itemModel.category">
+          <option value="Adventuring Gear">Adventuring Gear</option>
+          <option value="Armor">Armor</option>
+          <option value="Weapon">Weapon</option>
+          <option value="Tool">Tool</option>
+          <option value="Mount / Vehicle">Mount / Vehicle</option>
+          <option value="Magic Item">Magic Item</option>
+          <option value="Other">Other</option>
+        </select>
+      </label>
+
+      <label>
+        <span class="field-label" title="Rarity">Rarity</span>
+        <select [(ngModel)]="parent.itemModel.rarity">
+          <option value="Common">Common</option>
+          <option value="Uncommon">Uncommon</option>
+          <option value="Rare">Rare</option>
+          <option value="Very Rare">Very Rare</option>
+          <option value="Legendary">Legendary</option>
+          <option value="Artifact">Artifact</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="form-grid three">
+      <label>
+        <span class="field-label" title="Cost">Cost</span>
+        <input type="text" [(ngModel)]="parent.itemModel.cost">
+      </label>
+
+      <label>
+        <span class="field-label" title="Weight">Weight</span>
+        <input type="text" [(ngModel)]="parent.itemModel.weight">
+      </label>
+
+      <label class="checkbox-inline">
+        <input type="checkbox" [(ngModel)]="parent.itemModel.requiresAttunement">
+        <span class="field-label" title="Requires Attunement">Requires Attunement</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="editor-section">
+    <h3 class="section-title">Weapon / Armor</h3>
+
+    <div class="form-grid four">
+      <label>
+        <span class="field-label" title="Damage">Damage</span>
+        <input type="text" [(ngModel)]="parent.itemModel.damage">
+      </label>
+
+      <label>
+        <span class="field-label" title="Damage Type">Damage Type</span>
+        <input type="text" [(ngModel)]="parent.itemModel.damageType">
+      </label>
+
+      <label>
+        <span class="field-label" title="Range">Range</span>
+        <input type="text" [(ngModel)]="parent.itemModel.range">
+      </label>
+
+      <label>
+        <span class="field-label" title="Armor Class">Armor Class</span>
+        <input type="text" [(ngModel)]="parent.itemModel.armorClass">
+      </label>
+    </div>
+
+    <div class="form-grid two-cols">
+      <label>
+        <span class="field-label" title="Properties">Properties</span>
+        <input type="text" [(ngModel)]="parent.itemModel.propertiesText" placeholder="Light, finesse, two-handed...">
+      </label>
+
+      <label>
+        <span class="field-label" title="Strength Requirement">Strength Requirement</span>
+        <input type="text" [(ngModel)]="parent.itemModel.strengthRequirement">
+      </label>
+    </div>
+
+    <label class="checkbox-inline">
+      <input type="checkbox" [(ngModel)]="parent.itemModel.stealthDisadvantage">
+      <span class="field-label" title="Stealth Disadvantage">Stealth Disadvantage</span>
+    </label>
+  </div>
+
+  <div class="editor-section">
+    <h3 class="section-title">Leírás</h3>
+
+    <textarea
+      [(ngModel)]="parent.itemModel.description"
+      placeholder="Item leírása, szabályai, használata...">
+    </textarea>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="parent.selectedContentType === 'spell'">
+  <div class="editor-section">
+    <h3 class="section-title">Spell alapadatok</h3>
+
+    <div class="form-grid three">
+      <label>
+        <span class="field-label" title="Name">Name</span>
+        <input type="text" [(ngModel)]="parent.spellModel.name">
+      </label>
+
+      <label>
+        <span class="field-label" title="Level">Level</span>
+        <select [(ngModel)]="parent.spellModel.level">
+          <option [ngValue]="0">Cantrip</option>
+          <option [ngValue]="1">1st</option>
+          <option [ngValue]="2">2nd</option>
+          <option [ngValue]="3">3rd</option>
+          <option [ngValue]="4">4th</option>
+          <option [ngValue]="5">5th</option>
+          <option [ngValue]="6">6th</option>
+          <option [ngValue]="7">7th</option>
+          <option [ngValue]="8">8th</option>
+          <option [ngValue]="9">9th</option>
+        </select>
+      </label>
+
+      <label>
+        <span class="field-label" title="School">School</span>
+        <select [(ngModel)]="parent.spellModel.school">
+          <option value="Abjuration">Abjuration</option>
+          <option value="Conjuration">Conjuration</option>
+          <option value="Divination">Divination</option>
+          <option value="Enchantment">Enchantment</option>
+          <option value="Evocation">Evocation</option>
+          <option value="Illusion">Illusion</option>
+          <option value="Necromancy">Necromancy</option>
+          <option value="Transmutation">Transmutation</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="form-grid three">
+      <label>
+        <span class="field-label" title="Casting Time">Casting Time</span>
+        <input type="text" [(ngModel)]="parent.spellModel.castingTime">
+      </label>
+
+      <label>
+        <span class="field-label" title="Range">Range</span>
+        <input type="text" [(ngModel)]="parent.spellModel.range">
+      </label>
+
+      <label>
+        <span class="field-label" title="Duration">Duration</span>
+        <input type="text" [(ngModel)]="parent.spellModel.duration">
+      </label>
+    </div>
+  </div>
+
+  <div class="editor-section">
+    <h3 class="section-title">Components</h3>
+
+    <div class="toggle-chip-grid">
+      <label class="chip">
+        <input type="checkbox" [(ngModel)]="parent.spellModel.components.verbal">
+        <span>V</span>
+      </label>
+
+      <label class="chip">
+        <input type="checkbox" [(ngModel)]="parent.spellModel.components.somatic">
+        <span>S</span>
+      </label>
+
+      <label class="chip">
+        <input type="checkbox" [(ngModel)]="parent.spellModel.components.material">
+        <span>M</span>
+      </label>
+
+      <label class="chip">
+        <input type="checkbox" [(ngModel)]="parent.spellModel.concentration">
+        <span>Concentration</span>
+      </label>
+
+      <label class="chip">
+        <input type="checkbox" [(ngModel)]="parent.spellModel.ritual">
+        <span>Ritual</span>
+      </label>
+    </div>
+
+    <div class="form-grid one">
+      <label>
+        <span class="field-label" title="Material">Material</span>
+        <input type="text" [(ngModel)]="parent.spellModel.components.materialText">
+      </label>
+    </div>
+  </div>
+
+  <div class="editor-section">
+    <h3 class="section-title">Classes</h3>
+
+    <input
+      type="text"
+      [(ngModel)]="parent.spellModel.classesText"
+      placeholder="Wizard, Sorcerer, Cleric...">
+  </div>
+
+  <div class="editor-section">
+    <h3 class="section-title">Leírás</h3>
+
+    <textarea
+      [(ngModel)]="parent.spellModel.description"
+      placeholder="Spell leírása...">
+    </textarea>
+  </div>
+
+  <div class="editor-section">
+    <h3 class="section-title">At Higher Levels</h3>
+
+    <textarea
+      [(ngModel)]="parent.spellModel.higherLevels"
+      placeholder="Magasabb szinten...">
+    </textarea>
+  </div>
+</ng-container>

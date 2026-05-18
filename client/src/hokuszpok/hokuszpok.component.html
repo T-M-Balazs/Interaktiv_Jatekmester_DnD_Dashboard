@@ -1,0 +1,126 @@
+<div class="hokusz-page">
+  <div class="floating-toolbar" [class.open]="toolbarOpen">
+  <div class="floating-actions">
+    <button
+      class="floating-btn floating-btn-add"
+      type="button"
+      title="Új panel"
+      (click)="addPanel()">
+      +
+    </button>
+
+    <button
+      class="floating-btn floating-btn-danger"
+      type="button"
+      title="Összes panel törlése"
+      (click)="clearAllPanels()">
+      ×
+    </button>
+  </div>
+
+  <button
+    class="floating-btn floating-btn-menu"
+    type="button"
+    title="Menü"
+    (click)="toolbarOpen = !toolbarOpen">
+    ⋯
+  </button>
+</div>
+
+  <div class="hokusz-scroll-area">
+    <div
+      class="hokusz-container"
+      #hokuszContainer
+      [style.gridTemplateRows]="getGridTemplateRows()"
+    >
+      <ng-container *ngFor="let row of rows; let rowIndex = index; trackBy: trackByRowId">
+        <div class="row-wrapper">
+          <div class="hokusz-row" [attr.data-row-id]="row.id">
+            <ng-container *ngFor="let panel of row.panels; let panelIndex = index; trackBy: trackByPanelId">
+              <div class="segment" [style.flex]="'1 1 ' + (panel.widthPx || 0) + 'px'">
+                <div class="panel">
+                  <ng-container *ngTemplateOutlet="panelContent; context: { panel: panel }"></ng-container>
+                </div>
+
+                <div
+                  *ngIf="panelIndex < row.panels.length - 1"
+                  class="resizer"
+                  (mousedown)="startColResize($event, row, panelIndex)"
+                ></div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+
+        <div
+          *ngIf="rowIndex < rows.length - 1"
+          class="row-resizer"
+          (mousedown)="startRowResize($event, rowIndex)"
+        ></div>
+      </ng-container>
+    </div>
+  </div>
+</div>
+
+<ng-template #panelContent let-panel="panel">
+  <div *ngIf="!panel.widget" class="empty-state">
+    <button class="add-btn" type="button" (click)="toggleList(panel.id)">
+      <img src="/assets/plus.png" alt="Add">
+    </button>
+
+    <div class="playlist-overlay" *ngIf="activeListIndex === panel.id">
+      <div class="widget-selector-title">Widget hozzáadása</div>
+
+      <ul>
+        <li *ngFor="let opt of widgetOptions" (click)="selectWidget(panel.id, opt.id)">
+          <span class="icon">{{ opt.icon }}</span>
+          {{ opt.name }}
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div *ngIf="panel.widget" class="widget-container">
+    <div class="panel-actions">
+      <button
+        class="panel-action remove-widget-btn"
+        type="button"
+        title="Widget törlése"
+        (click)="clearWidget(panel.id)">
+        ↺
+      </button>
+
+      <button
+        class="panel-action remove-panel-btn"
+        type="button"
+        title="Panel törlése"
+        (click)="removePanel(panel.id)">
+        ×
+      </button>
+    </div>
+
+   <div class="widget-scroll">
+  <div [ngSwitch]="panel.widget" class="widget-frame">
+    <app-player-widget *ngSwitchCase="'player'"></app-player-widget>
+    <app-chat-widget *ngSwitchCase="'chat'"></app-chat-widget>
+    <app-soundboard-widget *ngSwitchCase="'soundboard'"></app-soundboard-widget>
+    <app-dice-widget *ngSwitchCase="'dice'"></app-dice-widget>
+    <app-texteditor-widget *ngSwitchCase="'texteditor'"></app-texteditor-widget>
+    <app-search-widget *ngSwitchCase="'search'"></app-search-widget>
+    <app-statblock-widget *ngSwitchCase="'statblock'"></app-statblock-widget>
+    <app-profile-file-widget *ngSwitchCase="'profile-files'"></app-profile-file-widget>
+  <app-combat-tracker-widget *ngSwitchCase="'combat-tracker'"></app-combat-tracker-widget>
+  </div>
+</div>
+  </div>
+
+  <div *ngIf="!panel.widget" class="panel-actions panel-actions-empty">
+    <button
+      class="panel-action remove-panel-btn"
+      type="button"
+      title="Panel törlése"
+      (click)="removePanel(panel.id)">
+      ×
+    </button>
+  </div>
+</ng-template>

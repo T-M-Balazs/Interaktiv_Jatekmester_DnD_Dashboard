@@ -1,0 +1,82 @@
+:host {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.home-menu {
+  display: flex;
+  flex-direction: row; /* vízszintesen egymás mellett */
+  height: 100%;
+  width: 100%;
+}
+
+/* Általános menüsor stílus */
+.menu-row {
+  font-family: 'Cinzel Decorative', system-ui, sans-serif;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #fff;
+  font-size: 1.6rem;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 3px 8px rgba(0, 0, 0, 3);
+  
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+  .menu-row:last-child {
+    border-right: none;
+  }
+
+/* 🔹 Egyedi háttérszínek áttetszővel */
+#m1 {
+  background-color: rgba(255, 99, 71, 0); /* pirosas (tomato) */
+}
+
+  #m1:hover {
+    background-color: rgba(255, 99, 71, 0.4);
+    font-size:1.2 ;
+  }
+
+#m2 {
+  background-color: rgba(255, 165, 0, 0); /* narancs */
+}
+
+  #m2:hover {
+    background-color: rgba(255, 165, 0, 0.4);
+  }
+
+#m3 {
+  background-color: rgba(60, 179, 113, 0); /* zöld */
+}
+
+  #m3:hover {
+    background-color: rgba(60, 179, 113, 0.4);
+  }
+
+#m4 {
+  background-color: rgba(30, 144, 255, 0); /* kék */
+}
+
+  #m4:hover {
+    background-color: rgba(30, 144, 255, 0.4);
+  }
+
+#m5 {
+  background-color: rgba(138, 43, 226, 0); /* lila */
+}
+
+  #m5:hover {
+    background-color: rgba(138, 43, 226, 0.4);
+  }
+.menu-row span {
+  font-weight: 700;
+  color: #f8f8f8;
+  -webkit-text-stroke: 0.2px #000;
+}

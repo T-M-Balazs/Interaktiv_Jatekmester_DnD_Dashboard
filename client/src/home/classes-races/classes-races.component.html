@@ -1,0 +1,281 @@
+<div class="classes-races-page">
+
+<header class="page-header">
+  <div>
+    <h1>Classes / Races</h1>
+    <p>D&D 5e classok, race-ek és subclassok böngészése.</p>
+  </div>
+
+  <div class="header-actions">
+    <nav class="main-nav">
+      <button routerLink="/spells-items" routerLinkActive="active">Spells / Items</button>
+      <button routerLink="/classes-races" routerLinkActive="active">Classes / Races</button>
+      <button routerLink="/backgrounds-feats" routerLinkActive="active">Backgrounds / Feats</button>
+      <button routerLink="/rules-mechanics" routerLinkActive="active">Rules / Mechanics</button>
+      <button routerLink="/monsters" routerLinkActive="active">Monsters</button>
+      <button routerLink="/">Home</button>
+    </nav>
+
+    <div class="mode-tabs">
+      <button
+        type="button"
+        [class.active]="viewMode === 'classes'"
+        (click)="setViewMode('classes')">
+        Classes
+      </button>
+
+      <button
+        type="button"
+        [class.active]="viewMode === 'races'"
+        (click)="setViewMode('races')">
+        Races
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main
+    class="content-layout"
+    [class.has-subclass-panel]="selectedSubclass || isSubclassLoading">
+
+    <aside class="side-panel">
+      <h2>{{ viewMode === 'classes' ? 'Classes' : 'Races' }}</h2>
+
+      <div class="entry-list">
+        <button
+          type="button"
+          *ngFor="let entry of filteredEntries"
+          [class.active]="selectedEntry?.id === entry.id"
+          (click)="selectEntry(entry)">
+          {{ entry.name }}
+        </button>
+      </div>
+    </aside>
+
+    <section class="detail-panel">
+
+      <div *ngIf="isLoading" class="loading">
+        Betöltés...
+      </div>
+
+      <ng-container *ngIf="!isLoading && selectedEntry as entry; else selectPlaceholder">
+
+        <article class="detail-card">
+          <h2>{{ entry.name }}</h2>
+
+          <p class="detail-meta" *ngIf="entry.data.shortDescription">
+            {{ entry.data.shortDescription }}
+          </p>
+
+          <div class="detail-rule"></div>
+
+          <ng-container *ngIf="entry.contentType === 'class'">
+
+            <section class="info-section" *ngIf="entry.data.hitPoints">
+              <h3>Hit Points</h3>
+              <p><strong>Hit Dice:</strong> {{ entry.data.hitPoints.hitDice }}</p>
+              <p><strong>Hit Points at 1st Level:</strong> {{ entry.data.hitPoints.firstLevel }}</p>
+              <p><strong>Hit Points at Higher Levels:</strong> {{ entry.data.hitPoints.higherLevels }}</p>
+            </section>
+
+            <section class="info-section" *ngIf="entry.data.proficiencies">
+              <h3>Proficiencies</h3>
+              <p><strong>Armor:</strong> {{ entry.data.proficiencies.armor }}</p>
+              <p><strong>Weapons:</strong> {{ entry.data.proficiencies.weapons }}</p>
+              <p><strong>Tools:</strong> {{ entry.data.proficiencies.tools }}</p>
+              <p><strong>Saving Throws:</strong> {{ entry.data.proficiencies.savingThrows }}</p>
+              <p><strong>Skills:</strong> {{ entry.data.proficiencies.skills }}</p>
+            </section>
+
+            <section class="info-section" *ngIf="entry.data.equipment?.length">
+              <h3>Equipment</h3>
+              <ul>
+                <li *ngFor="let item of entry.data.equipment">
+                  {{ item }}
+                </li>
+              </ul>
+            </section>
+
+            <section class="info-section" *ngIf="getTableRows(entry).length">
+              <h3>{{ entry.name }} Table</h3>
+
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th *ngFor="let col of getTableColumns(entry)">
+                        {{ col.label }}
+                      </th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr *ngFor="let row of getTableRows(entry)">
+                      <td *ngFor="let col of getTableColumns(entry)">
+                        {{ row[col.key] }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="info-section" *ngIf="entry.data.features?.length">
+              <h3>Class Features</h3>
+
+              <div class="feature-card" *ngFor="let feature of entry.data.features">
+                <h4>
+                  {{ feature.title }}
+                  <span *ngIf="feature.level">Level {{ feature.level }}</span>
+                </h4>
+
+                <p class="description">{{ feature.description }}</p>
+              </div>
+            </section>
+
+            <section class="info-section" *ngIf="entry.data.subclassRefs?.length">
+              <h3>{{ entry.data.subclassesTitle || 'Subclasses' }}</h3>
+
+              <div class="subclass-link-list">
+                <button
+                  type="button"
+                  *ngFor="let subclass of entry.data.subclassRefs"
+                  [class.active]="selectedSubclass?.id === subclass.id"
+                  (click)="selectSubclass(subclass)">
+                  {{ subclass.name }}
+                </button>
+              </div>
+            </section>
+
+          </ng-container>
+
+          <ng-container *ngIf="entry.contentType === 'race'">
+
+            <section class="info-section">
+              <h3>Race Details</h3>
+
+              <p *ngIf="entry.data.abilityScoreIncrease">
+                <strong>Ability Score Increase:</strong> {{ entry.data.abilityScoreIncrease }}
+              </p>
+
+              <p *ngIf="entry.data.size">
+                <strong>Size:</strong> {{ entry.data.size }}
+              </p>
+
+              <p *ngIf="entry.data.speed">
+                <strong>Speed:</strong> {{ entry.data.speed }}
+              </p>
+
+              <p *ngIf="entry.data.languages">
+                <strong>Languages:</strong> {{ entry.data.languages }}
+              </p>
+            </section>
+
+            <section class="info-section" *ngIf="entry.data.traits?.length">
+              <h3>Traits</h3>
+
+              <div class="feature-card" *ngFor="let trait of entry.data.traits">
+                <h4>{{ trait.title }}</h4>
+                <p class="description">{{ trait.description }}</p>
+              </div>
+            </section>
+
+            <section class="info-section" *ngIf="entry.data.subraces?.length">
+              <h3>Subraces</h3>
+
+              <div class="feature-card" *ngFor="let subrace of entry.data.subraces">
+                <h4>{{ subrace.name }}</h4>
+                <p class="description">{{ subrace.description }}</p>
+
+                <div class="sub-feature" *ngFor="let trait of subrace.traits">
+                  <h5>{{ trait.title }}</h5>
+                  <p class="description">{{ trait.description }}</p>
+                </div>
+              </div>
+            </section>
+
+          </ng-container>
+
+        </article>
+
+      </ng-container>
+
+      <ng-template #selectPlaceholder>
+        <div class="placeholder">
+          <h2>Válassz ki egy elemet</h2>
+          <p>Kattints egy classra vagy race-re a részletek megtekintéséhez.</p>
+        </div>
+      </ng-template>
+
+    </section>
+
+    <aside class="subclass-panel" *ngIf="selectedSubclass || isSubclassLoading">
+
+      <button
+        type="button"
+        class="close-button"
+        (click)="closeSubclassPanel()">
+        ×
+      </button>
+
+      <div *ngIf="isSubclassLoading" class="loading">
+        Subclass betöltése...
+      </div>
+
+      <article class="detail-card" *ngIf="!isSubclassLoading && selectedSubclass as subclass">
+        <h2>{{ subclass.name }}</h2>
+
+        <p class="detail-meta">
+          {{ subclass.className }}
+        </p>
+
+        <p class="detail-meta" *ngIf="subclass.data.shortDescription">
+          {{ subclass.data.shortDescription }}
+        </p>
+
+        <div class="detail-rule"></div>
+
+        <section class="info-section" *ngIf="getSubclassTableRows(subclass).length">
+          <h3>{{ subclass.name }} Table</h3>
+
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th *ngFor="let col of getSubclassTableColumns(subclass)">
+                    {{ col.label }}
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr *ngFor="let row of getSubclassTableRows(subclass)">
+                  <td *ngFor="let col of getSubclassTableColumns(subclass)">
+                    {{ row[col.key] }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="info-section" *ngIf="subclass.data.features?.length">
+          <h3>Subclass Features</h3>
+
+          <div class="feature-card" *ngFor="let feature of subclass.data.features">
+            <h4>
+              {{ feature.title }}
+              <span *ngIf="feature.level">Level {{ feature.level }}</span>
+            </h4>
+
+            <p class="description">{{ feature.description }}</p>
+          </div>
+        </section>
+
+      </article>
+
+    </aside>
+
+  </main>
+
+</div>

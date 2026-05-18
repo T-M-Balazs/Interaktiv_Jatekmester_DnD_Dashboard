@@ -1,0 +1,30 @@
+<header>
+  <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
+    <div class="container">
+      <a class="navbar-brand" [routerLink]="['/']">Szakdolgozat</a>
+      <button class="navbar-toggler" (click)="toggle()"><span class="navbar-toggler-icon"></span></button>
+
+      <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between" [ngClass]="{show: isExpanded}">
+        <ul class="navbar-nav flex-grow">
+          <li class="nav-item"><a class="nav-link text-dark" [routerLink]="['/player']">Zenelejátszó</a></li>
+          <li class="nav-item"><a class="nav-link text-dark" [routerLink]="['/chat']">Chat</a></li>
+        </ul>
+
+        <ul class="navbar-nav">
+          <ng-container *ngIf="currentUser; else guestButtons">
+            <li class="nav-item">
+              <span class="nav-link text-primary">Szia, <strong>{{ currentUser.username }}</strong>!</span>
+            </li>
+            <li class="nav-item">
+              <button class="btn btn-link nav-link text-danger" (click)="logout()">Kijelentkezés</button>
+            </li>
+          </ng-container>
+
+          <ng-template #guestButtons>
+            <li class="nav-item"><a class="nav-link text-dark" [routerLink]="['/login']">Bejelentkezés / Regisztráció</a></li>
+          </ng-template>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>

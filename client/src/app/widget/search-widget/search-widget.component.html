@@ -1,0 +1,536 @@
+<div class="search-widget">
+  <div class="search-header">
+    <h2>Compendium Search</h2>
+
+    <button type="button" class="clear-btn" (click)="clearSearch()">
+      Clear
+    </button>
+  </div>
+
+  <div class="search-box">
+    <input
+      type="text"
+      placeholder="Keresés név alapján..."
+      [(ngModel)]="searchText"
+      (input)="onSearchChange()"
+    >
+  </div>
+
+  <div class="loading" *ngIf="isLoading">
+    Betöltés...
+  </div>
+
+  <div class="search-results" *ngIf="results.length > 0">
+    <button
+      type="button"
+      *ngFor="let result of results"
+      [class.active]="selectedResult?.id === result.id && selectedResult?.type === result.type"
+      (click)="selectResult(result)"
+    >
+      <span>{{ result.name }}</span>
+      <small>{{ result.type }}</small>
+    </button>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && searchText.length >= 2 && results.length === 0">
+    Nincs találat.
+  </div>
+
+  <article class="preview-card" *ngIf="selectedResult as item">
+    <h1>{{ item.name }}</h1>
+
+    <!-- SPELL -->
+    <ng-container *ngIf="item.type === 'spell'">
+      <p class="meta">
+        {{ getSpellLevelText(item.data.level) }}
+        {{ item.data.school }}
+      </p>
+
+      <div class="rule"></div>
+
+      <p><strong>Casting Time:</strong> {{ item.data.castingTime }}</p>
+      <p><strong>Range:</strong> {{ item.data.range }}</p>
+      <p><strong>Components:</strong> {{ item.data.componentsText || item.data.components }}</p>
+      <p><strong>Duration:</strong> {{ item.data.duration }}</p>
+      <p><strong>Classes:</strong> {{ item.data.classesText }}</p>
+
+      <div class="rule"></div>
+
+      <p class="description">{{ item.data.description }}</p>
+
+      <ng-container *ngIf="item.data.higherLevels">
+        <h3>At Higher Levels</h3>
+        <p class="description">{{ item.data.higherLevels }}</p>
+      </ng-container>
+    </ng-container>
+
+    <!-- ITEM -->
+    <ng-container *ngIf="item.type === 'item'">
+      <p class="meta">
+        {{ item.data.category }}
+        <span *ngIf="item.data.rarity"> • {{ item.data.rarity }}</span>
+      </p>
+
+      <div class="rule"></div>
+
+      <p><strong>Category:</strong> {{ item.data.category }}</p>
+      <p><strong>Rarity:</strong> {{ item.data.rarity }}</p>
+      <p><strong>Cost:</strong> {{ item.data.cost }}</p>
+      <p><strong>Weight:</strong> {{ item.data.weight }}</p>
+      <p *ngIf="item.data.requiresAttunement">
+        <strong>Attunement:</strong> Required
+      </p>
+
+      <div class="rule"></div>
+
+      <p class="description">{{ item.data.description }}</p>
+    </ng-container>
+
+    <!-- MONSTER -->
+    <ng-container *ngIf="item.type === 'monster'">
+      <p class="meta">
+        {{ item.data.size }} {{ item.data.type }}, {{ item.data.alignment }}
+      </p>
+
+      <div class="stat-grid">
+        <div>
+          <strong>CR</strong>
+          <span>{{ item.data.challengeRating || item.data.cr || '—' }}</span>
+        </div>
+
+        <div>
+          <strong>AC</strong>
+          <span>{{ item.data.armorClass || item.data.ac || '—' }}</span>
+        </div>
+
+        <div>
+          <strong>HP</strong>
+          <span>{{ item.data.hitPoints || item.data.hp || '—' }}</span>
+        </div>
+      </div>
+
+      <p class="description" *ngIf="item.data.shortDescription">
+        {{ item.data.shortDescription }}
+      </p>
+
+      <div class="rule"></div>
+
+      <section class="info-section" *ngIf="item.data.speed">
+        <h3>Speed</h3>
+        <p>{{ item.data.speed }}</p>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.abilities">
+        <h3>Abilities</h3>
+
+        <div class="ability-grid">
+          <div>
+            <strong>STR</strong>
+            <span>{{ item.data.abilities.str || '—' }}</span>
+          </div>
+
+          <div>
+            <strong>DEX</strong>
+            <span>{{ item.data.abilities.dex || '—' }}</span>
+          </div>
+
+          <div>
+            <strong>CON</strong>
+            <span>{{ item.data.abilities.con || '—' }}</span>
+          </div>
+
+          <div>
+            <strong>INT</strong>
+            <span>{{ item.data.abilities.int || '—' }}</span>
+          </div>
+
+          <div>
+            <strong>WIS</strong>
+            <span>{{ item.data.abilities.wis || '—' }}</span>
+          </div>
+
+          <div>
+            <strong>CHA</strong>
+            <span>{{ item.data.abilities.cha || '—' }}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.savingThrows">
+        <h3>Saving Throws</h3>
+        <p>{{ item.data.savingThrows }}</p>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.skills">
+        <h3>Skills</h3>
+        <p>{{ item.data.skills }}</p>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.damageResistances">
+        <h3>Damage Resistances</h3>
+        <p>{{ item.data.damageResistances }}</p>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.damageImmunities">
+        <h3>Damage Immunities</h3>
+        <p>{{ item.data.damageImmunities }}</p>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.conditionImmunities">
+        <h3>Condition Immunities</h3>
+        <p>{{ item.data.conditionImmunities }}</p>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.senses">
+        <h3>Senses</h3>
+        <p>{{ item.data.senses }}</p>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.languages">
+        <h3>Languages</h3>
+        <p>{{ item.data.languages }}</p>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.traits?.length">
+        <h3>Traits</h3>
+
+        <div class="feature-card" *ngFor="let trait of item.data.traits">
+          <h4>{{ trait.name || trait.title }}</h4>
+          <p class="description">{{ trait.description }}</p>
+        </div>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.actions?.length">
+        <h3>Actions</h3>
+
+        <div class="feature-card" *ngFor="let action of item.data.actions">
+          <h4>{{ action.name || action.title }}</h4>
+          <p class="description">{{ action.description }}</p>
+        </div>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.legendaryActions?.length">
+        <h3>Legendary Actions</h3>
+
+        <div class="feature-card" *ngFor="let action of item.data.legendaryActions">
+          <h4>{{ action.name || action.title }}</h4>
+          <p class="description">{{ action.description }}</p>
+        </div>
+      </section>
+    </ng-container>
+
+    <!-- CLASS -->
+    <ng-container *ngIf="item.type === 'class'">
+      <p class="meta" *ngIf="item.data.shortDescription">
+        {{ item.data.shortDescription }}
+      </p>
+
+      <div class="rule"></div>
+
+      <section class="info-section" *ngIf="item.data.hitPoints">
+        <h3>Hit Points</h3>
+        <p><strong>Hit Dice:</strong> {{ item.data.hitPoints.hitDice }}</p>
+        <p><strong>Hit Points at 1st Level:</strong> {{ item.data.hitPoints.firstLevel }}</p>
+        <p><strong>Hit Points at Higher Levels:</strong> {{ item.data.hitPoints.higherLevels }}</p>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.proficiencies">
+        <h3>Proficiencies</h3>
+        <p><strong>Armor:</strong> {{ item.data.proficiencies.armor }}</p>
+        <p><strong>Weapons:</strong> {{ item.data.proficiencies.weapons }}</p>
+        <p><strong>Tools:</strong> {{ item.data.proficiencies.tools }}</p>
+        <p><strong>Saving Throws:</strong> {{ item.data.proficiencies.savingThrows }}</p>
+        <p><strong>Skills:</strong> {{ item.data.proficiencies.skills }}</p>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.equipment?.length">
+        <h3>Equipment</h3>
+        <ul>
+          <li *ngFor="let equipment of item.data.equipment">
+            {{ equipment }}
+          </li>
+        </ul>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.classTable?.length">
+        <h3>{{ item.name }} Table</h3>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th *ngFor="let col of item.data.classTableColumns">
+                  {{ col.label }}
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let row of item.data.classTable">
+                <td *ngFor="let col of item.data.classTableColumns">
+                  {{ row[col.key] }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.features?.length">
+        <h3>Class Features</h3>
+
+        <div class="feature-card" *ngFor="let feature of item.data.features">
+          <h4>
+            {{ feature.title || feature.name }}
+            <span *ngIf="feature.level">Level {{ feature.level }}</span>
+          </h4>
+
+          <p class="description">{{ feature.description }}</p>
+        </div>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.subclassRefs?.length">
+        <h3>{{ item.data.subclassesTitle || 'Subclasses' }}</h3>
+
+        <div class="subclass-link-list">
+          <button
+            type="button"
+            *ngFor="let subclass of item.data.subclassRefs"
+            disabled>
+            {{ subclass.name }}
+          </button>
+        </div>
+      </section>
+    </ng-container>
+
+    <!-- RACE -->
+    <ng-container *ngIf="item.type === 'race'">
+      <p class="meta" *ngIf="item.data.shortDescription">
+        {{ item.data.shortDescription }}
+      </p>
+
+      <div class="rule"></div>
+
+      <section class="info-section">
+        <h3>Race Details</h3>
+
+        <p *ngIf="item.data.abilityScoreIncrease">
+          <strong>Ability Score Increase:</strong> {{ item.data.abilityScoreIncrease }}
+        </p>
+
+        <p *ngIf="item.data.size">
+          <strong>Size:</strong> {{ item.data.size }}
+        </p>
+
+        <p *ngIf="item.data.speed">
+          <strong>Speed:</strong> {{ item.data.speed }}
+        </p>
+
+        <p *ngIf="item.data.languages">
+          <strong>Languages:</strong> {{ item.data.languages }}
+        </p>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.traits?.length">
+        <h3>Traits</h3>
+
+        <div class="feature-card" *ngFor="let trait of item.data.traits">
+          <h4>{{ trait.title || trait.name }}</h4>
+          <p class="description">{{ trait.description }}</p>
+        </div>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.subraces?.length">
+        <h3>Subraces</h3>
+
+        <div class="feature-card" *ngFor="let subrace of item.data.subraces">
+          <h4>{{ subrace.name }}</h4>
+          <p class="description">{{ subrace.description }}</p>
+
+          <div class="sub-feature" *ngFor="let trait of subrace.traits">
+            <h5>{{ trait.title || trait.name }}</h5>
+            <p class="description">{{ trait.description }}</p>
+          </div>
+        </div>
+      </section>
+    </ng-container>
+
+    <!-- SUBCLASS -->
+    <ng-container *ngIf="item.type === 'subclass'">
+      <p class="meta">
+        {{ item.data.className }}
+      </p>
+
+      <p class="meta" *ngIf="item.data.shortDescription">
+        {{ item.data.shortDescription }}
+      </p>
+
+      <div class="rule"></div>
+
+      <section class="info-section" *ngIf="item.data.tableRows?.length">
+        <h3>{{ item.name }} Table</h3>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th *ngFor="let col of item.data.tableColumns">
+                  {{ col.label }}
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let row of item.data.tableRows">
+                <td *ngFor="let col of item.data.tableColumns">
+                  {{ row[col.key] }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.features?.length">
+        <h3>Subclass Features</h3>
+
+        <div class="feature-card" *ngFor="let feature of item.data.features">
+          <h4>
+            {{ feature.title || feature.name }}
+            <span *ngIf="feature.level">Level {{ feature.level }}</span>
+          </h4>
+
+          <p class="description">{{ feature.description }}</p>
+        </div>
+      </section>
+    </ng-container>
+
+    <!-- BACKGROUND -->
+    <ng-container *ngIf="item.type === 'background'">
+      <p class="meta">Background</p>
+
+      <p class="description" *ngIf="item.data.shortDescription">
+        {{ item.data.shortDescription }}
+      </p>
+
+      <div class="rule"></div>
+
+      <section class="info-section">
+        <h3>Proficiencies</h3>
+
+        <p *ngIf="item.data.skillProficiencies">
+          <strong>Skill Proficiencies:</strong>
+          {{ item.data.skillProficiencies }}
+        </p>
+
+        <p *ngIf="item.data.toolProficiencies">
+          <strong>Tool Proficiencies:</strong>
+          {{ item.data.toolProficiencies }}
+        </p>
+
+        <p *ngIf="item.data.languages">
+          <strong>Languages:</strong>
+          {{ item.data.languages }}
+        </p>
+
+        <p *ngIf="item.data.equipment">
+          <strong>Equipment:</strong>
+          {{ item.data.equipment }}
+        </p>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.feature">
+        <h3>{{ item.data.feature.title }}</h3>
+        <p class="description">{{ item.data.feature.description }}</p>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.characteristics?.length">
+        <h3>Characteristics</h3>
+
+        <div class="feature-card" *ngFor="let characteristic of item.data.characteristics">
+          <h4>{{ characteristic.title }}</h4>
+          <p class="description">{{ characteristic.description }}</p>
+        </div>
+      </section>
+    </ng-container>
+
+    <!-- FEAT -->
+    <ng-container *ngIf="item.type === 'feat'">
+      <p class="meta">Feat</p>
+
+      <p class="description" *ngIf="item.data.shortDescription">
+        {{ item.data.shortDescription }}
+      </p>
+
+      <div class="rule"></div>
+
+      <section class="info-section">
+        <h3>Prerequisite</h3>
+        <p>{{ item.data.prerequisite || 'None' }}</p>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.description">
+        <h3>Description</h3>
+        <p class="description">{{ item.data.description }}</p>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.benefits?.length">
+        <h3>Benefits</h3>
+
+        <ul>
+          <li *ngFor="let benefit of item.data.benefits">
+            {{ benefit }}
+          </li>
+        </ul>
+      </section>
+    </ng-container>
+
+    <!-- RULE -->
+    <ng-container *ngIf="item.type === 'rule'">
+      <p class="meta">
+        {{ item.data.category }}
+      </p>
+
+      <p class="description" *ngIf="item.data.shortDescription">
+        {{ item.data.shortDescription }}
+      </p>
+
+      <div class="rule"></div>
+
+      <section class="info-section" *ngIf="item.data.description">
+        <h3>Description</h3>
+        <p class="description">{{ item.data.description }}</p>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.steps?.length">
+        <h3>Steps</h3>
+
+        <ul>
+          <li *ngFor="let step of item.data.steps">
+            {{ step }}
+          </li>
+        </ul>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.examples?.length">
+        <h3>Examples</h3>
+
+        <ul>
+          <li *ngFor="let example of item.data.examples">
+            {{ example }}
+          </li>
+        </ul>
+      </section>
+
+      <section class="info-section" *ngIf="item.data.relatedRules?.length">
+        <h3>Related Rules</h3>
+
+        <ul>
+          <li *ngFor="let related of item.data.relatedRules">
+            {{ related }}
+          </li>
+        </ul>
+      </section>
+    </ng-container>
+  </article>
+</div>

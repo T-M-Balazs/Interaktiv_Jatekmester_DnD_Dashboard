@@ -1,0 +1,334 @@
+<div class="chat-page-scroll">
+  <div class="chat-layout">
+  <div class="left">
+    <div class="tabs">
+      <button
+        [class.active]="activeTab === 'chats'"
+        (click)="activeTab = 'chats'">
+        Chatek
+        <span *ngIf="chatState.unreadTotal > 0" class="badge">
+          {{ chatState.unreadTotal }}
+        </span>
+      </button>
+
+      <button
+        [class.active]="activeTab === 'friends'"
+        (click)="activeTab = 'friends'">
+        Barátok
+        <span *ngIf="chatState.incomingRequests.length" class="badge">
+          {{ chatState.incomingRequests.length }}
+        </span>
+      </button>
+    </div>
+
+    <button class="btn-group-new" (click)="showGroupModal = true">
+      + Új csoport létrehozása
+    </button>
+
+    <div *ngIf="chatState.error" class="error-box">{{ chatState.error }}</div>
+
+    <div *ngIf="activeTab === 'chats'" class="tab-content">
+      <ul class="conv-list">
+        <li
+          *ngFor="let c of chatState.conversations"
+          (click)="chatState.openConversation(c.id)"
+          [class.active]="c.id === chatState.selectedConvId">
+
+          <div class="conv-info">
+            <span class="title">
+              {{ chatState.getConversationTitle(c) }}
+              <span *ngIf="chatState.getConversationUnreadCount(c) > 0" class="badge">
+                {{ chatState.getConversationUnreadCount(c) }}
+              </span>
+            </span>
+
+            <button
+              (click)="$event.stopPropagation(); deleteChat(c)"
+              class="del-btn"
+              title="Beszélgetés törlése">
+              🗑️
+            </button>
+          </div>
+
+          <div class="last">{{ c.lastMessage || 'Nincs még üzenet' }}</div>
+        </li>
+
+        <li *ngIf="chatState.conversations.length === 0" class="empty-info">
+          Nincsenek aktív chatek.
+        </li>
+      </ul>
+    </div>
+
+    <div *ngIf="activeTab === 'friends'" class="tab-content">
+      <div class="search-box">
+        <input
+          [(ngModel)]="chatState.searchTerm"
+          (input)="onSearchChange()"
+          placeholder="Keress barátokat..." />
+
+        <ul class="search-results" *ngIf="chatState.results.length">
+          <li *ngFor="let u of chatState.results">
+            <span>{{ u.username }}</span>
+            <button
+              type="button"
+              (click)="sendFriendRequest(u)"
+              [disabled]="chatState.isAlreadyFriend(u)">
+              {{ chatState.isAlreadyFriend(u) ? 'Barát' : 'Jelölés' }}
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="requests-section" *ngIf="chatState.incomingRequests.length">
+        <h5>Bejövő kérések</h5>
+
+        <div class="req-item" *ngFor="let r of chatState.incomingRequests">
+          <span>Új jelölés!</span>
+          <button type="button" (click)="acceptFriend(r.id)">Elfogadom</button>
+        </div>
+      </div>
+
+      <h5>Barátaim</h5>
+
+      <ul class="friend-list">
+        <li *ngFor="let f of chatState.friends" (click)="startChatWithFriend(f)">
+          <span class="status-icon">👤</span> {{ f.username }}
+
+          <button
+            type="button"
+            class="del-btn"
+            (click)="unfriend(f, $event)">
+            Unfriend
+          </button>
+        </li>
+
+        <li *ngIf="chatState.friends.length === 0" class="empty-info">
+          Még nincsenek barátaid.
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="right" *ngIf="chatState.selectedConvId; else noConv">
+    <div class="chat-header">
+      <div class="chat-header-top">
+        <h3>{{ chatState.getConversationTitle(chatState.selectedConvData) }}</h3>
+
+        <div class="chat-header-actions" *ngIf="chatState.selectedConvData?.type === 'group'">
+          <button
+            type="button"
+            class="header-action-btn secondary"
+            *ngIf="chatState.isSelectedGroupOwner()"
+            (click)="openManageMembersModal()">
+            Hozzáadás / Kitiltás
+          </button>
+
+          <button
+            type="button"
+            class="header-action-btn danger"
+            *ngIf="!chatState.isRemovedFromSelectedGroup()"
+            (click)="leaveSelectedGroup()">
+            Csoport elhagyása
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="msgs">
+  <div
+    *ngFor="let m of chatState.messages"
+    class="msg"
+    [class.mine]="chatState.isMine(m)"
+  >
+    <div class="message-avatar">
+      <img
+        *ngIf="m.senderPhotoUrl; else defaultMessageAvatar"
+        [src]="m.senderPhotoUrl"
+        alt="Profilkép"
+      >
+
+      <ng-template #defaultMessageAvatar>
+        <span>
+          {{ (m.senderName || 'F').charAt(0).toUpperCase() }}
+        </span>
+      </ng-template>
+    </div>
+
+    <div class="message-stack">
+      <div class="message-sender">
+        {{ m.senderName || 'Felhasználó' }}
+      </div>
+
+      <div class="bubble">
+        <img
+          *ngIf="m.imageUrl"
+          [src]="m.imageUrl"
+          class="chat-img"
+          alt="Küldött kép"
+          (click)="chatState.openImagePreview(m.imageUrl!)"
+        >
+
+        <p *ngIf="m.text">{{ m.text }}</p>
+      </div>
+    </div>
+  </div>
+
+      <div *ngIf="chatState.messages.length === 0" class="empty-info">
+        Még nincs üzenet ebben a beszélgetésben.
+      </div>
+    </div>
+
+    <div class="composer" *ngIf="chatState.canMessageSelectedConversation; else blockedBox">
+      <input
+        type="file"
+        #fileInputRef
+        (change)="uploadImage($event)"
+        hidden
+        accept="image/*" />
+
+      <button
+        type="button"
+        class="icon-btn"
+        (click)="fileInputRef.click()"
+        title="Kép küldése">
+        📷
+      </button>
+
+      <button
+        type="button"
+        class="icon-btn emoji-btn"
+        (click)="toggleEmojiPicker()"
+        title="Emoji">
+        😀
+      </button>
+
+      <div class="emoji-picker-wrap" *ngIf="showEmojiPicker">
+        <button
+          type="button"
+          class="emoji-item"
+          *ngFor="let emoji of emojis"
+          (click)="addEmoji(emoji)">
+          {{ emoji }}
+        </button>
+      </div>
+
+      <input
+        [(ngModel)]="chatState.newMessage"
+        (keyup.enter)="send()"
+        placeholder="Írj egy üzenetet..." />
+
+      <button type="button" (click)="send()" [disabled]="!chatState.newMessage.trim()">
+        Küldés
+      </button>
+    </div>
+
+    <ng-template #blockedBox>
+      <div class="composer">
+        <span class="empty-info">{{ chatState.getSelectedConversationBlockedMessage() }}</span>
+      </div>
+    </ng-template>
+  </div>
+
+  <ng-template #noConv>
+    <div class="right empty-state">
+      <div class="intro">
+        <h2>Szia!</h2>
+        <p>Válassz egy beszélgetést a bal oldalon, vagy keress barátokat az indításhoz!</p>
+      </div>
+    </div>
+  </ng-template>
+
+  <div class="modal-overlay" *ngIf="showGroupModal">
+    <div class="modal-card">
+      <h4>Új csoport létrehozása</h4>
+
+      <input
+        [(ngModel)]="newGroupName"
+        placeholder="Csoport neve (pl. Barátok)"
+        class="modal-input" />
+
+      <p class="label">Válaszd ki a tagokat:</p>
+
+      <div class="member-list">
+        <div *ngFor="let f of chatState.friends" class="member-option">
+          <label>
+            <input
+              type="checkbox"
+              [checked]="selectedForGroup.includes(f.uid)"
+              (change)="toggleParticipant(f.uid)" />
+            {{ f.username }}
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="showGroupModal = false">Mégse</button>
+        <button class="btn-confirm" (click)="createGroup()">Létrehozás</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showManageMembersModal">
+    <div class="modal-card manage-members-card">
+      <h4>Tagok kezelése</h4>
+
+      <p class="label">Aktív tagok:</p>
+      <div class="member-list">
+        <div *ngFor="let member of chatState.activeGroupMembers" class="manage-row">
+          <span>{{ member.username }}</span>
+
+          <button
+            type="button"
+            class="kick-btn"
+            *ngIf="member.uid !== chatState.meUid"
+            (click)="kickGroupMember(member)">
+            Kitiltás
+          </button>
+        </div>
+      </div>
+
+      <p class="label">Barátok hozzáadása:</p>
+      <div class="member-list">
+        <div *ngFor="let friend of chatState.addableGroupMembers" class="member-option">
+          <label>
+            <input
+              type="checkbox"
+              [checked]="chatState.selectedToAddToGroup.includes(friend.uid)"
+              (change)="chatState.toggleAddableMember(friend.uid)" />
+            {{ friend.username }}
+          </label>
+        </div>
+
+        <div *ngIf="chatState.addableGroupMembers.length === 0" class="empty-info">
+          Nincs hozzáadható barát.
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="closeManageMembersModal()">Bezárás</button>
+        <button class="btn-confirm" (click)="addSelectedMembersToGroup()">Kijelöltek hozzáadása</button>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="image-preview-overlay"
+    *ngIf="chatState.imagePreviewUrl"
+    (click)="chatState.closeImagePreview()">
+
+    <div class="image-preview-card" (click)="$event.stopPropagation()">
+      <button
+        type="button"
+        class="image-preview-close"
+        (click)="chatState.closeImagePreview()">
+        ✕
+      </button>
+
+      <img
+        [src]="chatState.imagePreviewUrl"
+        class="image-preview-full"
+        alt="Nagyított kép" />
+    </div>
+  </div>
+  </div>
+</div>

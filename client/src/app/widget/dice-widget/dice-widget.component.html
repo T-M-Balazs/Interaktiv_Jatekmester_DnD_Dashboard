@@ -1,0 +1,117 @@
+<div class="widget-box">
+
+  <div class="col-labels">
+    <span class="col-lbl center">#</span>
+    <span class="col-lbl center">db</span>
+    <span class="col-lbl">típus</span>
+    <span class="col-lbl center">dis</span>
+    <span class="col-lbl center">adv</span>
+    <span class="col-lbl"></span>
+  </div>
+
+  <div class="groups">
+    <div class="group-row" *ngFor="let group of diceGroups; let i = index">
+
+      <span class="group-num">{{ i + 1 }}</span>
+
+      <input
+        class="count-inp"
+        type="number"
+        min="1"
+        [(ngModel)]="group.count"
+        (ngModelChange)="!canUseAdvantage(group) && (group.mode = 'normal')"
+      />
+
+      <select
+        class="dice-sel"
+        [(ngModel)]="group.dice"
+        [compareWith]="compareDice"
+        (ngModelChange)="!canUseAdvantage(group) && (group.mode = 'normal')"
+      >
+        <option *ngFor="let d of diceTypes" [ngValue]="d">{{ d.label }}</option>
+      </select>
+
+      <button
+        class="mode-btn"
+        [class.on]="isDisadvantageActive(group)"
+        [disabled]="!canUseAdvantage(group)"
+        (click)="setMode(group, 'disadvantage')"
+        type="button"
+      >Dis</button>
+
+      <button
+        class="mode-btn"
+        [class.on]="isAdvantageActive(group)"
+        [disabled]="!canUseAdvantage(group)"
+        (click)="setMode(group, 'advantage')"
+        type="button"
+      >Adv</button>
+
+      <button
+        class="remove-btn"
+        [disabled]="diceGroups.length === 1"
+        (click)="removeGroup(group.id)"
+        type="button"
+        title="Kocka törlése"
+      >✕</button>
+
+    </div>
+  </div>
+
+  <button class="add-btn" type="button" (click)="addGroup()">
+    + kocka hozzáadása
+  </button>
+
+  <div class="results-area" *ngIf="results.length > 0">
+
+    <div class="result-row" *ngFor="let result of results; let i = index">
+      <span class="result-label">{{ result.count }}×{{ result.label }}</span>
+
+      <div
+        class="adv-pair"
+        *ngIf="result.mode !== 'normal' && result.firstAdvRoll !== undefined && result.secondAdvRoll !== undefined"
+      >
+        <span
+          class="adv-chip"
+          [class.picked]="result.picked === result.firstAdvRoll"
+          [class.crit]="isCritical(result.firstAdvRoll!, result.sides)"
+          [class.fail]="isCriticalFail(result.firstAdvRoll!, result.sides)"
+        >{{ result.firstAdvRoll }}</span>
+
+        <span class="vs">vs</span>
+
+        <span
+          class="adv-chip"
+          [class.picked]="result.picked === result.secondAdvRoll"
+          [class.crit]="isCritical(result.secondAdvRoll!, result.sides)"
+          [class.fail]="isCriticalFail(result.secondAdvRoll!, result.sides)"
+        >{{ result.secondAdvRoll }}</span>
+      </div>
+
+      <div class="dice-chips" *ngIf="result.mode === 'normal'">
+        <span
+          *ngFor="let r of result.rolls"
+          class="chip"
+          [class.crit]="isCritical(r, result.sides)"
+          [class.fail]="isCriticalFail(r, result.sides)"
+        >{{ r }}</span>
+      </div>
+
+      <span class="subtotal">{{ result.total }}</span>
+    </div>
+
+    <div class="grand">
+      <span>összesen</span>
+      <strong>{{ grandTotal }}</strong>
+    </div>
+
+  </div>
+
+  <div class="bottom-bar">
+    <button class="mute-btn" type="button" (click)="toggleMuted()" title="Hang be/ki">
+      {{ muted ? '🔇' : '🔊' }}
+    </button>
+    <button class="roll-btn" type="button" (click)="rollAll()">Dobás</button>
+  </div>
+
+</div>

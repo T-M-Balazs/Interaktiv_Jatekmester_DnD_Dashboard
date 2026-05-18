@@ -1,0 +1,70 @@
+<div class="widget-box">
+  <div class="header">
+    <select
+      [value]="player.selectedPlaylistId"
+      (change)="player.selectPlaylist($any($event.target).value)">
+      <option *ngFor="let pl of player.playlists" [value]="pl.id">
+        {{ pl.name }}
+      </option>
+    </select>
+  </div>
+
+  <div class="buttons">
+    <button (click)="player.prevTrack()" [disabled]="player.playlist.length === 0">
+      <span class="material-icons">skip_previous</span>
+    </button>
+
+    <button
+      (click)="player.togglePlay()"
+      class="main-btn"
+      [disabled]="player.playlist.length === 0">
+      <span class="material-icons">{{ player.isPlaying ? 'pause' : 'play_arrow' }}</span>
+    </button>
+
+    <button (click)="player.nextTrack()" [disabled]="player.playlist.length === 0">
+      <span class="material-icons">skip_next</span>
+    </button>
+  </div>
+
+  <div class="sliders">
+    <div class="slider-row time-row">
+      <span class="time-display">
+        {{ formatTime(player.currentTime) }} / {{ formatTime(player.duration) }}
+      </span>
+      <input
+        type="range"
+        min="0"
+        [max]="player.duration || 0"
+        step="0.1"
+        [value]="player.currentTime"
+        (input)="player.seek($any($event.target).valueAsNumber)"
+        [disabled]="!player.currentTrack">
+    </div>
+
+    <div class="slider-row volume-row">
+      <span class="material-icons">volume_up</span>
+      <input
+        type="range"
+        min="0"
+        max="1"
+        step="0.01"
+        [value]="player.volume"
+        (input)="player.setVolume($any($event.target).valueAsNumber)">
+    </div>
+  </div>
+
+  <div class="track-list">
+    <div *ngIf="player.playlist.length === 0" class="empty-msg">
+      Nincs betölthető zene.
+    </div>
+
+    <ul *ngIf="player.playlist.length > 0">
+      <li
+        *ngFor="let t of player.playlist; let i = index"
+        [class.active]="player.currentTrackIndex === i"
+        (click)="player.playTrack(i)">
+        <span>{{ t.title }}</span>
+      </li>
+    </ul>
+  </div>
+</div>

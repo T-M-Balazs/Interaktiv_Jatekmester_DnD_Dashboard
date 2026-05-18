@@ -1,0 +1,195 @@
+<div class="profile-scroll-container">
+  <div class="profile-page">
+
+    <div class="profile-header">
+      <h1>Profil</h1>
+
+      <p class="profile-subtitle">
+        Profilkép, fájlok és személyes tartalmak kezelése.
+      </p>
+    </div>
+
+    <div class="profile-card">
+      <div class="section-header">
+        <h2>Profil</h2>
+      </div>
+
+      <div class="profile-main-row">
+        <div
+          class="avatar-preview-large"
+          *ngIf="profilePreviewUrl || currentProfilePhotoUrl; else emptyAvatar"
+        >
+          <img
+            [src]="profilePreviewUrl || currentProfilePhotoUrl"
+            alt="Profilkép előnézet"
+            [style.transform]="'scale(' + avatarScale + ')'"
+            [style.object-position]="avatarX + '% ' + avatarY + '%'"
+          >
+        </div>
+
+        <ng-template #emptyAvatar>
+          <div class="avatar-preview-large avatar-placeholder">
+            Nincs profilkép
+          </div>
+        </ng-template>
+
+        <div class="profile-info-panel">
+          <div class="user-info-box">
+            <div class="user-name">{{ currentUserName || 'Felhasználó' }}</div>
+            <div class="user-email">{{ currentUserEmail || 'Nincs email cím' }}</div>
+          </div>
+
+          <div class="profile-image-tools">
+            <input
+              type="file"
+              accept="image/*"
+              (change)="onProfileImageSelected($event)"
+            >
+
+            <div class="avatar-controls" *ngIf="hasSelectedNewProfileImage">
+              <label>
+                Nagyítás
+                <input
+                  type="range"
+                  min="1"
+                  max="2.5"
+                  step="0.05"
+                  [(ngModel)]="avatarScale"
+                >
+              </label>
+
+              <label>
+                Vízszintes pozíció
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  [(ngModel)]="avatarX"
+                >
+              </label>
+
+              <label>
+                Függőleges pozíció
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  [(ngModel)]="avatarY"
+                >
+              </label>
+
+              <div class="avatar-button-row">
+                <button
+                  class="secondary-btn"
+                  type="button"
+                  (click)="resetAvatarSettings()"
+                >
+                  Visszaállítás
+                </button>
+
+                <button
+                  class="secondary-btn"
+                  type="button"
+                  (click)="cancelProfileImageSelection()"
+                >
+                  Mégse
+                </button>
+
+                <button
+                  class="primary-btn"
+                  type="button"
+                  (click)="uploadProfileImage()"
+                >
+                  Profilkép mentése
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-card">
+      <div class="section-header">
+        <h2>Fájl kereső</h2>
+      </div>
+
+      <div class="upload-controls merged-upload">
+        <input
+          type="file"
+          multiple
+          accept=".pdf,image/*"
+          (change)="onFilesSelected($event)"
+        >
+
+        <button
+          class="primary-btn"
+          type="button"
+          (click)="uploadFiles()"
+        >
+          Fájlok feltöltése
+        </button>
+      </div>
+
+      <input
+        class="search-input"
+        type="text"
+        placeholder="Keresés fájlnév alapján..."
+        [(ngModel)]="searchText"
+      >
+
+      <div class="loading-state" *ngIf="isLoadingFiles">
+        Fájlok betöltése...
+      </div>
+
+      <div class="file-list" *ngIf="!isLoadingFiles">
+        <div
+          class="file-item"
+          *ngFor="let file of filteredFiles"
+          (click)="openFile(file)"
+        >
+          <div class="file-icon">
+            {{ getFileIcon(file) }}
+          </div>
+
+          <div class="file-info">
+            <div class="file-name">
+              {{ file.name }}
+            </div>
+
+            <div class="file-meta">
+              {{ file.type || 'ismeretlen típus' }} • {{ formatFileSize(file.size) }}
+            </div>
+          </div>
+
+          <button
+            class="delete-file-btn"
+            type="button"
+            title="Fájl törlése"
+            [disabled]="isDeletingFileId === file.id"
+            (click)="deleteFile(file, $event)"
+          >
+            🗑
+          </button>
+        </div>
+
+        <div
+          class="empty-state"
+          *ngIf="filteredFiles.length === 0"
+        >
+          Nincs találat.
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="status-box"
+      *ngIf="uploadStatus"
+    >
+      {{ uploadStatus }}
+    </div>
+
+  </div>
+</div>

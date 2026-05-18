@@ -1,0 +1,124 @@
+<div class="page">
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-top">
+        <a class="profile-link" routerLink="/profile">
+  <span class="profile-avatar-wrap">
+    <img
+      *ngIf="currentUser?.profilePhotoUrl; else defaultAvatar"
+      class="profile-avatar"
+      [src]="currentUser.profilePhotoUrl"
+      alt="Profilkép"
+    >
+
+    <ng-template #defaultAvatar>
+      <span class="profile-avatar default-avatar">
+        {{ (currentUser?.username || currentUser?.email || 'V').charAt(0).toUpperCase() }}
+      </span>
+    </ng-template>
+  </span>
+
+  <span class="label">
+    {{ currentUser?.username || currentUser?.email || 'Vendég' }}
+  </span>
+</a>
+      </div>
+      
+   <div class="sidebar-search">
+  <input
+    type="text"
+    placeholder="Keresés..."
+    [(ngModel)]="globalSearchText"
+    (input)="onGlobalSearchChange()"
+  >
+
+  <div class="search-results" *ngIf="globalSearchResults.length > 0">
+    <button
+      type="button"
+      *ngFor="let result of globalSearchResults"
+      (click)="openGlobalSearchResult(result)">
+      <span>{{ result.name }}</span>
+      <small>{{ result.type }}</small>
+    </button>
+  </div>
+</div>
+    </div>
+
+    <ul>
+      <li>
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <span class="icon">🏠</span>
+          <span class="label">Főoldal</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/hokuszpok" routerLinkActive="active">
+          <span class="icon">🔢</span>
+          <span class="label">
+  Counter
+  <span *ngIf="audioState.isPlaying && audioState.source === 'dashboard'" class="audio-indicator">
+    🔊
+  </span>
+</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/player" routerLinkActive="active">
+          <span class="icon">📊</span>
+          <span class="label">
+  Adatok
+  <span *ngIf="audioState.isPlaying && audioState.source === 'player'" class="audio-indicator">
+    🔊
+  </span>
+</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/soundboard" routerLinkActive="active">
+          <span class="icon">🎹</span>
+          <span class="label">
+  Hangkeverő
+  <span *ngIf="audioState.isPlaying && audioState.source === 'soundboard'" class="audio-indicator">
+    🔊
+  </span>
+</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/statblock" routerLinkActive="active">
+          <span class="icon">🛡️</span>
+          <span class="label">Karakterkészítő</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/chat" routerLinkActive="active">
+          <span class="icon">💬</span>
+          <span class="label">
+            Chat
+            <span *ngIf="unreadChatTotal > 0" class="badge">
+              {{ unreadChatTotal }}
+            </span>
+          </span>
+        </a>
+      </li>
+
+      <li *ngIf="!currentUser">
+        <a routerLink="/login" routerLinkActive="active">
+          <span class="icon">🔐</span>
+          <span class="label">Bejelentkezés</span>
+        </a>
+      </li>
+
+      <li *ngIf="currentUser">
+        <button class="logout-btn" (click)="logout()">
+          <span class="icon">🚪</span>
+          <span class="label">Kijelentkezés</span>
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <div class="content">
+    <router-outlet></router-outlet>
+  </div>
+</div>

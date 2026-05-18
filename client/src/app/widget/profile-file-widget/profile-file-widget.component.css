@@ -1,0 +1,239 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.profile-widget-root {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  background:
+    radial-gradient(circle at top left, rgba(255, 215, 0, 0.06), transparent 24%),
+    linear-gradient(180deg, #111 0%, #1a1a1a 100%);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.widget-scroll-container {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: #ffd700 #181818;
+}
+
+.widget-scroll-container::-webkit-scrollbar {
+  width: 9px;
+}
+
+.widget-scroll-container::-webkit-scrollbar-track {
+  background: #181818;
+}
+
+.widget-scroll-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ffd700, #c9a84c);
+  border-radius: 999px;
+}
+
+.widget-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ffe76a, #ffd700);
+}
+
+/* ========================= */
+/* FILE LIST */
+/* ========================= */
+
+.widget-header {
+  padding: 18px 18px 0 18px;
+  margin-bottom: 16px;
+}
+
+.widget-header h2 {
+  margin: 0;
+  color: #ffd700;
+  font-size: 1.2rem;
+}
+
+.search-input {
+  width: calc(100% - 36px);
+  margin: 0 18px 18px 18px;
+  padding: 13px 15px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 215, 0, 0.18);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  outline: none;
+  box-sizing: border-box;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.search-input:focus {
+  border-color: rgba(255, 215, 0, 0.5);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 18px 18px 18px;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.file-item:hover {
+  background: rgba(255, 215, 0, 0.08);
+  border-color: rgba(255, 215, 0, 0.16);
+  transform: translateY(-1px);
+}
+
+.file-icon {
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  border-radius: 14px;
+  background: rgba(255, 215, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  font-weight: 700;
+  color: #fff;
+  word-break: break-word;
+}
+
+.file-meta {
+  margin-top: 4px;
+  color: #aaa;
+  font-size: 0.85rem;
+}
+
+.loading-state,
+.empty-state,
+.unsupported-viewer {
+  text-align: center;
+  padding: 26px;
+  color: #aaa;
+}
+
+/* ========================= */
+/* VIEWER */
+/* ========================= */
+
+.viewer-header {
+  height: 78px;
+  min-height: 78px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  box-sizing: border-box;
+}
+
+.viewer-title {
+  color: #fff;
+  font-weight: 700;
+  word-break: break-word;
+  min-width: 0;
+}
+
+.back-btn {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #ffd700, #ffb700);
+  color: #111;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
+  white-space: nowrap;
+}
+
+.back-btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.92;
+}
+
+.viewer-container {
+  width: 100%;
+  height: calc(100% - 78px);
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  overflow: hidden;
+}
+
+.image-viewer {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: #000;
+}
+
+.pdf-viewer {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+  background: #fff;
+}
+
+/* ========================= */
+/* MOBILE */
+/* ========================= */
+
+@media (max-width: 700px) {
+  .viewer-header {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    height: auto;
+    min-height: 78px;
+  }
+
+  .viewer-container {
+    height: calc(100% - 110px);
+  }
+
+  .file-item {
+    gap: 10px;
+  }
+
+  .file-icon {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    font-size: 1.2rem;
+  }
+}

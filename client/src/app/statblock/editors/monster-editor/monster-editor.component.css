@@ -1,0 +1,14 @@
+.editor-section {
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+input {
+  display: block;
+  margin-bottom: 6px;
+  width: 100%;
+}

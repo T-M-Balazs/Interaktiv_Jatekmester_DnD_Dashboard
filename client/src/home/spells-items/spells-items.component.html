@@ -1,0 +1,247 @@
+<div class="spells-items-page">
+
+<header class="page-header">
+  <div>
+    <h1>Spells / Items</h1>
+    <p>Alap D&D 5e spellek és itemek böngészése.</p>
+  </div>
+
+  <div class="header-actions">
+    <nav class="main-nav">
+      <button routerLink="/spells-items" routerLinkActive="active">Spells / Items</button>
+      <button routerLink="/classes-races" routerLinkActive="active">Classes / Races</button>
+      <button routerLink="/backgrounds-feats" routerLinkActive="active">Backgrounds / Feats</button>
+      <button routerLink="/rules-mechanics" routerLinkActive="active">Rules / Mechanics</button>
+      <button routerLink="/monsters" routerLinkActive="active">Monsters</button>
+      <button routerLink="/">Home</button>
+    </nav>
+
+    <div class="mode-tabs">
+      <button
+        type="button"
+        [class.active]="viewMode === 'spells'"
+        (click)="setViewMode('spells')">
+        Spells
+      </button>
+
+      <button
+        type="button"
+        [class.active]="viewMode === 'items'"
+        (click)="setViewMode('items')">
+        Items
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main class="content-layout">
+
+    <aside class="side-panel">
+
+      <ng-container *ngIf="viewMode === 'spells'">
+        <h2>Class</h2>
+
+        <div class="class-list">
+          <button
+            type="button"
+            *ngFor="let className of spellClasses"
+            [class.active]="selectedClass === className"
+            (click)="selectClass(className)">
+            {{ className === 'all' ? 'All Spells' : className }}
+          </button>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="viewMode === 'items'">
+        <h2>Category</h2>
+
+        <div class="class-list">
+          <button
+            type="button"
+            *ngFor="let category of itemCategories"
+            [class.active]="selectedItemCategory === category"
+            (click)="selectedItemCategory = category; selectedItem = null">
+            {{ category === 'all' ? 'All Categories' : category }}
+          </button>
+        </div>
+      </ng-container>
+
+    </aside>
+
+    <section class="list-panel">
+
+      <div class="toolbar">
+        <input
+          type="text"
+          [value]="searchText"
+          (input)="onSearchInput($event)"
+          placeholder="Keresés név alapján..."
+        >
+      </div>
+
+      <div *ngIf="isLoading" class="loading">
+        Betöltés...
+      </div>
+
+      <ng-container *ngIf="!isLoading && viewMode === 'spells'">
+        <section class="level-section">
+          <div class="section-header">
+            <h2>{{ selectedClass }} - {{ getLevelTitle(selectedSpellLevel) }}</h2>
+
+            <div class="inline-level-list">
+              <button
+                type="button"
+                *ngFor="let level of spellLevels"
+                [class.active]="selectedSpellLevel === level"
+                (click)="selectSpellLevel(level)">
+                {{ getLevelTitle(level) }}
+              </button>
+            </div>
+          </div>
+
+          <div class="table-wrapper" *ngIf="visibleSpells.length > 0; else noSpells">
+            <table>
+              <thead>
+                <tr>
+                  <th>Spell Name</th>
+                  <th>School</th>
+                  <th>Casting Time</th>
+                  <th>Range</th>
+                  <th>Duration</th>
+                  <th>Components</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr
+                  *ngFor="let spell of visibleSpells"
+                  (click)="selectItem(spell)"
+                  [class.selected]="selectedItem?.id === spell.id">
+                  <td>{{ spell.name }}</td>
+                  <td>{{ spell.data.school }}</td>
+                  <td>{{ spell.data.castingTime }}</td>
+                  <td>{{ spell.data.range }}</td>
+                  <td>{{ spell.data.duration }}</td>
+                  <td>{{ spell.data.componentsText || spell.data.components }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <ng-template #noSpells>
+            <div class="empty-row">Nincs spell ezen a szinten.</div>
+          </ng-template>
+        </section>
+      </ng-container>
+
+      <ng-container *ngIf="!isLoading && viewMode === 'items'">
+        <section class="level-section">
+          <div class="section-header">
+            <h2>Items</h2>
+
+            <div class="inline-level-list">
+              <button
+                type="button"
+                *ngFor="let rarity of rarities"
+                [class.active]="selectedRarity === rarity"
+                (click)="selectedRarity = rarity; selectedItem = null">
+                {{ rarity === 'all' ? 'All Rarities' : rarity }}
+              </button>
+            </div>
+          </div>
+
+          <div class="table-wrapper" *ngIf="filteredItems.length > 0; else noItems">
+            <table>
+              <thead>
+                <tr>
+                  <th>Item Name</th>
+                  <th>Category</th>
+                  <th>Rarity</th>
+                  <th>Attunement</th>
+                  <th>Weight</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr
+                  *ngFor="let item of filteredItems"
+                  (click)="selectItem(item)"
+                  [class.selected]="selectedItem?.id === item.id">
+                  <td>{{ item.name }}</td>
+                  <td>{{ item.data.category }}</td>
+                  <td>{{ item.data.rarity }}</td>
+                  <td>{{ item.data.requiresAttunement ? 'Yes' : 'No' }}</td>
+                  <td>{{ item.data.weight }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <ng-template #noItems>
+            <div class="empty-row">Nincs találat.</div>
+          </ng-template>
+        </section>
+      </ng-container>
+
+    </section>
+
+    <aside class="detail-panel" *ngIf="selectedItem as item; else selectPlaceholder">
+
+      <div class="detail-card">
+        <h2>{{ item.name }}</h2>
+
+        <div class="detail-meta" *ngIf="item.contentType === 'spell'">
+          {{ item.data.level === 0 ? 'Cantrip' : item.data.level + '. level' }}
+          {{ item.data.school }}
+        </div>
+
+        <div class="detail-meta" *ngIf="item.contentType === 'item'">
+          {{ item.data.category }}
+          <span *ngIf="item.data.rarity"> • {{ item.data.rarity }}</span>
+        </div>
+
+        <div class="detail-rule"></div>
+
+        <ng-container *ngIf="item.contentType === 'spell'">
+          <p><strong>Casting Time:</strong> {{ item.data.castingTime }}</p>
+          <p><strong>Range:</strong> {{ item.data.range }}</p>
+          <p><strong>Components:</strong> {{ item.data.componentsText || item.data.components }}</p>
+          <p><strong>Duration:</strong> {{ item.data.duration }}</p>
+          <p><strong>Classes:</strong> {{ item.data.classesText }}</p>
+
+          <div class="detail-rule"></div>
+
+          <p class="description">{{ item.data.description }}</p>
+
+          <ng-container *ngIf="item.data.higherLevels">
+            <h3>At Higher Levels</h3>
+            <p class="description">{{ item.data.higherLevels }}</p>
+          </ng-container>
+        </ng-container>
+
+        <ng-container *ngIf="item.contentType === 'item'">
+          <p><strong>Category:</strong> {{ item.data.category }}</p>
+          <p><strong>Rarity:</strong> {{ item.data.rarity }}</p>
+          <p><strong>Cost:</strong> {{ item.data.cost }}</p>
+          <p><strong>Weight:</strong> {{ item.data.weight }}</p>
+          <p *ngIf="item.data.requiresAttunement"><strong>Attunement:</strong> Required</p>
+
+          <div class="detail-rule"></div>
+
+          <p class="description">{{ item.data.description }}</p>
+        </ng-container>
+
+      </div>
+
+    </aside>
+
+    <ng-template #selectPlaceholder>
+      <aside class="detail-panel placeholder">
+        <h2>Válassz ki egy elemet</h2>
+        <p>Kattints egy spellre vagy itemre a részletek megtekintéséhez.</p>
+      </aside>
+    </ng-template>
+
+  </main>
+
+</div>

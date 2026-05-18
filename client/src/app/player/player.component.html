@@ -1,0 +1,187 @@
+<div class="scroll-container">
+  <div class="player-layout">
+    <div class="panel playlist-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">Listák</h2>
+        <button
+          class="small-btn plus-btn"
+          (click)="toggleAddPlaylist()"
+          title="Új lista létrehozása">
+          {{ isAddingPlaylist ? '−' : '+' }}
+        </button>
+      </div>
+
+      <div *ngIf="isAddingPlaylist" class="playlist-add">
+        <input
+          type="text"
+          [(ngModel)]="newPlaylistName"
+          placeholder="Új lista neve..."
+          (keyup.enter)="createPlaylist()" />
+        <button class="small-btn primary-btn" (click)="createPlaylist()">Létrehozás</button>
+      </div>
+
+      <ul class="scrollable-list">
+        <li
+          *ngFor="let pl of player.playlists"
+          [class.active]="pl.id === player.selectedPlaylistId"
+          (click)="player.selectPlaylist(pl.id)">
+          <span class="pl-name">{{ pl.name }}</span>
+
+          <button
+            *ngIf="pl.id !== 'all'"
+            class="delete-btn"
+            (click)="deletePlaylist(pl.id); $event.stopPropagation()">
+            ✖
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="panel main-player-panel">
+      <h2 class="panel-title">Player</h2>
+
+      <div class="now-playing-box">
+        <div class="now-playing-label">Most szól</div>
+        <div class="now-playing-title">
+          {{ player.currentTrack ? player.cleanTitle(player.currentTrack.title) : 'Nincs kiválasztott szám' }}
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="main-controls">
+  <button class="control-btn" (click)="player.prevTrack()">
+    <span class="material-icons">skip_previous</span>
+  </button>
+  
+  <button class="control-btn play-pause" (click)="player.togglePlay()">
+    <span class="material-icons">{{ player.isPlaying ? 'pause' : 'play_arrow' }}</span>
+  </button>
+  
+  <button class="control-btn" (click)="player.nextTrack()">
+    <span class="material-icons">skip_next</span>
+  </button>
+</div>
+
+        <div class="position-control">
+          <input
+            type="range"
+            min="0"
+            [max]="player.duration || 0"
+            step="0.1"
+            [value]="player.currentTime"
+            (input)="player.seek($any($event.target).valueAsNumber)"
+            [disabled]="!player.currentTrack" />
+
+          <div class="time-display">
+            <span>{{ player.formatTime(player.currentTime) }}</span>
+            <span>{{ player.formatTime(player.duration) }}</span>
+          </div>
+        </div>
+
+        <div class="volume-control">
+          <div class="volume-header">
+            <label>Hangerő</label>
+            <span>{{ (player.volume * 100).toFixed(0) }}%</span>
+          </div>
+
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            [value]="player.volume"
+            (input)="player.setVolume($any($event.target).valueAsNumber)" />
+        </div>
+      </div>
+
+      <div class="current-playlist-section">
+        <h3>Aktuális playlist</h3>
+
+        <ul class="scrollable-list player-list">
+          <li *ngFor="let t of player.playlist; let i = index" [class.active]="i === player.currentTrackIndex">
+            <div class="track-main" (click)="player.playTrack(i)">
+              <div class="marquee-container">
+                <span class="marquee-text" [class.animate]="i === player.currentTrackIndex">
+                  {{ player.cleanTitle(t.title) }}
+                </span>
+              </div>
+            </div>
+
+            <button
+              class="delete-btn"
+              *ngIf="player.selectedPlaylistId !== 'all'"
+              (click)="removeTrackFromPlaylist(t); $event.stopPropagation()">
+              ✖
+            </button>
+          </li>
+
+          <li *ngIf="player.playlist.length === 0" class="empty-state">
+            Ebben a listában még nincs zene.
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="panel library-panel">
+      <h2 class="panel-title">Fájltár</h2>
+
+      <input
+        type="text"
+        placeholder="Keresés a fájlok között..."
+        [(ngModel)]="player.searchTerm"
+        (input)="onSearchChange(player.searchTerm)"
+        class="search-input" />
+
+      <ul class="scrollable-list library-list">
+        <li *ngFor="let t of player.filteredTracks; let i = index">
+          <div class="track-main" (click)="playFromLibrary(i)">
+            <div class="marquee-container">
+              <span class="marquee-text">{{ player.cleanTitle(t.title) }}</span>
+            </div>
+          </div>
+
+          <div class="actions">
+            <select class="track-action" (change)="onTrackActionChange($any($event.target).value, t)">
+              <option value="">Művelet</option>
+              <option value="add">Hozzáadás listához</option>
+              <option value="delete">Törlés</option>
+            </select>
+
+            <select
+              *ngIf="pendingTrackUrlForPlaylist === t.url"
+              class="playlist-select"
+              (change)="onAddTrackToPlaylist(t, $any($event.target).value)">
+              <option value="">Válassz listát</option>
+              <option *ngFor="let pl of player.playlists" [value]="pl.id" [disabled]="pl.id === 'all'">
+                {{ pl.name }}
+              </option>
+            </select>
+          </div>
+        </li>
+
+        <li *ngIf="player.filteredTracks.length === 0" class="empty-state">
+          Nincs találat.
+        </li>
+      </ul>
+
+      <div class="upload-box">
+        <input type="file" (change)="onFileSelected($event)" id="fileInput" hidden />
+        <label for="fileInput" class="upload-label">📁 Fájl választása</label>
+
+        <div class="selected-file" *ngIf="selectedFile">
+          {{ selectedFile.name }}
+        </div>
+
+        <button
+          (click)="uploadSelectedFile()"
+          [disabled]="!selectedFile || isUploading"
+          class="small-btn primary-btn upload-btn">
+          {{ isUploading ? 'Feltöltés...' : 'Feltöltés' }}
+        </button>
+
+        <div class="status success" *ngIf="uploadMessage">{{ uploadMessage }}</div>
+        <div class="status error" *ngIf="uploadError">{{ uploadError }}</div>
+      </div>
+    </div>
+  </div>
+</div>

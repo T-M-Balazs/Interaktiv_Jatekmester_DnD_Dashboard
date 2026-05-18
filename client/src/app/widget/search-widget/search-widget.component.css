@@ -1,0 +1,219 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* --- FŐ KONTÉNER (Sötét alapon lila gradiens) --- */
+.search-widget {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  padding: 18px;
+  box-sizing: border-box;
+  color: #fff;
+  font-family: system-ui, sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(155, 89, 182, 0.16), transparent 30%),
+    linear-gradient(180deg, rgba(5, 5, 5, 0.96), rgba(17, 17, 17, 0.98));
+
+  /* Firefox Scrollbar - Lila stílus */
+  scrollbar-width: thin;
+  scrollbar-color: #9b59b8 #1a1a1a;
+}
+
+/* --- CHROME/EDGE/SAFARI SCROLLBAR --- */
+.search-widget::-webkit-scrollbar {
+  width: 8px;
+}
+
+.search-widget::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 10px;
+}
+
+.search-widget::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #9b59b8 0%, #8e44ad 100%);
+  border-radius: 10px;
+  border: 2px solid #050505;
+}
+
+.search-widget::-webkit-scrollbar-thumb:hover {
+  background: #8e44ad;
+}
+
+/* --- FEJLÉC --- */
+.search-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.search-header h2 {
+  margin: 0;
+  font-family: 'Cinzel Decorative', system-ui, sans-serif;
+  color: #d7bde2; /* Világosabb lila */
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.clear-btn {
+  border: 1px solid rgba(155, 89, 182, 0.3);
+  background: rgba(155, 89, 182, 0.1);
+  color: #eee;
+  border-radius: 999px;
+  padding: 7px 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clear-btn:hover {
+  background: rgba(155, 89, 182, 0.2);
+  border-color: #9b59b8;
+}
+
+/* --- KERESŐ MEZŐ --- */
+.search-box {
+  margin-bottom: 12px;
+}
+
+.search-box input {
+  width: 100%;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid rgba(155, 89, 182, 0.2);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  padding: 0 14px;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.2s;
+}
+
+.search-box input:focus {
+  border-color: rgba(155, 89, 182, 0.8);
+  box-shadow: 0 0 10px rgba(155, 89, 182, 0.2);
+}
+
+/* --- KERESÉSI EREDMÉNYEK (Lista és Scrollbar) --- */
+.search-results {
+  max-height: 190px;
+  overflow-y: auto;
+  margin-bottom: 14px;
+  padding: 6px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(155, 89, 182, 0.15);
+
+  /* Belső görgetősáv stílusa */
+  scrollbar-width: thin;
+  scrollbar-color: #8e44ad rgba(0, 0, 0, 0.2);
+}
+
+.search-results::-webkit-scrollbar {
+  width: 6px;
+}
+
+.search-results::-webkit-scrollbar-thumb {
+  background: #8e44ad;
+  border-radius: 10px;
+}
+
+.search-results button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  padding: 9px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  transition: all 0.2s;
+}
+
+.search-results button:hover {
+  background: rgba(155, 89, 182, 0.12);
+}
+
+.search-results button.active {
+  background: rgba(155, 89, 182, 0.2);
+  border: 1px solid rgba(155, 89, 182, 0.3);
+}
+
+.search-results small {
+  color: #a569bd; /* Közepes lila */
+  text-transform: capitalize;
+}
+
+/* --- PREVIEW KÁRTYA --- */
+.preview-card {
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.72);
+  border: 1px solid rgba(155, 89, 182, 0.25);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.preview-card h1 {
+  margin: 0 0 6px;
+  font-family: 'Cinzel Decorative', system-ui, sans-serif;
+  font-size: 1.55rem;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(155, 89, 182, 0.4);
+}
+
+.meta {
+  margin: 0 0 10px;
+  color: #a569bd; /* Lila meta adatok */
+  font-style: italic;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+/* --- DÍSZÍTŐ VONAL (Lila gradiens) --- */
+.rule {
+  height: 2px;
+  margin: 12px 0 16px;
+  background: linear-gradient(
+    90deg,
+    rgba(155, 89, 182, 0.9),
+    rgba(142, 68, 173, 0.55),
+    rgba(155, 89, 182, 0.9)
+  );
+}
+
+.preview-card p {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.preview-card strong {
+  color: #d7bde2; /* Világos lila a kiemeléseknek */
+}
+
+/* --- MONSTER STAT GRID --- */
+.preview-card h3 {
+  margin: 16px 0 8px;
+  color: #d7bde2;
+  font-family: 'Cinzel Decorative', system-ui, sans-serif;
+}
+
+.stat-grid div {
+  background: rgba(155, 89, 182, 0.05); /* Halvány lila háttér */
+  border: 1px solid rgba(155, 89, 182, 0.1);
+}
+
+.stat-grid strong {
+  color: #a569bd;
+}
+
+.preview-card button {
+  background: rgba(155, 89, 182, 0.1);
+  color: #d7bde2;
+  border: 1px solid rgba(155, 89, 182, 0.2);
+}

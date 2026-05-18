@@ -1,0 +1,200 @@
+<div class="backgrounds-feats-page">
+
+<header class="page-header">
+  <div>
+    <h1>Backgrounds / Feats</h1>
+    <p>D&D 5e backgroundok és featek böngészése.</p>
+  </div>
+
+  <div class="header-actions">
+    <nav class="main-nav">
+      <button routerLink="/spells-items" routerLinkActive="active">Spells / Items</button>
+      <button routerLink="/classes-races" routerLinkActive="active">Classes / Races</button>
+      <button routerLink="/backgrounds-feats" routerLinkActive="active">Backgrounds / Feats</button>
+      <button routerLink="/rules-mechanics" routerLinkActive="active">Rules / Mechanics</button>
+      <button routerLink="/monsters" routerLinkActive="active">Monsters</button>
+      <button routerLink="/">Home</button>
+    </nav>
+
+    <div class="mode-tabs">
+      <button
+        type="button"
+        [class.active]="viewMode === 'backgrounds'"
+        (click)="setViewMode('backgrounds')">
+        Backgrounds
+      </button>
+
+      <button
+        type="button"
+        [class.active]="viewMode === 'feats'"
+        (click)="setViewMode('feats')">
+        Feats
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main
+    class="content-layout"
+    [class.has-detail-panel]="selectedEntry">
+
+    <section class="list-panel">
+
+      <div *ngIf="isLoading" class="loading">
+        Betöltés...
+      </div>
+
+      <ng-container *ngIf="!isLoading">
+        <section class="table-section">
+          <div class="section-header">
+            <h2>{{ viewMode === 'backgrounds' ? 'Backgrounds' : 'Feats' }}</h2>
+          </div>
+
+          <div class="table-wrapper" *ngIf="filteredEntries.length > 0; else noEntries">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th *ngIf="viewMode === 'backgrounds'">Skill Proficiencies</th>
+                  <th *ngIf="viewMode === 'backgrounds'">Tool Proficiencies</th>
+                  <th *ngIf="viewMode === 'backgrounds'">Languages</th>
+
+                  <th *ngIf="viewMode === 'feats'">Prerequisite</th>
+                  <th *ngIf="viewMode === 'feats'">Benefit</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr
+                  *ngFor="let entry of filteredEntries"
+                  (click)="selectEntry(entry)"
+                  [class.selected]="selectedEntry?.id === entry.id">
+                  <td>{{ entry.name }}</td>
+
+                  <td *ngIf="viewMode === 'backgrounds'">
+                    {{ entry.data.skillProficiencies || '—' }}
+                  </td>
+
+                  <td *ngIf="viewMode === 'backgrounds'">
+                    {{ entry.data.toolProficiencies || '—' }}
+                  </td>
+
+                  <td *ngIf="viewMode === 'backgrounds'">
+                    {{ entry.data.languages || '—' }}
+                  </td>
+
+                  <td *ngIf="viewMode === 'feats'">
+                    {{ entry.data.prerequisite || '—' }}
+                  </td>
+
+                  <td *ngIf="viewMode === 'feats'">
+                    {{ entry.data.shortBenefit || entry.data.summary || '—' }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <ng-template #noEntries>
+            <div class="empty-row">Nincs találat.</div>
+          </ng-template>
+        </section>
+      </ng-container>
+
+    </section>
+
+    <aside class="detail-panel" *ngIf="selectedEntry as entry">
+
+      <button
+        type="button"
+        class="close-button"
+        (click)="closeDetailPanel()">
+        ×
+      </button>
+
+      <article class="detail-card">
+        <h2>{{ entry.name }}</h2>
+
+        <p class="detail-meta">
+          {{ entry.contentType === 'background' ? 'Background' : 'Feat' }}
+        </p>
+
+        <p class="description" *ngIf="entry.data.shortDescription">
+          {{ entry.data.shortDescription }}
+        </p>
+
+        <div class="detail-rule"></div>
+
+        <ng-container *ngIf="entry.contentType === 'background'">
+
+          <section class="info-section">
+            <h3>Proficiencies</h3>
+
+            <p *ngIf="entry.data.skillProficiencies">
+              <strong>Skill Proficiencies:</strong>
+              {{ entry.data.skillProficiencies }}
+            </p>
+
+            <p *ngIf="entry.data.toolProficiencies">
+              <strong>Tool Proficiencies:</strong>
+              {{ entry.data.toolProficiencies }}
+            </p>
+
+            <p *ngIf="entry.data.languages">
+              <strong>Languages:</strong>
+              {{ entry.data.languages }}
+            </p>
+
+            <p *ngIf="entry.data.equipment">
+              <strong>Equipment:</strong>
+              {{ entry.data.equipment }}
+            </p>
+          </section>
+
+          <section class="info-section" *ngIf="entry.data.feature">
+            <h3>{{ entry.data.feature.title }}</h3>
+            <p class="description">{{ entry.data.feature.description }}</p>
+          </section>
+
+          <section class="info-section" *ngIf="entry.data.characteristics?.length">
+            <h3>Characteristics</h3>
+
+            <div class="feature-card" *ngFor="let characteristic of entry.data.characteristics">
+              <h4>{{ characteristic.title }}</h4>
+              <p class="description">{{ characteristic.description }}</p>
+            </div>
+          </section>
+
+        </ng-container>
+
+        <ng-container *ngIf="entry.contentType === 'feat'">
+
+          <section class="info-section">
+            <h3>Prerequisite</h3>
+            <p>{{ entry.data.prerequisite || 'None' }}</p>
+          </section>
+
+          <section class="info-section" *ngIf="entry.data.description">
+            <h3>Description</h3>
+            <p class="description">{{ entry.data.description }}</p>
+          </section>
+
+          <section class="info-section" *ngIf="entry.data.benefits?.length">
+            <h3>Benefits</h3>
+
+            <ul>
+              <li *ngFor="let benefit of entry.data.benefits">
+                {{ benefit }}
+              </li>
+            </ul>
+          </section>
+
+        </ng-container>
+
+      </article>
+
+    </aside>
+
+  </main>
+
+</div>

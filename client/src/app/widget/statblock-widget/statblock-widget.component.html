@@ -1,0 +1,287 @@
+<div class="statblock-widget">
+  <div class="widget-header">
+    <h2>Statblockok</h2>
+
+    <button type="button" class="clear-btn" (click)="clearSelection()">
+      Bezár
+    </button>
+  </div>
+
+  <div class="type-tabs">
+    <button type="button" [class.active]="selectedType === 'monster'" (click)="setType('monster')">
+      Monster
+    </button>
+
+    <button type="button" [class.active]="selectedType === 'item'" (click)="setType('item')">
+      Item
+    </button>
+
+    <button type="button" [class.active]="selectedType === 'spell'" (click)="setType('spell')">
+      Spell
+    </button>
+  </div>
+
+  <div class="type-tabs">
+    <button type="button" [class.active]="selectedTab === 'mine'" (click)="setTab('mine')">
+      Saját
+    </button>
+
+    <button type="button" [class.active]="selectedTab === 'community'" (click)="setTab('community')">
+      Közösségi
+    </button>
+
+    <button type="button" [class.active]="selectedTab === 'system'" (click)="setTab('system')">
+      Alap
+    </button>
+  </div>
+
+  <div class="search-box">
+    <input
+      type="text"
+      placeholder="Keresés statblock név alapján..."
+      [(ngModel)]="searchText"
+    >
+  </div>
+
+  <div class="loading" *ngIf="isLoading">
+    Betöltés...
+  </div>
+
+  <div class="statblock-list" *ngIf="!isLoading && visibleItems.length > 0">
+    <button
+      type="button"
+      *ngFor="let item of visibleItems"
+      [class.active]="selectedItem?.id === item.id"
+      (click)="selectItem(item)">
+      <span>{{ item.name }}</span>
+      <small>{{ item.contentType }}</small>
+    </button>
+  </div>
+
+  <div class="empty-message" *ngIf="!isLoading && visibleItems.length === 0">
+    Nincs megjeleníthető statblock.
+  </div>
+
+  <article class="statblock-paper" *ngIf="model">
+    <ng-container *ngIf="selectedType === 'monster'">
+      <div class="sb-top-rule"></div>
+
+      <h1 class="sb-name">{{ model.name || 'Unnamed Monster' }}</h1>
+      <div class="sb-meta">{{ getTypeLine() }}</div>
+
+      <div class="sb-rule"></div>
+
+      <div class="sb-line">
+        <strong>Armor Class</strong>
+        <span>{{ getArmorClass() }}<span *ngIf="getArmorText()"> ({{ getArmorText() }})</span></span>
+      </div>
+
+      <div class="sb-line">
+        <strong>Hit Points</strong>
+        <span>{{ model.hitPoints }} <span *ngIf="model.hitDice">({{ model.hitDice }})</span></span>
+      </div>
+
+      <div class="sb-line">
+        <strong>Speed</strong>
+        <span>{{ getSpeedText() }}</span>
+      </div>
+
+      <div class="sb-rule"></div>
+
+      <div class="ability-table">
+        <div class="ability-col" *ngFor="let key of abilityKeys">
+          <div class="ability-label">{{ key.toUpperCase() }}</div>
+          <div class="ability-score">{{ model.abilities?.[key] }}</div>
+          <div class="ability-mod">({{ formatModifier(model.abilities?.[key]) }})</div>
+        </div>
+      </div>
+
+      <div class="sb-rule"></div>
+
+      <div class="sb-line" *ngIf="hasAnySavingThrow()">
+        <strong>Saving Throws</strong>
+        <span>{{ getSavingThrowsText() }}</span>
+      </div>
+
+      <div class="sb-line" *ngIf="hasAnySkill()">
+        <strong>Skills</strong>
+        <span>{{ getSkillsText() }}</span>
+      </div>
+
+      <div class="sb-line" *ngIf="model.conditionImmunities?.length">
+        <strong>Condition Immunities</strong>
+        <span>{{ getConditionImmunityText() }}</span>
+      </div>
+
+      <div class="sb-line" *ngIf="hasDamageGroup('vulnerable')">
+        <strong>Damage Vulnerabilities</strong>
+        <span>{{ getDamageGroupText('vulnerable') }}</span>
+      </div>
+
+      <div class="sb-line" *ngIf="hasDamageGroup('resistant')">
+        <strong>Damage Resistances</strong>
+        <span>{{ getDamageGroupText('resistant') }}</span>
+      </div>
+
+      <div class="sb-line" *ngIf="hasDamageGroup('immune')">
+        <strong>Damage Immunities</strong>
+        <span>{{ getDamageGroupText('immune') }}</span>
+      </div>
+
+      <div class="sb-line">
+        <strong>Senses</strong>
+        <span>{{ getSensesText() }}</span>
+      </div>
+
+      <div class="sb-line">
+        <strong>Languages</strong>
+        <span>{{ getLanguagesText() }}</span>
+      </div>
+
+      <div class="sb-line">
+        <strong>Challenge</strong>
+        <span>{{ model.challengeRating }} ({{ getXp() | number }} XP)</span>
+      </div>
+
+      <div class="sb-line">
+        <strong>Proficiency Bonus</strong>
+        <span>+{{ getProficiencyBonus() }}</span>
+      </div>
+
+      <div class="sb-rule thick"></div>
+
+      <div *ngFor="let item of model.traits" class="entry-preview">
+        <span class="entry-title" *ngIf="item.name?.trim()">{{ item.name }}.</span>
+        <span [innerHTML]="renderText(item.text)"></span>
+      </div>
+
+      <div class="section-title preview-title" *ngIf="model.actions?.length">Actions</div>
+      <div class="sb-rule small" *ngIf="model.actions?.length"></div>
+      <div *ngFor="let item of model.actions" class="entry-preview">
+        <span class="entry-title" *ngIf="item.name?.trim()">{{ item.name }}.</span>
+        <span [innerHTML]="renderText(item.text)"></span>
+      </div>
+
+      <div class="section-title preview-title" *ngIf="model.bonusActions?.length">Bonus Actions</div>
+      <div class="sb-rule small" *ngIf="model.bonusActions?.length"></div>
+      <div *ngFor="let item of model.bonusActions" class="entry-preview">
+        <span class="entry-title" *ngIf="item.name?.trim()">{{ item.name }}.</span>
+        <span [innerHTML]="renderText(item.text)"></span>
+      </div>
+
+      <div class="section-title preview-title" *ngIf="model.reactions?.length">Reactions</div>
+      <div class="sb-rule small" *ngIf="model.reactions?.length"></div>
+      <div *ngFor="let item of model.reactions" class="entry-preview">
+        <span class="entry-title" *ngIf="item.name?.trim()">{{ item.name }}.</span>
+        <span [innerHTML]="renderText(item.text)"></span>
+      </div>
+
+      <div class="section-title preview-title" *ngIf="model.legendaryActions?.length">Legendary Actions</div>
+      <div class="sb-rule small" *ngIf="model.legendaryActions?.length"></div>
+      <div *ngFor="let item of model.legendaryActions" class="entry-preview">
+        <span class="entry-title" *ngIf="item.name?.trim()">{{ item.name }}.</span>
+        <span [innerHTML]="renderText(item.text)"></span>
+      </div>
+
+      <div class="section-title preview-title" *ngIf="model.mythicActions?.length">Mythic</div>
+      <div class="sb-rule small" *ngIf="model.mythicActions?.length"></div>
+      <div *ngFor="let item of model.mythicActions" class="entry-preview">
+        <span class="entry-title" *ngIf="item.name?.trim()">{{ item.name }}.</span>
+        <span [innerHTML]="renderText(item.text)"></span>
+      </div>
+
+      <div class="section-title preview-title" *ngIf="model.lairActions?.length">Lair</div>
+      <div class="sb-rule small" *ngIf="model.lairActions?.length"></div>
+      <div *ngFor="let item of model.lairActions" class="entry-preview">
+        <span class="entry-title" *ngIf="item.name?.trim()">{{ item.name }}.</span>
+        <span [innerHTML]="renderText(item.text)"></span>
+      </div>
+
+      <div class="section-title preview-title" *ngIf="model.regionalEffects?.length">Regional</div>
+      <div class="sb-rule small" *ngIf="model.regionalEffects?.length"></div>
+      <div *ngFor="let item of model.regionalEffects" class="entry-preview">
+        <span class="entry-title" *ngIf="item.name?.trim()">{{ item.name }}.</span>
+        <span [innerHTML]="renderText(item.text)"></span>
+      </div>
+
+      <div class="sb-bottom-rule"></div>
+    </ng-container>
+
+    <ng-container *ngIf="selectedType === 'item'">
+      <div class="sb-top-rule"></div>
+
+      <h1 class="sb-name">{{ model.name || 'Unnamed Item' }}</h1>
+
+      <div class="sb-meta">
+        {{ model.category }}
+        <span *ngIf="model.rarity">, {{ model.rarity }}</span>
+        <span *ngIf="model.requiresAttunement"> (requires attunement)</span>
+      </div>
+
+      <div class="sb-rule"></div>
+
+      <div class="sb-line" *ngIf="model.cost"><strong>Cost</strong><span>{{ model.cost }}</span></div>
+      <div class="sb-line" *ngIf="model.weight"><strong>Weight</strong><span>{{ model.weight }}</span></div>
+      <div class="sb-line" *ngIf="model.damage || model.damageType"><strong>Damage</strong><span>{{ model.damage }} {{ model.damageType }}</span></div>
+      <div class="sb-line" *ngIf="model.range"><strong>Range</strong><span>{{ model.range }}</span></div>
+      <div class="sb-line" *ngIf="model.armorClass"><strong>Armor Class</strong><span>{{ model.armorClass }}</span></div>
+      <div class="sb-line" *ngIf="model.propertiesText"><strong>Properties</strong><span>{{ model.propertiesText }}</span></div>
+      <div class="sb-line" *ngIf="model.strengthRequirement"><strong>Strength Requirement</strong><span>{{ model.strengthRequirement }}</span></div>
+      <div class="sb-line" *ngIf="model.stealthDisadvantage"><strong>Stealth</strong><span>Disadvantage</span></div>
+
+      <div class="sb-rule thick" *ngIf="model.description"></div>
+
+      <div class="entry-preview" *ngIf="model.description">
+        <span [innerHTML]="renderText(model.description)"></span>
+      </div>
+
+      <div class="sb-bottom-rule"></div>
+    </ng-container>
+
+    <ng-container *ngIf="selectedType === 'spell'">
+      <div class="sb-top-rule"></div>
+
+      <h1 class="sb-name">{{ model.name || 'Unnamed Spell' }}</h1>
+
+      <div class="sb-meta">
+        {{ model.level === 0 ? 'Cantrip' : model.level + ' level' }}
+        {{ model.school }}
+        <span *ngIf="model.ritual"> (ritual)</span>
+      </div>
+
+      <div class="sb-rule"></div>
+
+      <div class="sb-line"><strong>Casting Time</strong><span>{{ model.castingTime }}</span></div>
+      <div class="sb-line"><strong>Range</strong><span>{{ model.range }}</span></div>
+      <div class="sb-line"><strong>Components</strong><span>{{ getSpellComponentsText() }}</span></div>
+
+      <div class="sb-line">
+        <strong>Duration</strong>
+        <span><span *ngIf="model.concentration">Concentration, </span>{{ model.duration }}</span>
+      </div>
+
+      <div class="sb-line" *ngIf="model.classesText">
+        <strong>Classes</strong>
+        <span>{{ model.classesText }}</span>
+      </div>
+
+      <div class="sb-rule thick" *ngIf="model.description"></div>
+
+      <div class="entry-preview" *ngIf="model.description">
+        <span [innerHTML]="renderText(model.description)"></span>
+      </div>
+
+      <div class="section-title preview-title" *ngIf="model.higherLevels">
+        At Higher Levels
+      </div>
+
+      <div class="sb-rule small" *ngIf="model.higherLevels"></div>
+
+      <div class="entry-preview" *ngIf="model.higherLevels">
+        <span [innerHTML]="renderText(model.higherLevels)"></span>
+      </div>
+
+      <div class="sb-bottom-rule"></div>
+    </ng-container>
+  </article>
+</div>

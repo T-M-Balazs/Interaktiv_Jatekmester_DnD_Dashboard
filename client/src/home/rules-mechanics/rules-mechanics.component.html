@@ -1,0 +1,126 @@
+<div class="rules-mechanics-page">
+
+ <header class="page-header">
+  <div>
+    <h1>Rules / Mechanics</h1>
+    <p>D&D 5e szabályok és mechanikák böngészése.</p>
+  </div>
+
+  <nav class="main-nav">
+    <button routerLink="/spells-items" routerLinkActive="active">Spells / Items</button>
+    <button routerLink="/classes-races" routerLinkActive="active">Classes / Races</button>
+    <button routerLink="/backgrounds-feats" routerLinkActive="active">Backgrounds / Feats</button>
+    <button routerLink="/rules-mechanics" routerLinkActive="active">Rules / Mechanics</button>
+    <button routerLink="/monsters" routerLinkActive="active">Monsters</button>
+    <button routerLink="/">Home</button>
+  </nav>
+</header>
+
+  <main
+    class="content-layout"
+    [class.has-detail-panel]="selectedRule">
+
+    <section class="list-panel">
+
+      <div *ngIf="isLoading" class="loading">
+        Betöltés...
+      </div>
+
+      <ng-container *ngIf="!isLoading">
+        <section class="table-section">
+          <div class="section-header">
+            <h2>Rules / Mechanics</h2>
+          </div>
+
+          <div class="table-wrapper" *ngIf="filteredRules.length > 0; else noRules">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Summary</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr
+                  *ngFor="let rule of filteredRules"
+                  (click)="selectRule(rule)"
+                  [class.selected]="selectedRule?.id === rule.id">
+                  <td>{{ rule.name }}</td>
+                  <td>{{ rule.category }}</td>
+                  <td>{{ rule.data.summary || rule.data.shortDescription || '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <ng-template #noRules>
+            <div class="empty-row">Nincs találat.</div>
+          </ng-template>
+        </section>
+      </ng-container>
+
+    </section>
+
+    <aside class="detail-panel" *ngIf="selectedRule as rule">
+
+      <button
+        type="button"
+        class="close-button"
+        (click)="closeDetailPanel()">
+        ×
+      </button>
+
+      <article class="detail-card">
+        <h2>{{ rule.name }}</h2>
+
+        <p class="detail-meta">
+          {{ rule.category }}
+        </p>
+
+        <p class="description" *ngIf="rule.data.shortDescription">
+          {{ rule.data.shortDescription }}
+        </p>
+
+        <div class="detail-rule"></div>
+
+        <section class="info-section" *ngIf="rule.data.description">
+          <h3>Description</h3>
+          <p class="description">{{ rule.data.description }}</p>
+        </section>
+
+        <section class="info-section" *ngIf="rule.data.steps?.length">
+          <h3>Steps</h3>
+          <ul>
+            <li *ngFor="let step of rule.data.steps">
+              {{ step }}
+            </li>
+          </ul>
+        </section>
+
+        <section class="info-section" *ngIf="rule.data.examples?.length">
+          <h3>Examples</h3>
+          <ul>
+            <li *ngFor="let example of rule.data.examples">
+              {{ example }}
+            </li>
+          </ul>
+        </section>
+
+        <section class="info-section" *ngIf="rule.data.relatedRules?.length">
+          <h3>Related Rules</h3>
+          <ul>
+            <li *ngFor="let related of rule.data.relatedRules">
+              {{ related }}
+            </li>
+          </ul>
+        </section>
+
+      </article>
+
+    </aside>
+
+  </main>
+
+</div>

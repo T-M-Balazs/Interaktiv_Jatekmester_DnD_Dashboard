@@ -1,0 +1,86 @@
+<div class="profile-widget-root">
+  <div class="widget-scroll-container">
+
+    <ng-container *ngIf="!openedFile">
+      <div class="widget-header">
+        <h2>Fájl kereső</h2>
+      </div>
+
+      <input
+        class="search-input"
+        type="text"
+        placeholder="Keresés fájlnév alapján..."
+        [(ngModel)]="searchText"
+      >
+
+      <div class="loading-state" *ngIf="isLoading">
+        Fájlok betöltése...
+      </div>
+
+      <div class="file-list" *ngIf="!isLoading">
+        <div
+          class="file-item"
+          *ngFor="let file of filteredFiles"
+          (click)="openFile(file)"
+        >
+          <div class="file-icon">
+            {{ getFileIcon(file) }}
+          </div>
+
+          <div class="file-info">
+            <div class="file-name">
+              {{ file.name }}
+            </div>
+
+            <div class="file-meta">
+              {{ formatFileSize(file.size) }}
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="filteredFiles.length === 0">
+          Nincs találat.
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="openedFile">
+      <div class="viewer-header">
+        <button
+          class="back-btn"
+          type="button"
+          (click)="closeViewer()"
+        >
+          ← Vissza
+        </button>
+
+        <div class="viewer-title">
+          {{ openedFile.name }}
+        </div>
+      </div>
+
+      <div class="viewer-container">
+        <img
+          *ngIf="isImage(openedFile)"
+          class="image-viewer"
+          [src]="openedFile.url"
+          [alt]="openedFile.name"
+        >
+
+        <iframe
+  *ngIf="isPdf(openedFile) && safePdfUrl"
+  class="pdf-viewer"
+  [src]="safePdfUrl"
+></iframe>
+
+        <div
+          class="unsupported-viewer"
+          *ngIf="!isImage(openedFile) && !isPdf(openedFile)"
+        >
+          Ez a fájltípus nem jeleníthető meg előnézetben.
+        </div>
+      </div>
+    </ng-container>
+
+  </div>
+</div>

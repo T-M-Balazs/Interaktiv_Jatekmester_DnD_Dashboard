@@ -1,0 +1,148 @@
+<div class="combat-widget">
+
+  <div class="combat-header">
+    <div>
+      <h3>Combat Tracker</h3>
+      <p>Gyors DM harckövető HP, AC és condition kezeléshez.</p>
+    </div>
+
+    <button
+      type="button"
+      class="clear-btn"
+      (click)="clearCombat()"
+      *ngIf="combatants.length">
+      Clear
+    </button>
+  </div>
+
+  <div class="add-row">
+    <input
+      type="text"
+      placeholder="Név..."
+      [(ngModel)]="newName"
+      (keyup.enter)="addCombatant()">
+
+    <label>
+      AC
+      <input
+        type="number"
+        min="0"
+        [(ngModel)]="newAc">
+    </label>
+
+    <label>
+      HP
+      <input
+        type="number"
+        min="0"
+        [(ngModel)]="newHp">
+    </label>
+
+    <select [(ngModel)]="selectedCondition">
+      <option value="">Condition</option>
+      <option *ngFor="let condition of conditions" [value]="condition">
+        {{ condition }}
+      </option>
+    </select>
+
+    <button
+      type="button"
+      class="add-btn"
+      (click)="addCombatant()">
+      +
+    </button>
+  </div>
+
+  <div class="empty-state" *ngIf="combatants.length === 0">
+    Még nincs harcos hozzáadva.
+  </div>
+
+  <div class="combat-list" *ngIf="combatants.length > 0">
+
+    <div class="combatant-card" *ngFor="let combatant of combatants">
+
+      <div class="combatant-main">
+
+        <input
+          class="name-input"
+          type="text"
+          [(ngModel)]="combatant.name">
+
+        <label class="small-field">
+          AC
+          <input
+            type="number"
+            min="0"
+            [(ngModel)]="combatant.ac"
+            (change)="updateAc(combatant)">
+        </label>
+
+        <label class="small-field">
+          HP
+          <input
+            type="number"
+            min="0"
+            [(ngModel)]="combatant.hp"
+            (change)="updateHp(combatant)">
+        </label>
+
+        <label class="damage-field">
+          DMG
+          <input
+            type="number"
+            placeholder="+/-"
+            [(ngModel)]="combatant.damageInput"
+            (keyup.enter)="applyDamage(combatant)">
+        </label>
+
+        <button
+          type="button"
+          class="apply-btn"
+          (click)="applyDamage(combatant)">
+          Apply
+        </button>
+
+        <select
+          class="condition-select"
+          #conditionSelect
+          (change)="addCondition(combatant, conditionSelect.value); conditionSelect.value = ''">
+          <option value="">Condition</option>
+          <option *ngFor="let condition of conditions" [value]="condition">
+            {{ condition }}
+          </option>
+        </select>
+
+        <button
+          type="button"
+          class="remove-btn"
+          (click)="removeCombatant(combatant.id)">
+          ×
+        </button>
+
+      </div>
+
+      <div class="hp-bar">
+        <div
+          class="hp-fill"
+          [style.width.%]="getHpPercent(combatant)">
+        </div>
+      </div>
+
+      <div class="condition-tags" *ngIf="combatant.conditions.length">
+        <span
+          class="condition-tag"
+          *ngFor="let condition of combatant.conditions">
+          {{ condition }}
+          <button
+            type="button"
+            (click)="removeCondition(combatant, condition)">
+            ×
+          </button>
+        </span>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

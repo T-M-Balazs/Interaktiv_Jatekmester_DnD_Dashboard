@@ -1,0 +1,49 @@
+<div class="widget-box">
+  <div class="header-section">
+    <select
+      [value]="soundboard.selectedBoardId"
+      (change)="soundboard.selectBoard($any($event.target).value)">
+      <option *ngFor="let b of soundboard.boards" [value]="b.id">
+        {{ b.name }}
+      </option>
+    </select>
+  </div>
+
+  <div class="top-actions">
+    <button type="button" class="action-btn" (click)="soundboard.toggleMute()" [title]="soundboard.isMuted ? 'Némítás feloldása' : 'Némítás'">
+      <span class="material-icons">
+        {{ soundboard.isMuted ? 'volume_off' : 'volume_up' }}
+      </span>
+    </button>
+
+    <button
+      type="button"
+      class="action-btn stop-btn"
+      (click)="soundboard.stopSlot()"
+      [disabled]="!soundboard.isPlaying"
+      title="Összes hang leállítása">
+      <span class="material-icons">stop</span>
+    </button>
+  </div>
+
+  <div class="slot-matrix" *ngIf="soundboard.selectedBoard">
+    <ng-container *ngFor="let slot of soundboard.selectedBoard.slots; let i = index">
+      <button
+        *ngIf="slot.sfxUrl"
+        type="button"
+        class="slot-btn"
+        [title]="slot.label || ('Slot ' + (i + 1))"
+        (click)="soundboard.playSlot(i)">
+        <span class="slot-number">{{ i + 1 }}</span>
+        <span class="slot-label">
+          {{ slot.label || ('Hang ' + (i + 1)) }}
+        </span>
+      </button>
+    </ng-container>
+  </div>
+
+  <div class="empty-msg" *ngIf="!hasActiveSlots()">
+    <span class="material-icons">info</span>
+    <p>Nincsenek hangok ezen a táblán.</p>
+  </div>
+</div>

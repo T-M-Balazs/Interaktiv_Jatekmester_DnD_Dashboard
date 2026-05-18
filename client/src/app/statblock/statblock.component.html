@@ -1,0 +1,476 @@
+<div class="scroll-container">
+  <div class="statblock-layout">
+
+    <section class="panel library-panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">Statblockok</h2>
+          <div class="panel-subtitle">Mentés, betöltés, törlés</div>
+        </div>
+      </div>
+
+      <div class="tab-row content-type-row">
+        <button
+          type="button"
+          class="small-btn"
+          [class.primary-btn]="selectedContentType === 'monster'"
+          [class.secondary-btn]="selectedContentType !== 'monster'"
+          (click)="selectContentType('monster')">
+          Monster
+        </button>
+
+    
+
+        <button
+          type="button"
+          class="small-btn"
+          [class.primary-btn]="selectedContentType === 'item'"
+          [class.secondary-btn]="selectedContentType !== 'item'"
+          (click)="selectContentType('item')">
+          Item
+        </button>
+
+        <button
+          type="button"
+          class="small-btn"
+          [class.primary-btn]="selectedContentType === 'spell'"
+          [class.secondary-btn]="selectedContentType !== 'spell'"
+          (click)="selectContentType('spell')">
+          Spell
+        </button>
+      </div>
+
+      <div class="tab-row">
+        <button
+          type="button"
+          class="small-btn"
+          [class.primary-btn]="selectedLibraryTab === 'system'"
+          [class.secondary-btn]="selectedLibraryTab !== 'system'"
+          (click)="selectedLibraryTab = 'system'">
+          Alap
+        </button>
+
+        <button
+          type="button"
+          class="small-btn"
+          [class.primary-btn]="selectedLibraryTab === 'mine'"
+          [class.secondary-btn]="selectedLibraryTab !== 'mine'"
+          (click)="selectedLibraryTab = 'mine'">
+          Saját
+        </button>
+
+        <button
+          type="button"
+          class="small-btn"
+          [class.primary-btn]="selectedLibraryTab === 'community'"
+          [class.secondary-btn]="selectedLibraryTab !== 'community'"
+          (click)="selectedLibraryTab = 'community'">
+          Közösségi
+        </button>
+      </div>
+
+      <div class="save-box">
+        <div class="save-box-title">Mentés</div>
+
+        <div class="save-status" *ngIf="currentUserId; else notLoggedIn">
+          Bejelentkezve: <b>{{ currentUserEmail || currentUserId }}</b>
+        </div>
+
+        <ng-template #notLoggedIn>
+          <div class="save-status warning">
+            Mentéshez be kell jelentkezned.
+          </div>
+        </ng-template>
+
+        <div class="visibility-row">
+          <label class="chip">
+            <input type="radio" name="visibility" [(ngModel)]="saveVisibility" value="private">
+            <span>Privát</span>
+          </label>
+
+          <label class="chip">
+            <input type="radio" name="visibility" [(ngModel)]="saveVisibility" value="public">
+            <span>Publikus</span>
+          </label>
+        </div>
+
+        <div class="save-actions">
+          <button
+            type="button"
+            class="small-btn primary-btn"
+            [disabled]="!canSave()"
+            (click)="save()">
+            Mentés
+          </button>
+
+          <button
+            type="button"
+            class="small-btn secondary-btn"
+            (click)="reset()">
+            Új statblock
+          </button>
+
+          <button
+            type="button"
+            class="small-btn secondary-btn"
+            *ngIf="selectedSaveId"
+            (click)="startFromLoadedAsCopy()">
+            Másolatként mentem
+          </button>
+        </div>
+      </div>
+
+      <div class="list-header">
+        <h3 class="section-title">{{ getLibraryTitle(selectedLibraryTab) }}</h3>
+      </div>
+
+      <div class="loading-box" *ngIf="isLoadingSaves">
+        Betöltés...
+      </div>
+
+      <ul class="scrollable-list statblock-list" *ngIf="!isLoadingSaves">
+        <li
+          *ngFor="let item of getLibraryItems(selectedLibraryTab); trackBy: trackBySaveId"
+          [class.active]="isSelectedSavedItem(item)">
+          <div class="saved-main">
+            <div class="saved-name">{{ item.name }}</div>
+            <div class="saved-meta">
+              <span class="saved-badge">{{ getSaveModeLabel(item) }}</span>
+              <span class="saved-owner">{{ getOwnerLabel(item) }}</span>
+            </div>
+          </div>
+
+          <div class="saved-actions">
+            <button
+              type="button"
+              class="small-btn secondary-btn"
+              (click)="loadStatblock(item)">
+              Betöltés
+            </button>
+
+            <button
+              type="button"
+              class="small-btn secondary-btn danger-btn"
+              *ngIf="item.sourceType === 'user' && item.ownerId === currentUserId"
+              (click)="deleteStatblock(item)">
+              Törlés
+            </button>
+          </div>
+        </li>
+
+        <li *ngIf="getLibraryItems(selectedLibraryTab).length === 0" class="empty-state">
+          Nincs elem ebben a kategóriában.
+        </li>
+      </ul>
+    </section>
+
+    <section class="panel editor-panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">Statblock Editor</h2>
+          <div class="panel-subtitle">Szerkesztő</div>
+        </div>
+
+        <div class="editor-actions">
+          <div class="selected-badge" *ngIf="selectedSaveId">Betöltött elem</div>
+        </div>
+      </div>
+
+      <div class="editor-scroll">
+
+        <app-monster-editor
+          *ngIf="selectedContentType === 'monster'"
+          [parent]="this">
+        </app-monster-editor>
+
+        <app-item-spell-editor
+  *ngIf="selectedContentType === 'item' || selectedContentType === 'spell'"
+  [parent]="this">
+</app-item-spell-editor>
+
+      
+      </div>
+    </section>
+
+    <section class="panel preview-panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">Előnézet</h2>
+          <div class="panel-subtitle">Live statblock preview</div>
+        </div>
+      </div>
+
+      <div class="statblock-paper">
+        <ng-container *ngIf="selectedContentType === 'monster'">
+        <div class="sb-top-rule"></div>
+
+        <h1 class="sb-name">{{ getDisplayName() }}</h1>
+        <div class="sb-meta">{{ getTypeLine() }}</div>
+
+        <div class="sb-rule"></div>
+
+        <div class="sb-line">
+          <strong>Armor Class</strong>
+          <span>{{ getArmorClass() }}<span *ngIf="getArmorText()"> ({{ getArmorText() }})</span></span>
+        </div>
+
+        <div class="sb-line">
+          <strong>Hit Points</strong>
+          <span>
+            {{ model.hitPoints }}
+            <span *ngIf="model.hitDice">({{ model.hitDice }})</span>
+          </span>
+        </div>
+
+        <div class="sb-line">
+          <strong>Speed</strong>
+          <span>{{ getSpeedText() }}</span>
+        </div>
+
+        <div class="sb-rule"></div>
+
+        <div class="ability-table">
+          <div class="ability-col" *ngFor="let key of abilityKeys">
+            <div class="ability-label">{{ key.toUpperCase() }}</div>
+            <div class="ability-score">{{ model.abilities[key] }}</div>
+            <div class="ability-mod">({{ formatModifier(model.abilities[key]) }})</div>
+          </div>
+        </div>
+
+        <div class="sb-rule"></div>
+
+        <div class="sb-line" *ngIf="hasAnySavingThrow()">
+          <strong>Saving Throws</strong>
+          <span>{{ getSavingThrowsText() }}</span>
+        </div>
+
+        <div class="sb-line" *ngIf="hasAnySkill()">
+          <strong>Skills</strong>
+          <span>{{ getSkillsText() }}</span>
+        </div>
+
+        <div class="sb-line" *ngIf="model.conditionImmunities.length > 0">
+          <strong>Condition Immunities</strong>
+          <span>{{ getConditionImmunityText() }}</span>
+        </div>
+
+        <div class="sb-line" *ngIf="hasDamageGroup('vulnerable')">
+          <strong>Damage Vulnerabilities</strong>
+          <span>{{ getDamageGroupText('vulnerable') }}</span>
+        </div>
+
+        <div class="sb-line" *ngIf="hasDamageGroup('resistant')">
+          <strong>Damage Resistances</strong>
+          <span>{{ getDamageGroupText('resistant') }}</span>
+        </div>
+
+        <div class="sb-line" *ngIf="hasDamageGroup('immune')">
+          <strong>Damage Immunities</strong>
+          <span>{{ getDamageGroupText('immune') }}</span>
+        </div>
+
+        <div class="sb-line">
+          <strong>Senses</strong>
+          <span>{{ getSensesText() }}</span>
+        </div>
+
+        <div class="sb-line">
+          <strong>Languages</strong>
+          <span>{{ getLanguagesText() }}</span>
+        </div>
+
+        <div class="sb-line">
+          <strong>Challenge</strong>
+          <span>{{ model.challengeRating }} ({{ getXp() | number }} XP)</span>
+        </div>
+
+        <div class="sb-line">
+          <strong>Proficiency Bonus</strong>
+          <span>+{{ getProficiencyBonus() }}</span>
+        </div>
+
+        <div class="sb-rule thick"></div>
+
+        <div *ngFor="let item of model.traits" class="entry-preview">
+          <span class="entry-title" *ngIf="item.name.trim()">{{ item.name }}.</span>
+          <span [innerHTML]="renderText(item.text)"></span>
+        </div>
+
+        <div class="section-title preview-title" *ngIf="model.actions.length > 0">Actions</div>
+        <div class="sb-rule small" *ngIf="model.actions.length > 0"></div>
+        <div *ngFor="let item of model.actions" class="entry-preview">
+          <span class="entry-title" *ngIf="item.name.trim()">{{ item.name }}.</span>
+          <span [innerHTML]="renderText(item.text)"></span>
+        </div>
+
+        <div class="section-title preview-title" *ngIf="model.bonusActions.length > 0">Bonus Actions</div>
+        <div class="sb-rule small" *ngIf="model.bonusActions.length > 0"></div>
+        <div *ngFor="let item of model.bonusActions" class="entry-preview">
+          <span class="entry-title" *ngIf="item.name.trim()">{{ item.name }}.</span>
+          <span [innerHTML]="renderText(item.text)"></span>
+        </div>
+
+        <div class="section-title preview-title" *ngIf="model.reactions.length > 0">Reactions</div>
+        <div class="sb-rule small" *ngIf="model.reactions.length > 0"></div>
+        <div *ngFor="let item of model.reactions" class="entry-preview">
+          <span class="entry-title" *ngIf="item.name.trim()">{{ item.name }}.</span>
+          <span [innerHTML]="renderText(item.text)"></span>
+        </div>
+<div class="section-title preview-title" *ngIf="model.legendaryActions.length > 0">Legendary Actions</div>
+<div class="sb-rule small" *ngIf="model.legendaryActions.length > 0"></div>
+<div *ngFor="let item of model.legendaryActions" class="entry-preview">
+  <span class="entry-title" *ngIf="item.name.trim()">{{ item.name }}.</span>
+  <span [innerHTML]="renderText(item.text)"></span>
+</div>
+
+<div class="section-title preview-title" *ngIf="model.mythicActions.length > 0">Mythic</div>
+<div class="sb-rule small" *ngIf="model.mythicActions.length > 0"></div>
+<div *ngFor="let item of model.mythicActions" class="entry-preview">
+  <span class="entry-title" *ngIf="item.name.trim()">{{ item.name }}.</span>
+  <span [innerHTML]="renderText(item.text)"></span>
+</div>
+
+<div class="section-title preview-title" *ngIf="model.lairActions.length > 0">Lair</div>
+<div class="sb-rule small" *ngIf="model.lairActions.length > 0"></div>
+<div *ngFor="let item of model.lairActions" class="entry-preview">
+  <span class="entry-title" *ngIf="item.name.trim()">{{ item.name }}.</span>
+  <span [innerHTML]="renderText(item.text)"></span>
+</div>
+
+<div class="section-title preview-title" *ngIf="model.regionalEffects.length > 0">Regional</div>
+<div class="sb-rule small" *ngIf="model.regionalEffects.length > 0"></div>
+<div *ngFor="let item of model.regionalEffects" class="entry-preview">
+  <span class="entry-title" *ngIf="item.name.trim()">{{ item.name }}.</span>
+  <span [innerHTML]="renderText(item.text)"></span>
+</div>
+        <div class="sb-bottom-rule"></div>
+        </ng-container>
+
+      <ng-container *ngIf="selectedContentType === 'item'">
+  <div class="sb-top-rule"></div>
+
+  <h1 class="sb-name">{{ itemModel.name || 'Unnamed Item' }}</h1>
+
+  <div class="sb-meta">
+    {{ itemModel.category }}
+    <span *ngIf="itemModel.rarity">, {{ itemModel.rarity }}</span>
+    <span *ngIf="itemModel.requiresAttunement"> (requires attunement)</span>
+  </div>
+
+  <div class="sb-rule"></div>
+
+  <div class="sb-line" *ngIf="itemModel.cost">
+    <strong>Cost</strong>
+    <span>{{ itemModel.cost }}</span>
+  </div>
+
+  <div class="sb-line" *ngIf="itemModel.weight">
+    <strong>Weight</strong>
+    <span>{{ itemModel.weight }}</span>
+  </div>
+
+  <div class="sb-line" *ngIf="itemModel.damage || itemModel.damageType">
+    <strong>Damage</strong>
+    <span>{{ itemModel.damage }} {{ itemModel.damageType }}</span>
+  </div>
+
+  <div class="sb-line" *ngIf="itemModel.range">
+    <strong>Range</strong>
+    <span>{{ itemModel.range }}</span>
+  </div>
+
+  <div class="sb-line" *ngIf="itemModel.armorClass">
+    <strong>Armor Class</strong>
+    <span>{{ itemModel.armorClass }}</span>
+  </div>
+
+  <div class="sb-line" *ngIf="itemModel.propertiesText">
+    <strong>Properties</strong>
+    <span>{{ itemModel.propertiesText }}</span>
+  </div>
+
+  <div class="sb-line" *ngIf="itemModel.strengthRequirement">
+    <strong>Strength Requirement</strong>
+    <span>{{ itemModel.strengthRequirement }}</span>
+  </div>
+
+  <div class="sb-line" *ngIf="itemModel.stealthDisadvantage">
+    <strong>Stealth</strong>
+    <span>Disadvantage</span>
+  </div>
+
+  <div class="sb-rule thick" *ngIf="itemModel.description"></div>
+
+  <div class="entry-preview" *ngIf="itemModel.description">
+    <span [innerHTML]="renderText(itemModel.description)"></span>
+  </div>
+
+  <div class="sb-bottom-rule"></div>
+</ng-container>
+
+<ng-container *ngIf="selectedContentType === 'spell'">
+  <div class="sb-top-rule"></div>
+
+  <h1 class="sb-name">{{ spellModel.name || 'Unnamed Spell' }}</h1>
+
+  <div class="sb-meta">
+    {{ spellModel.level === 0 ? 'Cantrip' : spellModel.level + ' level' }}
+    {{ spellModel.school }}
+    <span *ngIf="spellModel.ritual"> (ritual)</span>
+  </div>
+
+  <div class="sb-rule"></div>
+
+  <div class="sb-line">
+    <strong>Casting Time</strong>
+    <span>{{ spellModel.castingTime }}</span>
+  </div>
+
+  <div class="sb-line">
+    <strong>Range</strong>
+    <span>{{ spellModel.range }}</span>
+  </div>
+
+  <div class="sb-line">
+    <strong>Components</strong>
+    <span>{{ getSpellComponentsText() }}</span>
+  </div>
+
+  <div class="sb-line">
+    <strong>Duration</strong>
+    <span>
+      <span *ngIf="spellModel.concentration">Concentration, </span>
+      {{ spellModel.duration }}
+    </span>
+  </div>
+
+  <div class="sb-line" *ngIf="spellModel.classesText">
+    <strong>Classes</strong>
+    <span>{{ spellModel.classesText }}</span>
+  </div>
+
+  <div class="sb-rule thick" *ngIf="spellModel.description"></div>
+
+  <div class="entry-preview" *ngIf="spellModel.description">
+    <span [innerHTML]="renderText(spellModel.description)"></span>
+  </div>
+
+  <div class="section-title preview-title" *ngIf="spellModel.higherLevels">
+    At Higher Levels
+  </div>
+
+  <div class="sb-rule small" *ngIf="spellModel.higherLevels"></div>
+
+  <div class="entry-preview" *ngIf="spellModel.higherLevels">
+    <span [innerHTML]="renderText(spellModel.higherLevels)"></span>
+  </div>
+
+  <div class="sb-bottom-rule"></div>
+</ng-container>
+
+       
+      </div>
+    </section>
+
+  </div>
+</div>

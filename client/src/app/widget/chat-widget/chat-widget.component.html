@@ -1,0 +1,134 @@
+<div class="widget-box">
+  <div class="widget-header">
+    <div class="widget-title">
+      <span class="material-icons">chat</span>
+      <span>Chat</span>
+      <span *ngIf="chatState.unreadTotal > 0" class="badge-glow">
+        {{ chatState.unreadTotal }}
+      </span>
+    </div>
+  </div>
+
+  <div class="widget-body">
+    <div class="conv-column custom-scroll">
+      <div class="section-title">Beszélgetések</div>
+      <ul class="conv-list">
+        <li
+          *ngFor="let c of chatState.conversations"
+          (click)="chatState.openConversation(c.id)"
+          [class.active]="c.id === chatState.selectedConvId">
+          <div class="conv-top">
+            <span class="title">{{ chatState.getConversationTitle(c) }}</span>
+            <span *ngIf="chatState.getConversationUnreadCount(c) > 0" class="badge-small">
+              {{ chatState.getConversationUnreadCount(c) }}
+            </span>
+          </div>
+          <div class="last">{{ c.lastMessage || 'Nincs még üzenet' }}</div>
+        </li>
+      </ul>
+
+      <div class="section-title">Barátok</div>
+      <ul class="friend-list">
+        <li *ngFor="let f of chatState.friends" (click)="startChatWithFriend(f)">
+          <span class="friend-icon">👤</span>
+          <span>{{ $any(f).displayName || $any(f).username || 'Felhasználó' }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="messages-column" *ngIf="chatState.selectedConvId; else noConv">
+      <div class="msgs custom-scroll">
+        <div
+  *ngFor="let m of chatState.messages"
+  class="msg-wrapper"
+  [class.mine]="chatState.isMine(m)"
+>
+  <div class="widget-message-avatar">
+    <img
+      *ngIf="chatState.getMessageSenderPhoto(m); else defaultWidgetAvatar"
+      [src]="chatState.getMessageSenderPhoto(m)"
+      alt="Profilkép"
+    >
+
+    <ng-template #defaultWidgetAvatar>
+      <span>
+        {{ chatState.getMessageSenderName(m).charAt(0).toUpperCase() }}
+      </span>
+    </ng-template>
+  </div>
+
+  <div class="widget-message-stack">
+    <div class="widget-message-sender">
+      {{ chatState.getMessageSenderName(m) }}
+    </div>
+
+    <div class="msg-bubble">
+      <div class="msg-content">
+        <div class="chat-img-container" *ngIf="m.imageUrl">
+          <img
+            [src]="m.imageUrl"
+            class="chat-img"
+            (click)="chatState.openImagePreview(m.imageUrl!)"
+          >
+        </div>
+
+        <p *ngIf="m.text">{{ m.text }}</p>
+      </div>
+
+      <div class="msg-time">
+        {{ m.createdAt?.toDate() | date:'HH:mm' }}
+      </div>
+    </div>
+  </div>
+</div>
+      </div>
+
+      <div class="composer-container" *ngIf="chatState.canMessageSelectedConversation; else blockedBox">
+        <div class="composer-tools">
+          <input type="file" #imgInput hidden (change)="uploadImage($event)" accept="image/*" />
+          
+          <button type="button" class="tool-btn" (click)="imgInput.click()" title="Kép küldése">
+            <span class="material-icons">image</span>
+          </button>
+          
+          <button type="button" class="tool-btn" (click)="toggleEmojiPicker(); $event.stopPropagation()" title="Emoji">
+  <span class="material-icons">sentiment_satisfied_alt</span>
+</button>
+
+<div class="emoji-picker-wrap" *ngIf="showEmojiPicker" (click)="$event.stopPropagation()">
+  <button 
+    type="button" 
+    class="emoji-item" 
+    *ngFor="let emoji of emojis" 
+    (click)="chatState.newMessage = (chatState.newMessage || '') + emoji; showEmojiPicker = false">
+    {{ emoji }}
+  </button>
+</div>
+        </div>
+
+        <div class="input-row">
+          <input
+            [(ngModel)]="chatState.newMessage"
+            (keyup.enter)="send()"
+            placeholder="Üzenet írása..." />
+          <button type="button" class="send-btn" (click)="send()" [disabled]="!chatState.newMessage.trim()">
+            <span class="material-icons">send</span>
+          </button>
+        </div>
+      </div>
+
+      <ng-template #blockedBox>
+        <div class="composer-blocked">
+          <span class="empty-info">{{ chatState.getSelectedConversationBlockedMessage() }}</span>
+        </div>
+      </ng-template>
+    </div>
+
+    <ng-template #noConv>
+      <div class="messages-column empty-state">
+        <span class="material-icons big-icon">forum</span>
+        <div class="empty-info">Válassz egy beszélgetést vagy barátot a kezdéshez.</div>
+      </div>
+    </ng-template>
+  </div>
+</div>

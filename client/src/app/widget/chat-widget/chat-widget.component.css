@@ -1,0 +1,309 @@
+/* --- GLOBÁLIS ÉS ALAP BEÁLLÍTÁSOK --- */
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 250px;
+}
+
+.widget-box {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: rgba(15, 15, 15, 0.98);
+  color: #eee;
+  border-radius: 14px;
+  /* Ha a widget maga túl kicsi a képernyőhöz, görgethető legyen az egész */
+  overflow: auto; 
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.widget-header {
+  flex-shrink: 0;
+  padding: 12px 18px;
+  background: linear-gradient(90deg, #1a1a1a, #222);
+  border-bottom: 1px solid #333;
+}
+
+.widget-title {
+  font-weight: 700;
+  color: #00d2ff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+.widget-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  min-height: 0; /* Engedi a belső görgetést */
+}
+
+/* --- BAL OSZLOP (GÖRGETHETŐ LISTÁK) --- */
+.conv-column {
+  min-height: 0;
+  overflow-y: auto; 
+  border-right: 1px solid #252525;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.section-title {
+  padding: 12px 14px 6px;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: #555;
+  font-weight: 800;
+  position: sticky;
+  top: 0;
+  background: #151515;
+  z-index: 10;
+}
+
+.conv-list, .friend-list { list-style: none; padding: 0; margin: 0; }
+.conv-list li, .friend-list li {
+  padding: 10px 14px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: 0.2s;
+}
+.conv-list li:hover, .friend-list li:hover { background: rgba(0, 210, 255, 0.05); }
+.conv-list li.active { background: rgba(0, 210, 255, 0.08); border-left-color: #00d2ff; }
+
+.title { font-weight: 600; font-size: 12px; color: #fff; display: block; }
+.last { font-size: 11px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* --- JOBB OSZLOP (ÜZENETEK) --- */
+.messages-column {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.msgs {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto; 
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* --- ÜZENET BUBORÉK ÉS KÉP --- */
+.msg-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 8px;
+  width: 100%;
+}
+
+.msg-wrapper.mine {
+  flex-direction: row-reverse;
+}
+
+.widget-message-avatar {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #3a3b3c;
+  border: 2px solid rgba(0, 210, 255, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 800;
+  font-size: 0.78rem;
+  align-self: flex-end;
+}
+
+.widget-message-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.widget-message-stack {
+  max-width: 85%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.msg-wrapper.mine .widget-message-stack {
+  align-items: flex-end;
+}
+
+.widget-message-sender {
+  margin: 0 0 4px 4px;
+  color: #00d2ff;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.msg-wrapper.mine .widget-message-sender {
+  margin: 0 4px 4px 0;
+}
+
+.msg-bubble {
+  max-width: 100%;
+}
+
+.msg-bubble {
+  max-width: 85%;
+  padding: 8px 12px;
+  border-radius: 16px;
+  background: #252525;
+  border: 1px solid #333;
+  font-size: 13px;
+  word-break: break-word;
+}
+
+.mine .msg-bubble {
+  background: linear-gradient(135deg, #0072ff, #00c6ff);
+  color: white;
+  border: none;
+}
+
+.chat-img-container {
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.chat-img {
+  display: block;
+  max-width: 100%; /* Követi az ablak méretét */
+  height: auto;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.msg-time { font-size: 9px; opacity: 0.5; margin-top: 4px; text-align: right; }
+
+/* --- ÜZENETKÜLDŐ ÉS SZERSZÁMOK --- */
+.composer-container {
+  flex-shrink: 0;
+  padding: 12px;
+  background: #151515;
+  border-top: 1px solid #282828;
+}
+
+.composer-tools { 
+  display: flex; gap: 10px; margin-bottom: 8px; position: relative; 
+}
+
+.tool-btn {
+  background: transparent; border: none; color: #666;
+  cursor: pointer; font-size: 18px;
+}
+.tool-btn:hover { color: #00d2ff; }
+
+.emoji-picker-wrap {
+  position: absolute;
+  bottom: 45px;
+  left: 0;
+  background: #1c1c1c;
+  border: 1px solid #333;
+  border-radius: 12px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  padding: 8px;
+  z-index: 1000;
+  box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+}
+
+.emoji-item { background: none; border: none; font-size: 18px; cursor: pointer; padding: 5px; }
+
+.input-row { display: flex; gap: 10px; align-items: center; }
+.input-row input {
+  flex: 1; background: #000; border: 1px solid #333; color: #fff;
+  padding: 10px 16px; border-radius: 20px; outline: none; font-size: 13px;
+}
+
+.send-btn {
+  background: #00d2ff; color: #000; border: none;
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.send-btn:disabled { opacity: 0.3; }
+
+/* --- EGYEDI GÖRGETŐSÁVOK --- */
+.custom-scroll::-webkit-scrollbar { width: 5px; }
+.custom-scroll::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 10px; }
+.custom-scroll::-webkit-scrollbar-thumb:hover { background: #00d2ff; }
+
+/* Globális görgetősáv stílusa */
+.widget-box::-webkit-scrollbar { width: 6px; }
+.widget-box::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+
+@media (max-width: 500px) {
+  .widget-body { grid-template-columns: 1fr; }
+  .conv-column { display: none; }
+}.msg-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.msg-wrapper.mine {
+  align-items: flex-end;
+  flex-direction: row-reverse;
+}
+
+.widget-message-avatar {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #3a3b3c;
+  border: 2px solid rgba(0, 210, 255, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 800;
+  font-size: 0.78rem;
+}
+
+.widget-message-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.widget-message-stack {
+  max-width: 85%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.msg-wrapper.mine .widget-message-stack {
+  align-items: flex-end;
+}
+
+.widget-message-sender {
+  margin: 0 0 4px 4px;
+  color: #00d2ff;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.msg-wrapper.mine .widget-message-sender {
+  margin: 0 4px 4px 0;
+}
+
+.msg-bubble {
+  max-width: 100%;
+}

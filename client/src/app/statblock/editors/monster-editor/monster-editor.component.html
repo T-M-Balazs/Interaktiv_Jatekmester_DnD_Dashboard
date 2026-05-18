@@ -1,0 +1,443 @@
+<div class="editor-section">
+          <h3 class="section-title">Alapadatok</h3>
+
+          <div class="form-grid five">
+            <label>
+              <span class="field-label" title="Name">Name</span>
+              <input type="text" [(ngModel)]="parent.model.name">
+            </label>
+
+            <label>
+              <span class="field-label" title="Size">Size</span>
+              <select [(ngModel)]="parent.model.size">
+                <option *ngFor="let size of parent.sizes" [ngValue]="size">{{ size }}</option>
+              </select>
+            </label>
+
+            <label>
+              <span class="field-label" title="Type">Type</span>
+              <select [(ngModel)]="parent.model.type">
+                <option *ngFor="let type of parent.types" [ngValue]="type">{{ type }}</option>
+              </select>
+            </label>
+
+            <label>
+              <span class="field-label" title="Tag">Tag</span>
+              <input type="text" [(ngModel)]="parent.model.tag">
+            </label>
+
+            <label>
+              <span class="field-label" title="Alignment">Alignment</span>
+              <input type="text" [(ngModel)]="parent.model.alignment">
+            </label>
+          </div>
+
+          <div class="form-grid three">
+            <label *ngIf="parent.model.type === 'Other'">
+              <span class="field-label" title="Other Type">Other Type</span>
+              <input type="text" [(ngModel)]="parent.model.otherType">
+            </label>
+          </div>
+        </div>
+
+        <div class="editor-section">
+          <h3 class="section-title">Defense</h3>
+
+          <div class="form-grid three">
+            <label>
+              <span class="field-label" title="Armor Type">Armor Type</span>
+              <select [(ngModel)]="parent.model.armorType">
+                <option *ngFor="let armor of parent.armorTypes" [ngValue]="armor">{{ armor }}</option>
+              </select>
+            </label>
+
+            <label>
+              <span class="field-label" title="Natural Armor Bonus">Natural Armor Bonus</span>
+              <input type="number" [(ngModel)]="parent.model.naturalArmorBonus">
+            </label>
+
+            <label class="checkbox-inline">
+              <input type="checkbox" [(ngModel)]="parent.model.shield">
+              <span class="field-label" title="Shield">Shield</span>
+            </label>
+          </div>
+
+          <div class="form-grid two-cols">
+            <label>
+              <span class="field-label" title="Hit Dice">Hit Dice</span>
+              <input type="text" [(ngModel)]="parent.model.hitDice">
+            </label>
+
+            <label>
+              <span class="field-label" title="Hit Points">Hit Points</span>
+              <input type="number" [(ngModel)]="parent.model.hitPoints">
+            </label>
+          </div>
+        </div>
+
+        <div class="editor-section">
+          <h3 class="section-title">Speed</h3>
+
+          <div class="form-grid five">
+            <label>
+              <span class="field-label" title="Walk">Walk</span>
+              <input type="number" [(ngModel)]="parent.model.speeds.walk">
+            </label>
+
+            <label>
+              <span class="field-label" title="Burrow">Burrow</span>
+              <input type="number" [(ngModel)]="parent.model.speeds.burrow">
+            </label>
+
+            <label>
+              <span class="field-label" title="Climb">Climb</span>
+              <input type="number" [(ngModel)]="parent.model.speeds.climb">
+            </label>
+
+            <label>
+              <span class="field-label" title="Fly">Fly</span>
+              <input type="number" [(ngModel)]="parent.model.speeds.fly">
+            </label>
+
+            <label>
+              <span class="field-label" title="Swim">Swim</span>
+              <input type="number" [(ngModel)]="parent.model.speeds.swim">
+            </label>
+          </div>
+        </div>
+
+        <div class="editor-section">
+          <h3 class="section-title">Ability Scores</h3>
+
+          <div class="ability-editor-grid">
+            <label *ngFor="let key of parent.abilityKeys">
+              <span class="field-label" [title]="key.toUpperCase()">{{ key.toUpperCase() }}</span>
+              <input type="number" [(ngModel)]="parent.model.abilities[key]" (input)="parent.onAbilityChange()">
+            </label>
+          </div>
+        </div>
+
+        <div class="editor-section">
+          <h3 class="section-title">Saving Throws</h3>
+
+          <div class="toggle-chip-grid">
+            <label class="chip" *ngFor="let key of parent.abilityKeys">
+              <input type="checkbox" [(ngModel)]="parent.model.savingThrows[key]" (change)="parent.onAbilityChange()">
+              <span class="field-label" [title]="key.toUpperCase() + ' proficient'">{{ key.toUpperCase() }} proficient</span>
+            </label>
+          </div>
+        </div>
+
+<div class="editor-section">
+  <h3 class="section-title">Skills</h3>
+
+  <div class="skills-editor">
+    <div class="skill-editor-row header-row">
+      <div class="skill-name">Skill</div>
+      <div class="header-cell">Prof</div>
+      <div class="header-cell">Expert</div>
+      <div class="header-cell bonus-header">Bonus</div>
+    </div>
+
+    <div class="skill-editor-row" *ngFor="let skill of parent.skillNames">
+      <div class="skill-name" [title]="skill">{{ skill }}</div>
+
+      <label class="mini-radio compact-radio">
+        <input
+          type="checkbox"
+          [checked]="parent.model.skills[skill] === 'prof'"
+          (change)="parent.setSkillLevel(skill, $any($event.target).checked ? 'prof' : 'none')">
+      </label>
+
+      <label class="mini-radio compact-radio">
+        <input
+          type="checkbox"
+          [checked]="parent.model.skills[skill] === 'expert'"
+          (change)="parent.setSkillLevel(skill, $any($event.target).checked ? 'expert' : 'none')">
+      </label>
+
+      <div class="skill-bonus">{{ parent.formatSigned(parent.getSkillBonus(skill)) }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="editor-section">
+  <h3 class="section-title">Damage Types</h3>
+
+  <div class="damage-editor">
+    <div class="damage-editor-row header-row damage-header-row">
+      <div class="damage-name">Damage Type</div>
+      <div class="header-cell">Vulnerable</div>
+      <div class="header-cell">Resistant</div>
+      <div class="header-cell">Immune</div>
+    </div>
+
+    <div class="damage-editor-row" *ngFor="let item of parent.damageTypeNames">
+      <div class="damage-name" [title]="item">{{ item }}</div>
+
+      <label class="mini-radio compact-radio">
+        <input
+          type="checkbox"
+          [checked]="parent.isDamageLevel(item, 'vulnerable')"
+          (change)="parent.toggleDamageLevel(item, 'vulnerable', $any($event.target).checked)">
+      </label>
+
+      <label class="mini-radio compact-radio">
+        <input
+          type="checkbox"
+          [checked]="parent.isDamageLevel(item, 'resistant')"
+          (change)="parent.toggleDamageLevel(item, 'resistant', $any($event.target).checked)">
+      </label>
+
+      <label class="mini-radio compact-radio">
+        <input
+          type="checkbox"
+          [checked]="parent.isDamageLevel(item, 'immune')"
+          (change)="parent.toggleDamageLevel(item, 'immune', $any($event.target).checked)">
+      </label>
+    </div>
+  </div>
+</div>
+
+        <div class="editor-section">
+          <h3 class="section-title">Condition Immunities</h3>
+
+          <div class="toggle-chip-grid">
+            <label class="chip" *ngFor="let item of parent.conditions">
+              <input
+                type="checkbox"
+                [ngModel]="parent.hasCondition(item)"
+                (ngModelChange)="parent.toggleCondition(item, $event)"
+              >
+              <span class="field-label" [title]="item">{{ item }}</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="editor-section">
+          <h3 class="section-title">Languages &amp; Senses</h3>
+
+          <div class="form-grid two-cols">
+            <label>
+              <span class="field-label" title="Languages">Languages</span>
+              <select [(ngModel)]="parent.selectedLanguageToAdd" (change)="parent.addLanguageFromSelect()">
+                <option value="">Nyelv kiválasztása...</option>
+                <option *ngFor="let lang of parent.getAvailableLanguages()" [value]="lang">{{ lang }}</option>
+              </select>
+            </label>
+
+            <label>
+              <span class="field-label" title="Telepathy">Telepathy</span>
+              <input type="number" [(ngModel)]="parent.model.telepathy">
+            </label>
+          </div>
+
+          <div class="selected-languages" *ngIf="parent.model.languages.length > 0">
+            <label class="chip selected-chip" *ngFor="let lang of parent.model.languages">
+              <input
+                type="checkbox"
+                [checked]="parent.isLanguageSelected(lang)"
+                (change)="parent.toggleSelectedLanguage(lang, $any($event.target).checked)">
+              <span class="field-label" [title]="lang">{{ lang }}</span>
+            </label>
+          </div>
+
+          <div class="toggle-chip-grid">
+            <label class="chip">
+              <input type="checkbox" [(ngModel)]="parent.model.understandsBut">
+              <span class="field-label" title="Understands but can't speak">Understands but can't speak</span>
+            </label>
+
+            <label class="chip">
+              <input type="checkbox" [(ngModel)]="parent.model.speaksBut">
+              <span class="field-label" title="Speaks only through magic">Speaks only through magic</span>
+            </label>
+          </div>
+
+          <div class="form-grid four">
+            <label>
+              <span class="field-label" title="Blindsight">Blindsight</span>
+              <input type="number" [(ngModel)]="parent.model.senses.blindsight">
+            </label>
+
+            <label>
+              <span class="field-label" title="Darkvision">Darkvision</span>
+              <input type="number" [(ngModel)]="parent.model.senses.darkvision">
+            </label>
+
+            <label>
+              <span class="field-label" title="Tremorsense">Tremorsense</span>
+              <input type="number" [(ngModel)]="parent.model.senses.tremorsense">
+            </label>
+
+            <label>
+              <span class="field-label" title="Truesight">Truesight</span>
+              <input type="number" [(ngModel)]="parent.model.senses.truesight">
+            </label>
+          </div>
+        </div>
+
+        <div class="editor-section">
+          <h3 class="section-title">Challenge</h3>
+
+          <div class="form-grid three">
+            <label>
+              <span class="field-label" title="Challenge Rating">Challenge Rating</span>
+              <input type="text" [(ngModel)]="parent.model.challengeRating" (input)="parent.onCrChange()">
+            </label>
+
+            <label>
+              <span class="field-label" title="CR Text">CR Text</span>
+              <input type="text" [(ngModel)]="parent.model.customCrText">
+            </label>
+
+            <label>
+              <span class="field-label" title="Proficiency Override">Proficiency Override</span>
+              <input
+                type="number"
+                [ngModel]="parent.model.proficiencyBonusOverride"
+                (ngModelChange)="parent.model.proficiencyBonusOverride = $event === '' ? null : $event"
+              >
+            </label>
+          </div>
+
+          <div class="readonly-box">
+            XP: {{ parent.getXp() | number }}<br>
+            PB: +{{ parent.getProficiencyBonus() }}
+          </div>
+        </div>
+
+        <div class="editor-section">
+          <h3 class="section-title">Traits</h3>
+
+          <div class="entry-box" *ngFor="let item of parent.model.traits; let i = index; trackBy: parent.trackByIndex">
+            <input type="text" [(ngModel)]="item.name" placeholder="Trait neve">
+            <textarea [(ngModel)]="item.text" placeholder="Trait leírás"></textarea>
+
+            <div class="entry-actions">
+              <button type="button" class="small-btn secondary-btn" (click)="parent.moveUp(parent.model.traits, i)">↑</button>
+              <button type="button" class="small-btn secondary-btn" (click)="parent.moveDown(parent.model.traits, i)">↓</button>
+              <button type="button" class="small-btn secondary-btn danger-btn" (click)="parent.removeEntry(parent.model.traits, i)">X</button>
+            </div>
+          </div>
+
+          <button type="button" class="small-btn primary-btn" (click)="parent.addEntry(parent.model.traits)">+ Trait</button>
+        </div>
+
+        <div class="editor-section">
+          <h3 class="section-title">Actions</h3>
+
+          <div class="entry-box" *ngFor="let item of parent.model.actions; let i = index; trackBy: parent.trackByIndex">
+            <input type="text" [(ngModel)]="item.name" placeholder="Action neve">
+            <textarea [(ngModel)]="item.text" placeholder="Action leírás"></textarea>
+
+            <div class="entry-actions">
+              <button type="button" class="small-btn secondary-btn" (click)="parent.moveUp(parent.model.actions, i)">↑</button>
+              <button type="button" class="small-btn secondary-btn" (click)="parent.moveDown(parent.model.actions, i)">↓</button>
+              <button type="button" class="small-btn secondary-btn danger-btn" (click)="parent.removeEntry(parent.model.actions, i)">X</button>
+            </div>
+          </div>
+
+          <button type="button" class="small-btn primary-btn" (click)="parent.addEntry(parent.model.actions)">+ Action</button>
+        </div>
+
+        <div class="editor-section">
+          <h3 class="section-title">Bonus Actions</h3>
+
+          <div class="entry-box" *ngFor="let item of parent.model.bonusActions; let i = index; trackBy: parent.trackByIndex">
+            <input type="text" [(ngModel)]="item.name" placeholder="Bonus action neve">
+            <textarea [(ngModel)]="item.text" placeholder="Bonus action leírás"></textarea>
+
+            <div class="entry-actions">
+              <button type="button" class="small-btn secondary-btn" (click)="parent.moveUp(parent.model.bonusActions, i)">↑</button>
+              <button type="button" class="small-btn secondary-btn" (click)="parent.moveDown(parent.model.bonusActions, i)">↓</button>
+              <button type="button" class="small-btn secondary-btn danger-btn" (click)="parent.removeEntry(parent.model.bonusActions, i)">X</button>
+            </div>
+          </div>
+
+          <button type="button" class="small-btn primary-btn" (click)="parent.addEntry(parent.model.bonusActions)">+ Bonus Action</button>
+        </div>
+
+        <div class="editor-section">
+          <h3 class="section-title">Reactions</h3>
+
+          <div class="entry-box" *ngFor="let item of parent.model.reactions; let i = index; trackBy: parent.trackByIndex">
+            <input type="text" [(ngModel)]="item.name" placeholder="Reaction neve">
+            <textarea [(ngModel)]="item.text" placeholder="Reaction leírás"></textarea>
+
+            <div class="entry-actions">
+              <button type="button" class="small-btn secondary-btn" (click)="parent.moveUp(parent.model.reactions, i)">↑</button>
+              <button type="button" class="small-btn secondary-btn" (click)="parent.moveDown(parent.model.reactions, i)">↓</button>
+              <button type="button" class="small-btn secondary-btn danger-btn" (click)="parent.removeEntry(parent.model.reactions, i)">X</button>
+            </div>
+          </div>
+
+          <button type="button" class="small-btn primary-btn" (click)="parent.addEntry(parent.model.reactions)">+ Reaction</button>
+        </div>
+<div class="editor-section">
+  <h3 class="section-title">Legendary Actions</h3>
+
+  <div class="entry-box" *ngFor="let item of parent.model.legendaryActions; let i = index; trackBy: parent.trackByIndex">
+    <input type="text" [(ngModel)]="item.name" placeholder="Legendary action neve">
+    <textarea [(ngModel)]="item.text" placeholder="Legendary action leírás"></textarea>
+
+    <div class="entry-actions">
+      <button type="button" class="small-btn secondary-btn" (click)="parent.moveUp(parent.model.legendaryActions, i)">↑</button>
+      <button type="button" class="small-btn secondary-btn" (click)="parent.moveDown(parent.model.legendaryActions, i)">↓</button>
+      <button type="button" class="small-btn secondary-btn danger-btn" (click)="parent.removeEntry(parent.model.legendaryActions, i)">X</button>
+    </div>
+  </div>
+
+  <button type="button" class="small-btn primary-btn" (click)="parent.addEntry(parent.model.legendaryActions)">+ Legendary Action</button>
+</div>
+
+<div class="editor-section">
+  <h3 class="section-title">Mythic</h3>
+
+  <div class="entry-box" *ngFor="let item of parent.model.mythicActions; let i = index; trackBy: parent.trackByIndex">
+    <input type="text" [(ngModel)]="item.name" placeholder="Mythic neve">
+    <textarea [(ngModel)]="item.text" placeholder="Mythic leírás"></textarea>
+
+    <div class="entry-actions">
+      <button type="button" class="small-btn secondary-btn" (click)="parent.moveUp(parent.model.mythicActions, i)">↑</button>
+      <button type="button" class="small-btn secondary-btn" (click)="parent.moveDown(parent.model.mythicActions, i)">↓</button>
+      <button type="button" class="small-btn secondary-btn danger-btn" (click)="parent.removeEntry(parent.model.mythicActions, i)">X</button>
+    </div>
+  </div>
+
+  <button type="button" class="small-btn primary-btn" (click)="parent.addEntry(parent.model.mythicActions)">+ Mythic</button>
+</div>
+
+<div class="editor-section">
+  <h3 class="section-title">Lair</h3>
+
+  <div class="entry-box" *ngFor="let item of parent.model.lairActions; let i = index; trackBy: parent.trackByIndex">
+    <input type="text" [(ngModel)]="item.name" placeholder="Lair neve">
+    <textarea [(ngModel)]="item.text" placeholder="Lair leírás"></textarea>
+
+    <div class="entry-actions">
+      <button type="button" class="small-btn secondary-btn" (click)="parent.moveUp(parent.model.lairActions, i)">↑</button>
+      <button type="button" class="small-btn secondary-btn" (click)="parent.moveDown(parent.model.lairActions, i)">↓</button>
+      <button type="button" class="small-btn secondary-btn danger-btn" (click)="parent.removeEntry(parent.model.lairActions, i)">X</button>
+    </div>
+  </div>
+
+  <button type="button" class="small-btn primary-btn" (click)="parent.addEntry(parent.model.lairActions)">+ Lair</button>
+</div>
+
+<div class="editor-section">
+  <h3 class="section-title">Regional</h3>
+
+  <div class="entry-box" *ngFor="let item of parent.model.regionalEffects; let i = index; trackBy: parent.trackByIndex">
+    <input type="text" [(ngModel)]="item.name" placeholder="Regional neve">
+    <textarea [(ngModel)]="item.text" placeholder="Regional leírás"></textarea>
+
+    <div class="entry-actions">
+      <button type="button" class="small-btn secondary-btn" (click)="parent.moveUp(parent.model.regionalEffects, i)">↑</button>
+      <button type="button" class="small-btn secondary-btn" (click)="parent.moveDown(parent.model.regionalEffects, i)">↓</button>
+      <button type="button" class="small-btn secondary-btn danger-btn" (click)="parent.removeEntry(parent.model.regionalEffects, i)">X</button>
+    </div>
+  </div>
+
+  <button type="button" class="small-btn primary-btn" (click)="parent.addEntry(parent.model.regionalEffects)">+ Regional</button>
+</div>

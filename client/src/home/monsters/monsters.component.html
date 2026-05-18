@@ -1,0 +1,345 @@
+<div class="monsters-page">
+
+  <header class="page-header">
+    <div>
+      <h1>Monsters</h1>
+      <p>D&D 5e szörnyek böngészése, szűrése és rendezése.</p>
+    </div>
+
+    <nav class="main-nav">
+      <button routerLink="/spells-items" routerLinkActive="active">Spells / Items</button>
+      <button routerLink="/classes-races" routerLinkActive="active">Classes / Races</button>
+      <button routerLink="/backgrounds-feats" routerLinkActive="active">Backgrounds / Feats</button>
+      <button routerLink="/rules-mechanics" routerLinkActive="active">Rules / Mechanics</button>
+      <button routerLink="/monsters" routerLinkActive="active">Monsters</button>
+      <button routerLink="/">Home</button>
+    </nav>
+  </header>
+
+  <main
+    class="content-layout"
+    [class.has-detail-panel]="selectedMonster">
+
+    <section class="list-panel">
+
+      <div class="filters-panel">
+        <input
+          type="text"
+          placeholder="Keresés név, típus vagy leírás alapján..."
+          [(ngModel)]="searchText">
+
+        <select [(ngModel)]="selectedType">
+          <option value="">All Types</option>
+          <option *ngFor="let type of monsterTypes" [value]="type">
+            {{ type }}
+          </option>
+        </select>
+
+        <select [(ngModel)]="selectedSize">
+          <option value="">All Sizes</option>
+          <option *ngFor="let size of monsterSizes" [value]="size">
+            {{ size }}
+          </option>
+        </select>
+
+        <select [(ngModel)]="selectedAlignment">
+          <option value="">All Alignments</option>
+          <option *ngFor="let alignment of monsterAlignments" [value]="alignment">
+            {{ alignment }}
+          </option>
+        </select>
+
+        <input type="number" placeholder="Min CR" [(ngModel)]="minCr">
+        <input type="number" placeholder="Max CR" [(ngModel)]="maxCr">
+
+        <input type="number" placeholder="Min AC" [(ngModel)]="minAc">
+        <input type="number" placeholder="Max AC" [(ngModel)]="maxAc">
+
+        <div class="filter-actions">
+          <button
+            type="button"
+            class="advanced-toggle"
+            (click)="showAdvancedFilters = !showAdvancedFilters">
+            ⚙
+          </button>
+
+          <button type="button" (click)="clearFilters()">
+            Clear Filters
+          </button>
+        </div>
+      </div>
+
+      <div
+        class="advanced-filters-panel"
+        *ngIf="showAdvancedFilters">
+
+        <div class="advanced-grid">
+
+          <input
+            type="number"
+            placeholder="Min HP"
+            [(ngModel)]="minHp">
+
+          <input
+            type="number"
+            placeholder="Max HP"
+            [(ngModel)]="maxHp">
+
+          <input
+            type="text"
+            placeholder="Speed contains..."
+            [(ngModel)]="speedFilter">
+
+          <input
+            type="text"
+            placeholder="Language contains..."
+            [(ngModel)]="languageFilter">
+
+          <label class="checkbox-filter">
+            <input type="checkbox" [(ngModel)]="hasLegendaryActions">
+            Legendary Actions
+          </label>
+
+          <label class="checkbox-filter">
+            <input type="checkbox" [(ngModel)]="hasDamageResistances">
+            Damage Resistances
+          </label>
+
+          <label class="checkbox-filter">
+            <input type="checkbox" [(ngModel)]="hasDamageImmunities">
+            Damage Immunities
+          </label>
+
+          <label class="checkbox-filter">
+            <input type="checkbox" [(ngModel)]="hasConditionImmunities">
+            Condition Immunities
+          </label>
+
+          <label class="checkbox-filter">
+            <input type="checkbox" [(ngModel)]="hasSpellcasting">
+            Spellcasting
+          </label>
+
+        </div>
+      </div>
+
+      <div *ngIf="isLoading" class="loading">
+        Betöltés...
+      </div>
+
+      <ng-container *ngIf="!isLoading">
+        <section class="table-section">
+          <div class="section-header">
+            <h2>Monsters</h2>
+            <p>{{ filteredMonsters.length }} találat</p>
+          </div>
+
+          <div class="table-wrapper" *ngIf="filteredMonsters.length > 0; else noMonsters">
+            <table>
+              <thead>
+                <tr>
+                  <th (click)="sortBy('name')">
+                    Name {{ getSortIcon('name') }}
+                  </th>
+
+                  <th (click)="sortBy('size')">
+                    Size {{ getSortIcon('size') }}
+                  </th>
+
+                  <th (click)="sortBy('type')">
+                    Type {{ getSortIcon('type') }}
+                  </th>
+
+                  <th (click)="sortBy('alignment')">
+                    Alignment {{ getSortIcon('alignment') }}
+                  </th>
+
+                  <th (click)="sortBy('challengeRating')">
+                    CR {{ getSortIcon('challengeRating') }}
+                  </th>
+
+                  <th (click)="sortBy('armorClass')">
+                    AC {{ getSortIcon('armorClass') }}
+                  </th>
+
+                  <th (click)="sortBy('hitPoints')">
+                    HP {{ getSortIcon('hitPoints') }}
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr
+                  *ngFor="let monster of filteredMonsters"
+                  (click)="selectMonster(monster)"
+                  [class.selected]="selectedMonster?.id === monster.id">
+
+                  <td>{{ monster.name }}</td>
+                  <td>{{ monster.size || '—' }}</td>
+                  <td>{{ monster.type || '—' }}</td>
+                  <td>{{ monster.alignment || '—' }}</td>
+                  <td>{{ monster.challengeRating || '—' }}</td>
+                  <td>{{ monster.armorClass || '—' }}</td>
+                  <td>{{ monster.hitPoints || '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <ng-template #noMonsters>
+            <div class="empty-row">Nincs találat.</div>
+          </ng-template>
+        </section>
+      </ng-container>
+
+    </section>
+
+    <aside class="detail-panel" *ngIf="selectedMonster as monster">
+
+      <button
+        type="button"
+        class="close-button"
+        (click)="closeDetailPanel()">
+        ×
+      </button>
+
+      <article class="detail-card">
+        <h2>{{ monster.name }}</h2>
+
+        <p class="detail-meta">
+          {{ monster.size }} {{ monster.type }}, {{ monster.alignment }}
+        </p>
+
+        <div class="stat-grid">
+          <div>
+            <strong>CR</strong>
+            <span>{{ monster.challengeRating || '—' }}</span>
+          </div>
+
+          <div>
+            <strong>AC</strong>
+            <span>{{ monster.armorClass || '—' }}</span>
+          </div>
+
+          <div>
+            <strong>HP</strong>
+            <span>{{ monster.hitPoints || '—' }}</span>
+          </div>
+        </div>
+
+        <p class="description" *ngIf="monster.data.shortDescription">
+          {{ monster.data.shortDescription }}
+        </p>
+
+        <div class="detail-rule"></div>
+
+        <section class="info-section" *ngIf="monster.speed">
+          <h3>Speed</h3>
+          <p>{{ monster.speed }}</p>
+        </section>
+
+        <section class="info-section" *ngIf="monster.data.abilities">
+          <h3>Abilities</h3>
+
+          <div class="ability-grid">
+            <div>
+              <strong>STR</strong>
+              <span>{{ monster.data.abilities.str || '—' }}</span>
+            </div>
+
+            <div>
+              <strong>DEX</strong>
+              <span>{{ monster.data.abilities.dex || '—' }}</span>
+            </div>
+
+            <div>
+              <strong>CON</strong>
+              <span>{{ monster.data.abilities.con || '—' }}</span>
+            </div>
+
+            <div>
+              <strong>INT</strong>
+              <span>{{ monster.data.abilities.int || '—' }}</span>
+            </div>
+
+            <div>
+              <strong>WIS</strong>
+              <span>{{ monster.data.abilities.wis || '—' }}</span>
+            </div>
+
+            <div>
+              <strong>CHA</strong>
+              <span>{{ monster.data.abilities.cha || '—' }}</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="info-section" *ngIf="monster.data.savingThrows">
+          <h3>Saving Throws</h3>
+          <p>{{ monster.data.savingThrows }}</p>
+        </section>
+
+        <section class="info-section" *ngIf="monster.data.skills">
+          <h3>Skills</h3>
+          <p>{{ monster.data.skills }}</p>
+        </section>
+
+        <section class="info-section" *ngIf="monster.data.damageResistances">
+          <h3>Damage Resistances</h3>
+          <p>{{ monster.data.damageResistances }}</p>
+        </section>
+
+        <section class="info-section" *ngIf="monster.data.damageImmunities">
+          <h3>Damage Immunities</h3>
+          <p>{{ monster.data.damageImmunities }}</p>
+        </section>
+
+        <section class="info-section" *ngIf="monster.data.conditionImmunities">
+          <h3>Condition Immunities</h3>
+          <p>{{ monster.data.conditionImmunities }}</p>
+        </section>
+
+        <section class="info-section" *ngIf="monster.data.senses">
+          <h3>Senses</h3>
+          <p>{{ monster.data.senses }}</p>
+        </section>
+
+        <section class="info-section" *ngIf="monster.data.languages">
+          <h3>Languages</h3>
+          <p>{{ monster.data.languages }}</p>
+        </section>
+
+        <section class="info-section" *ngIf="monster.data.traits?.length">
+          <h3>Traits</h3>
+
+          <div class="feature-card" *ngFor="let trait of monster.data.traits">
+            <h4>{{ trait.name }}</h4>
+            <p class="description">{{ trait.description }}</p>
+          </div>
+        </section>
+
+        <section class="info-section" *ngIf="monster.data.actions?.length">
+          <h3>Actions</h3>
+
+          <div class="feature-card" *ngFor="let action of monster.data.actions">
+            <h4>{{ action.name }}</h4>
+            <p class="description">{{ action.description }}</p>
+          </div>
+        </section>
+
+        <section class="info-section" *ngIf="monster.data.legendaryActions?.length">
+          <h3>Legendary Actions</h3>
+
+          <div class="feature-card" *ngFor="let action of monster.data.legendaryActions">
+            <h4>{{ action.name }}</h4>
+            <p class="description">{{ action.description }}</p>
+          </div>
+        </section>
+
+      </article>
+
+    </aside>
+
+  </main>
+
+</div>
