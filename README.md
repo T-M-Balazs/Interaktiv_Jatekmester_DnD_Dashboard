@@ -1,4 +1,4 @@
-# Szakdolgozat projekt futtatása
+# Interaktiv_Jatekmester_DnD_Dashboard projekt futtatása
 
 Ez a leírás bemutatja, hogyan lehet a projektet egy másik gépen telepíteni és elindítani.
 A projekt futtatásához Node.js, npm, Angular CLI és opcionálisan ngrok szükséges.
@@ -41,14 +41,14 @@ A projekt letöltéséhez a GitHub repository klónozása szükséges.
 git clone https://github.com/T-M-Balazs/Interaktiv_Jatekmester_DnD_Dashboard.git
 ```
 
-A parancs lefutása után létrejön egy `Szakdolgozat` nevű mappa, amely tartalmazza a projekt forráskódját.
+A parancs lefutása után létrejön egy `Interaktiv_Jatekmester_DnD_Dashboard` nevű mappa, amely tartalmazza a projekt forráskódját.
 
 ## 4. Belépés a projekt mappájába
 
 A letöltés után be kell lépni a projekt fő mappájába:
 
 ```bash
-cd Szakdolgozat
+cd Interaktiv_Jatekmester_DnD_Dashboard
 ```
 
 ## 5. Függőségek telepítése
