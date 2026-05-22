@@ -38,8 +38,7 @@ ng version
 A projekt letöltéséhez a GitHub repository klónozása szükséges.
 
 ```bash
-git clone https://github.com/T-M-Balazs/Interaktiv_Jatekmester_DnD_Dashboard
-.git
+git clone https://github.com/T-M-Balazs/Interaktiv_Jatekmester_DnD_Dashboard.git
 ```
 
 A parancs lefutása után létrejön egy `Szakdolgozat` nevű mappa, amely tartalmazza a projekt forráskódját.
