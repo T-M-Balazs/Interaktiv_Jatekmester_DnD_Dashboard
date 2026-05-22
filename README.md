@@ -92,8 +92,17 @@ http://localhost:4200
 Ha az alkalmazást interneten keresztül is el szeretnénk érni, akkor használható az ngrok. Ez akkor hasznos, ha a lokálisan futó projektet másik eszközről vagy külső hálózatról is meg szeretnénk nyitni.
 Először be kell állítani az ngrok hitelesítési tokent:
 
+Ngrok token létrehozása
+A folyamat egyszerű és ingyenes:
+1. Regisztráció
+Menj a ngrok.com oldalra, és hozz létre egy fiókot (Google vagy GitHub fiókkal is lehet).
+2. Token megkeresése
+Bejelentkezés után a dashboardon a bal oldali menüben keresd meg a "Your Authtoken" vagy "Auth" részt. Ott látható az egyedi tokened.
+3. Token beállítása
+bashngrok config add-authtoken <IDE_JÖSSZ_A_TE_TOKENED>
+
 ```bash
-.\ngrok config add-authtoken 3Bj8HYxX3HixTcigoGVNuTJLrDG_68mLXuqJJXLPcEfBNQoWS
+.\ngrok config add-authtoken <IDE_JÖSSZ_A_TE_TOKENED>
 ```
 
 Az ngrok indítása a 4200-as porthoz:
@@ -102,9 +111,4 @@ Az ngrok indítása a 4200-as porthoz:
 .\ngrok.exe http 4200
 ```
 
-A parancs lefutása után az ngrok létrehoz egy publikus URL-t. Ezen az URL-en keresztül az alkalmazás külső hálózatról is elérhető.
-Ngrok indítása külön terminálablakban:
 
-```bash
-.\ngrok.exe http 4200
-```
