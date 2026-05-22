@@ -99,10 +99,10 @@ Menj a ngrok.com oldalra, és hozz létre egy fiókot (Google vagy GitHub fiókk
 2. Token megkeresése
 Bejelentkezés után a dashboardon a bal oldali menüben keresd meg a "Your Authtoken" vagy "Auth" részt. Ott látható az egyedi tokened.
 3. Token beállítása
-bashngrok config add-authtoken <IDE_JÖSSZ_A_TE_TOKENED>
+bashngrok config add-authtoken <IDE_JÖN_A_TE_TOKENED>
 
 ```bash
-.\ngrok config add-authtoken <IDE_JÖSSZ_A_TE_TOKENED>
+.\ngrok config add-authtoken <IDE_JÖn_A_TE_TOKENED>
 ```
 
 Az ngrok indítása a 4200-as porthoz:
@@ -110,5 +110,6 @@ Az ngrok indítása a 4200-as porthoz:
 ```bash
 .\ngrok.exe http 4200
 ```
+Ezután adni fog egy linket amit más eszközökről is meg lehet nyitni
 
 
