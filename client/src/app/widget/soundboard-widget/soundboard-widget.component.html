@@ -1,19 +1,32 @@
 <div class="widget-box">
+
   <div class="header-section">
     <select
       [value]="soundboard.selectedBoardId"
       (change)="soundboard.selectBoard($any($event.target).value)">
-      <option *ngFor="let b of soundboard.boards" [value]="b.id">
+
+      <option
+        *ngFor="let b of soundboard.boards"
+        [value]="b.id">
+
         {{ b.name }}
+
       </option>
     </select>
   </div>
 
   <div class="top-actions">
-    <button type="button" class="action-btn" (click)="soundboard.toggleMute()" [title]="soundboard.isMuted ? 'Némítás feloldása' : 'Némítás'">
+
+    <button
+      type="button"
+      class="action-btn"
+      (click)="soundboard.toggleMute()"
+      [title]="soundboard.isMuted ? 'Némítás feloldása' : 'Némítás'">
+
       <span class="material-icons">
         {{ soundboard.isMuted ? 'volume_off' : 'volume_up' }}
       </span>
+
     </button>
 
     <button
@@ -22,28 +35,66 @@
       (click)="soundboard.stopSlot()"
       [disabled]="!soundboard.isPlaying"
       title="Összes hang leállítása">
-      <span class="material-icons">stop</span>
+
+      <span class="material-icons">
+        stop
+      </span>
+
     </button>
   </div>
 
-  <div class="slot-matrix" *ngIf="soundboard.selectedBoard">
-    <ng-container *ngFor="let slot of soundboard.selectedBoard.slots; let i = index">
+  <div
+    class="slot-matrix"
+    *ngIf="soundboard.selectedBoard">
+
+    <ng-container
+      *ngFor="let slot of soundboard.selectedBoard.slots; let i = index">
+
       <button
-        *ngIf="slot.sfxUrl"
         type="button"
         class="slot-btn"
-        [title]="slot.label || ('Slot ' + (i + 1))"
-        (click)="soundboard.playSlot(i)">
-        <span class="slot-number">{{ i + 1 }}</span>
-        <span class="slot-label">
-          {{ slot.label || ('Hang ' + (i + 1)) }}
+        [class.empty-slot]="!slot.sfxUrl"
+        [style.--slot-color]="slot.color || '#ff5722'"
+        [style.borderColor]="slot.sfxUrl ? (slot.color || '#ff5722') : 'rgba(255,255,255,0.08)'"
+        [title]="slot.sfxUrl ? (slot.label || ('Slot ' + (i + 1))) : ('Üres slot ' + (i + 1))"
+        (click)="slot.sfxUrl ? soundboard.playSlot(i) : null">
+
+        <span class="slot-number">
+          {{ i + 1 }}
         </span>
+
+        <span
+          class="slot-icon"
+          *ngIf="slot.sfxUrl">
+
+          <span class="material-icons">
+            {{ slot.icon || 'music_note' }}
+          </span>
+
+        </span>
+
+        <span
+          class="slot-label empty-label"
+          *ngIf="!slot.sfxUrl">
+          Üres
+        </span>
+
       </button>
+
     </ng-container>
   </div>
 
-  <div class="empty-msg" *ngIf="!hasActiveSlots()">
-    <span class="material-icons">info</span>
-    <p>Nincsenek hangok ezen a táblán.</p>
+  <div
+    class="empty-msg"
+    *ngIf="!hasActiveSlots()">
+
+    <span class="material-icons">
+      info
+    </span>
+
+    <p>
+      Nincsenek hangok ezen a táblán.
+    </p>
+
   </div>
 </div>

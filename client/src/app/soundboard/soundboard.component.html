@@ -7,6 +7,7 @@
         <h2 class="panel-title">Soundboardok</h2>
         <button
           class="small-btn plus-btn"
+          [class.active-action]="isAddingBoard"
           type="button"
           (click)="toggleAddBoard()"
           title="Új board létrehozása">
@@ -20,7 +21,11 @@
           [(ngModel)]="newBoardName"
           placeholder="Új board neve..."
           (keyup.enter)="createBoard()" />
-        <button class="small-btn primary-btn" type="button" (click)="createBoard()">
+
+        <button
+          class="small-btn primary-btn"
+          type="button"
+          (click)="createBoard()">
           Létrehozás
         </button>
       </div>
@@ -30,7 +35,10 @@
           *ngFor="let b of boards"
           [class.active]="b.id === selectedBoardId"
           (click)="selectBoard(b.id)">
-          <span class="board-name">{{ b.name }}</span>
+
+          <span class="board-name">
+            {{ b.name }}
+          </span>
 
           <button
             class="delete-btn"
@@ -41,27 +49,43 @@
           </button>
         </li>
 
-        <li *ngIf="boards.length === 0" class="empty-state">
+        <li
+          *ngIf="boards.length === 0"
+          class="empty-state">
           Még nincs soundboard.
         </li>
       </ul>
     </div>
 
     <!-- KÖZÉPSŐ PANEL: AKTUÁLIS BOARD -->
-    <div class="panel main-board-panel" *ngIf="selectedBoard as board">
+    <div
+      class="panel main-board-panel"
+      *ngIf="selectedBoard as board">
+
       <div class="panel-header">
         <div>
-          <h2 class="panel-title">{{ board.name }}</h2>
-          <div class="panel-subtitle">12 gombos soundboard szerkesztő</div>
+          <h2 class="panel-title">
+            {{ board.name }}
+          </h2>
+
+          <div class="panel-subtitle">
+            12 gombos soundboard szerkesztő
+          </div>
         </div>
 
-        <div class="selected-badge" *ngIf="selectedSlotIndex !== null">
+        <div
+          class="selected-badge"
+          *ngIf="selectedSlotIndex !== null">
+
           Slot {{ selectedSlotIndex! + 1 }}
         </div>
       </div>
 
       <div class="now-playing-box">
-        <div class="now-playing-label">Kiválasztott slot</div>
+        <div class="now-playing-label">
+          Kiválasztott slot
+        </div>
+
         <div class="now-playing-title">
           {{
             selectedSlotIndex !== null
@@ -71,261 +95,880 @@
         </div>
       </div>
 
-      <div class="slot-editor" *ngIf="selectedSlotIndex !== null">
-        <button class="small-btn primary-btn" type="button" (click)="clearSlot()">
-          Slot ürítése
-        </button>
-
-        <button
-          class="small-btn secondary-btn"
-          type="button"
-          (click)="stopSlot()"
-          *ngIf="isPlaying">
-          ⏹ Stop
-        </button>
-      </div>
-
+      <!-- SLOTOK -->
       <div class="slot-grid">
-        <button
+
+        <div
           *ngFor="let slot of board.slots; let i = index"
+          #slotElement
           class="slot-btn"
-          type="button"
+          role="button"
+          tabindex="0"
+
           [class.selected]="i === selectedSlotIndex"
-          (click)="selectSlot(i); playSlot(i)">
+          [class.empty-slot]="!slot.sfxUrl"
 
-          <div class="slot-num">#{{ i + 1 }}</div>
+          [class.picker-open]="
+            activePicker !== null &&
+            activePickerSlotIndex === i
+          "
 
-          <div class="slot-content">
-            <div class="slot-title">{{ getSlotName(board, i) }}</div>
-            <div class="slot-state" [class.filled]="!!slot.sfxUrl">
-              {{ slot.sfxUrl ? 'Foglalt' : 'Üres' }}
+          [style.borderColor]="slot.color || '#ffd700'"
+          [style.--slot-color]="slot.color || '#ffd700'"
+
+          (click)="selectSlot(i); playSlot(i)"
+
+          (keydown.enter)="
+            selectSlot(i);
+            playSlot(i)
+          "
+
+          (keydown.space)="
+            selectSlot(i);
+            playSlot(i);
+            $event.preventDefault()
+          ">
+
+          <!-- SLOT MŰVELETI GOMBOK -->
+          <div
+            class="slot-action-group"
+            *ngIf="
+              slot.sfxUrl ||
+              i === selectedSlotIndex
+            ">
+
+            <!-- TÖRLÉS -->
+            <button
+              class="slot-clear-inline"
+              type="button"
+              title="Slot ürítése"
+
+              (click)="
+                clearSlot();
+                $event.stopPropagation()
+              ">
+              ✕
+            </button>
+
+            <!-- SZÍNVÁLASZTÓ -->
+            <button
+              class="slot-mini-btn color-mini"
+              type="button"
+              title="Szín választás"
+
+              (click)="
+                toggleColorPicker(i, slotElement);
+                $event.stopPropagation()
+              ">
+
+              <span class="material-icons">
+                palette
+              </span>
+            </button>
+
+            <!-- IKONVÁLASZTÓ -->
+            <button
+              class="slot-mini-btn icon-mini"
+              type="button"
+              title="Ikon választás"
+
+              (click)="
+                toggleIconPicker(i, slotElement);
+                $event.stopPropagation()
+              ">
+
+              <span class="material-icons">
+                emoji_symbols
+              </span>
+            </button>
+          </div>
+
+
+          <!--
+            LÁTHATATLAN HÁTTÉR A PICKER MÖGÖTT
+
+            Ez blokkolja, hogy a picker alatt
+            lévő másik slotokra lehessen kattintani.
+          -->
+          <div
+            class="picker-backdrop"
+
+            *ngIf="
+              activePicker !== null &&
+              activePickerSlotIndex === i
+            "
+
+            (mousedown)="
+              $event.stopPropagation()
+            "
+
+            (click)="
+              closePickers();
+              $event.stopPropagation()
+            ">
+          </div>
+
+
+          <!-- SZÍNVÁLASZTÓ -->
+          <div
+            class="slot-picker-popover color-popover"
+
+            *ngIf="
+              activePicker === 'color' &&
+              activePickerSlotIndex === i
+            "
+
+            [class.open-up]="
+              pickerDirection === 'up'
+            "
+
+            [class.open-down]="
+              pickerDirection === 'down'
+            "
+
+            [style.maxHeight.px]="
+              pickerMaxHeight
+            "
+
+            (mousedown)="
+              $event.stopPropagation()
+            "
+
+            (click)="
+              $event.stopPropagation()
+            ">
+
+            <!-- ELŐRE DEFINIÁLT SZÍNEK -->
+            <button
+              type="button"
+              class="color-option"
+
+              *ngFor="
+                let colorPreset
+                of colorOptions
+              "
+
+              [style.background]="
+                colorPreset.gradient
+              "
+
+              [class.active]="
+                getSelectedSlotColor() ===
+                colorPreset.value
+              "
+
+              [title]="
+                colorPreset.value
+              "
+
+              (click)="
+                updateSelectedSlotColor(
+                  colorPreset.value
+                )
+              ">
+            </button>
+
+
+            <!-- EGYEDI SZÍN -->
+            <div class="custom-color-row">
+
+              <span class="custom-color-label">
+                Egyedi szín
+              </span>
+
+              <input
+                type="color"
+                class="custom-color-input"
+
+                [value]="
+                  getSelectedSlotColor()
+                "
+
+                (change)="
+                  applyCustomSlotColor(
+                    $any($event.target).value
+                  )
+                "
+
+                title="Egyedi szín kiválasztása" />
+
+             
+
             </div>
           </div>
-        </button>
+
+
+          <!-- IKONVÁLASZTÓ -->
+          <div
+            class="slot-picker-popover icon-popover"
+
+            *ngIf="
+              activePicker === 'icon' &&
+              activePickerSlotIndex === i
+            "
+
+            [class.open-up]="
+              pickerDirection === 'up'
+            "
+
+            [class.open-down]="
+              pickerDirection === 'down'
+            "
+
+            [style.maxHeight.px]="
+              pickerMaxHeight
+            "
+
+            (mousedown)="
+              $event.stopPropagation()
+            "
+
+            (click)="
+              $event.stopPropagation()
+            ">
+
+            <button
+              type="button"
+              class="icon-option"
+
+              *ngFor="
+                let icon
+                of iconOptions
+              "
+
+              [class.active]="
+                getSelectedSlotIcon() === icon
+              "
+
+              [title]="icon"
+
+              (click)="
+                updateSelectedSlotIcon(icon)
+              ">
+
+              <span class="material-icons">
+                {{ icon }}
+              </span>
+
+            </button>
+          </div>
+
+
+          <!-- SLOT SORSZÁM -->
+          <div class="slot-num">
+            #{{ i + 1 }}
+          </div>
+
+
+          <!-- SLOT TARTALOM -->
+          <div class="slot-content">
+
+            <div
+              class="slot-icon"
+              *ngIf="slot.sfxUrl">
+
+              <span class="material-icons">
+                {{ slot.icon || 'music_note' }}
+              </span>
+
+            </div>
+
+            <div
+              class="slot-title"
+              *ngIf="
+                slot.sfxUrl;
+                else emptySlotLabel
+              ">
+
+              {{ getSlotName(board, i) }}
+            </div>
+
+
+            <ng-template #emptySlotLabel>
+              <div class="slot-title empty-label">
+                Üres
+              </div>
+            </ng-template>
+
+          </div>
+        </div>
       </div>
 
       <audio #player hidden></audio>
+
     </div>
+
 
     <!-- JOBB PANEL: SFX TÁR + CUTTER -->
     <div class="panel library-panel">
-      <h2 class="panel-title">Hangeffektek</h2>
+
+      <h2 class="panel-title">
+        Hangeffektek
+      </h2>
 
       <input
         class="search-input"
         type="text"
+
         [(ngModel)]="searchTerm"
-        (input)="onSearch(searchTerm)"
+
+        (input)="
+          onSearch(searchTerm)
+        "
+
         placeholder="Keresés..." />
 
+
+      <!-- HANGEFFEKTEK -->
       <ul class="scrollable-list library-list">
+
         <li *ngFor="let t of filteredSfx">
+
           <div class="track-main">
-            <div class="track-title">{{ t.title }}</div>
-            <div class="track-meta">{{ t.path }}</div>
+
+            <div class="track-title">
+              {{ t.title }}
+            </div>
+
+            <div class="track-meta">
+              {{ t.path }}
+            </div>
+
           </div>
 
+
           <div class="actions">
+
             <button
               class="small-btn primary-btn"
-              [disabled]="selectedSlotIndex === null"
-              (click)="assignToSlot(t)">
+
+              [disabled]="
+                selectedSlotIndex === null
+              "
+
+              (click)="
+                assignToSlot(t)
+              ">
+
               Slothoz adás
             </button>
 
+
             <button
               class="small-btn secondary-btn"
-              (click)="deleteSfx(t)">
+
+              (click)="
+                deleteSfx(t)
+              ">
+
               Törlés
             </button>
+
           </div>
         </li>
 
-        <li *ngIf="filteredSfx.length === 0" class="empty-state">
+
+        <li
+          *ngIf="filteredSfx.length === 0"
+          class="empty-state">
+
           Nincs találat.
         </li>
+
       </ul>
+
 
       <!-- CUTTER -->
       <div class="cutter-box">
+
         <div class="panel-header cutter-header">
+
           <div>
-            <h3 class="section-title">Hangeffekt vágó</h3>
-            <div class="section-subtitle">Maximum 5 másodperces kivágás</div>
-          </div>
-        </div>
 
-        <div class="upload-box">
-          <input type="file" (change)="onTempFileSelected($event)" id="tempSfxInput" hidden />
-          <label for="tempSfxInput" class="upload-label">📁 Hangfájl kiválasztása</label>
+            <h3 class="section-title">
+              Hangeffekt vágó
+            </h3>
 
-          <div class="selected-file" *ngIf="originalFile">
-            {{ originalFile.name }}
-          </div>
-        </div>
-
-        <div *ngIf="originalFile" class="cutter-content">
-          <div class="controls">
-            <div class="playback-buttons">
-              <button class="control-btn play-pause" type="button" (click)="togglePlay()">
-                {{ isPlaying ? '⏸' : '▶' }}
-              </button>
+            <div class="section-subtitle">
+              Maximum 5 másodperces kivágás
             </div>
 
+          </div>
+        </div>
+
+
+        <!-- FÁJLVÁLASZTÓ -->
+        <div class="upload-box">
+
+          <input
+            type="file"
+
+            (change)="
+              onTempFileSelected($event)
+            "
+
+            id="tempSfxInput"
+
+            hidden />
+
+
+          <label
+            for="tempSfxInput"
+            class="upload-label">
+
+            📁 Hangfájl kiválasztása
+          </label>
+
+
+          <div
+            class="selected-file"
+            *ngIf="originalFile">
+
+            {{ originalFile.name }}
+          </div>
+
+        </div>
+
+
+        <div
+          *ngIf="originalFile"
+          class="cutter-content">
+
+
+          <!-- PLAY + VOLUME -->
+          <div class="controls">
+
+            <div class="playback-buttons">
+
+              <button
+                class="control-btn play-pause"
+                type="button"
+
+                (click)="
+                  togglePlay()
+                ">
+
+                <span class="material-icons">
+                  {{
+                    isPlaying
+                      ? 'pause'
+                      : 'play_arrow'
+                  }}
+                </span>
+
+              </button>
+
+            </div>
+
+
             <div class="volume-control">
+
               <div class="volume-header">
-                <label>Hangerő</label>
-                <span>{{ (volume * 100).toFixed(0) }}%</span>
+
+                <label>
+                  Hangerő
+                </label>
+
+                <span>
+                  {{
+                    (volume * 100)
+                      .toFixed(0)
+                  }}%
+                </span>
+
               </div>
+
 
               <input
                 type="range"
+
                 min="0"
                 max="1"
                 step="0.01"
+
                 [value]="volume"
-                (input)="setVolume($any($event.target).valueAsNumber)" />
+
+                (input)="
+                  setVolume(
+                    $any($event.target)
+                      .valueAsNumber
+                  )
+                " />
+
             </div>
           </div>
 
-          <div class="seek-section" *ngIf="duration > 0">
+
+          <!-- SEEK -->
+          <div
+            class="seek-section"
+            *ngIf="duration > 0">
+
             <label class="jump-label">
+
               Ugrás pozícióra
+
               <div class="jump-row">
+
                 <input
                   type="text"
+
                   maxlength="2"
-                  [ngModel]="seekMinInput"
-                  (ngModelChange)="seekMinInput = sanitizeTimeInput($event)"
-                  (focus)="selectAll($event)"
-                  (blur)="applySeekTyped()"
-                  (keyup.enter)="applySeekTyped()"
+
+                  [ngModel]="
+                    seekMinInput
+                  "
+
+                  (ngModelChange)="
+                    seekMinInput =
+                      sanitizeTimeInput($event)
+                  "
+
+                  (focus)="
+                    selectAll($event)
+                  "
+
+                  (blur)="
+                    applySeekTyped()
+                  "
+
+                  (keyup.enter)="
+                    applySeekTyped()
+                  "
+
                   placeholder="mm" />
+
 
                 <span>:</span>
 
+
                 <input
                   type="text"
+
                   maxlength="2"
-                  [ngModel]="seekSecInput"
-                  (ngModelChange)="seekSecInput = sanitizeTimeInput($event)"
-                  (focus)="selectAll($event)"
-                  (blur)="applySeekTyped()"
-                  (keyup.enter)="applySeekTyped()"
+
+                  [ngModel]="
+                    seekSecInput
+                  "
+
+                  (ngModelChange)="
+                    seekSecInput =
+                      sanitizeTimeInput($event)
+                  "
+
+                  (focus)="
+                    selectAll($event)
+                  "
+
+                  (blur)="
+                    applySeekTyped()
+                  "
+
+                  (keyup.enter)="
+                    applySeekTyped()
+                  "
+
                   placeholder="ss" />
+
               </div>
             </label>
 
+
+            <!-- SEEK SLIDER -->
             <div class="range-wrapper trim-range-wrapper">
+
               <input
                 type="range"
+
                 class="seek-slider"
+
                 [min]="0"
                 [max]="duration"
+
                 step="0.01"
+
                 [value]="currentPos"
-                (input)="onSeekChange($any($event.target).valueAsNumber)" />
+
+                (input)="
+                  onSeekChange(
+                    $any($event.target)
+                      .valueAsNumber
+                  )
+                " />
+
 
               <div
                 class="selection"
-                [style.left.%]="duration ? (startSec / duration) * 100 : 0"
-                [style.width.%]="duration ? ((endSec - startSec) / duration) * 100 : 0">
+
+                [style.left.%]="
+                  duration
+                    ? (startSec / duration) * 100
+                    : 0
+                "
+
+                [style.width.%]="
+                  duration
+                    ? ((endSec - startSec) / duration) * 100
+                    : 0
+                ">
               </div>
+
 
               <div
                 class="marker marker-start"
-                [style.left.%]="duration ? (startSec / duration) * 100 : 0">
+
+                [style.left.%]="
+                  duration
+                    ? (startSec / duration) * 100
+                    : 0
+                ">
               </div>
+
 
               <div
                 class="marker marker-end"
-                [style.left.%]="duration ? (endSec / duration) * 100 : 0">
+
+                [style.left.%]="
+                  duration
+                    ? (endSec / duration) * 100
+                    : 0
+                ">
               </div>
+
             </div>
+
 
             <div class="time-display">
-              <span>{{ formatTime(startSec) }}</span>
-              <span>{{ formatTime(currentPos) }}</span>
-              <span>{{ formatTime(endSec) }}</span>
+
+              <span>
+                {{ formatTime(startSec) }}
+              </span>
+
+              <span>
+                {{ formatTime(currentPos) }}
+              </span>
+
+              <span>
+                {{ formatTime(endSec) }}
+              </span>
+
             </div>
           </div>
 
+
+          <!-- KEZDŐ / VÉG IDŐ -->
           <div class="time-inputs">
+
             <label>
+
               Kezdés
+
               <div class="time-row">
+
                 <input
                   type="text"
                   maxlength="2"
-                  [ngModel]="startMinInput"
-                  (ngModelChange)="startMinInput = sanitizeTimeInput($event)"
-                  (focus)="selectAll($event)"
-                  (blur)="applyStartTyped()"
-                  (keyup.enter)="applyStartTyped()"
+
+                  [ngModel]="
+                    startMinInput
+                  "
+
+                  (ngModelChange)="
+                    startMinInput =
+                      sanitizeTimeInput($event)
+                  "
+
+                  (focus)="
+                    selectAll($event)
+                  "
+
+                  (blur)="
+                    applyStartTyped()
+                  "
+
+                  (keyup.enter)="
+                    applyStartTyped()
+                  "
+
                   placeholder="mm" />
+
+
                 <span>:</span>
+
+
                 <input
                   type="text"
                   maxlength="2"
-                  [ngModel]="startSecInput"
-                  (ngModelChange)="startSecInput = sanitizeTimeInput($event)"
-                  (focus)="selectAll($event)"
-                  (blur)="applyStartTyped()"
-                  (keyup.enter)="applyStartTyped()"
+
+                  [ngModel]="
+                    startSecInput
+                  "
+
+                  (ngModelChange)="
+                    startSecInput =
+                      sanitizeTimeInput($event)
+                  "
+
+                  (focus)="
+                    selectAll($event)
+                  "
+
+                  (blur)="
+                    applyStartTyped()
+                  "
+
+                  (keyup.enter)="
+                    applyStartTyped()
+                  "
+
                   placeholder="ss" />
+
               </div>
             </label>
+
 
             <label>
+
               Vége
+
               <div class="time-row">
+
                 <input
                   type="text"
                   maxlength="2"
-                  [ngModel]="endMinInput"
-                  (ngModelChange)="endMinInput = sanitizeTimeInput($event)"
-                  (focus)="selectAll($event)"
-                  (blur)="applyEndTyped()"
-                  (keyup.enter)="applyEndTyped()"
+
+                  [ngModel]="
+                    endMinInput
+                  "
+
+                  (ngModelChange)="
+                    endMinInput =
+                      sanitizeTimeInput($event)
+                  "
+
+                  (focus)="
+                    selectAll($event)
+                  "
+
+                  (blur)="
+                    applyEndTyped()
+                  "
+
+                  (keyup.enter)="
+                    applyEndTyped()
+                  "
+
                   placeholder="mm" />
+
+
                 <span>:</span>
+
+
                 <input
                   type="text"
                   maxlength="2"
-                  [ngModel]="endSecInput"
-                  (ngModelChange)="endSecInput = sanitizeTimeInput($event)"
-                  (focus)="selectAll($event)"
-                  (blur)="applyEndTyped()"
-                  (keyup.enter)="applyEndTyped()"
+
+                  [ngModel]="
+                    endSecInput
+                  "
+
+                  (ngModelChange)="
+                    endSecInput =
+                      sanitizeTimeInput($event)
+                  "
+
+                  (focus)="
+                    selectAll($event)
+                  "
+
+                  (blur)="
+                    applyEndTyped()
+                  "
+
+                  (keyup.enter)="
+                    applyEndTyped()
+                  "
+
                   placeholder="ss" />
+
               </div>
             </label>
+
           </div>
 
+
+          <!-- KIVÁGÁS HOSSZA -->
           <div class="clip-summary">
+
             Hossz:
-            <b>{{ selectedLength.toFixed(2) }}s</b>
-            <span class="clip-limit">(max 5s)</span>
+
+            <b>
+              {{
+                selectedLength
+                  .toFixed(2)
+              }}s
+            </b>
+
+            <span class="clip-limit">
+              (max 5s)
+            </span>
+
           </div>
+
 
           <input
             type="text"
+
             [(ngModel)]="clipName"
+
             placeholder="Kivágott fájl neve..."
+
             class="search-input" />
+
 
           <button
             class="small-btn primary-btn full-btn"
+
             type="button"
-            [disabled]="selectedLength <= 0 || selectedLength > 5"
-            (click)="cutAndUpload()">
-            {{ isCutting ? 'Vágás...' : 'Vágás és feltöltés' }}
+
+            [disabled]="
+              selectedLength <= 0 ||
+              selectedLength > 5
+            "
+
+            (click)="
+              cutAndUpload()
+            ">
+
+            {{
+              isCutting
+                ? 'Vágás...'
+                : 'Vágás és feltöltés'
+            }}
+
           </button>
 
-          <div class="status success" *ngIf="cutMessage">{{ cutMessage }}</div>
-          <div class="status error" *ngIf="cutError">{{ cutError }}</div>
+
+          <div
+            class="status success"
+            *ngIf="cutMessage">
+
+            {{ cutMessage }}
+
+          </div>
+
+
+          <div
+            class="status error"
+            *ngIf="cutError">
+
+            {{ cutError }}
+
+          </div>
+
         </div>
       </div>
+
     </div>
 
   </div>

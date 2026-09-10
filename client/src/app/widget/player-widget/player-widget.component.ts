@@ -1,14 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { PlayerSharedService } from '../../services/player-shared.service';
 
 @Component({
   selector: 'app-player-widget',
   templateUrl: './player-widget.component.html',
   styleUrls: ['./player-widget.component.css'],
-  // EZ A SOR KELL: így minden widget saját szervizpéldányt kap
-  providers: [PlayerSharedService] 
+  providers: [PlayerSharedService]
 })
-export class PlayerWidgetComponent implements OnInit {
+export class PlayerWidgetComponent implements OnInit, OnDestroy {
   constructor(public player: PlayerSharedService) {}
 
 async ngOnInit(): Promise<void> {
@@ -24,5 +23,9 @@ async ngOnInit(): Promise<void> {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  }
+
+  ngOnDestroy(): void {
+    this.player.resetPlayerState();
   }
 }

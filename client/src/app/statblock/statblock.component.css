@@ -12,9 +12,11 @@
   overflow-x: hidden;
   scrollbar-width: thin;
   scrollbar-color: #ffd700 #222;
-  background:
-    radial-gradient(circle at top left, rgba(255, 215, 0, 0.08), transparent 25%),
-    linear-gradient(180deg, #111 0%, #181818 100%);
+  background-image: url('/assets/Kepek/character-background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 .statblock-layout {

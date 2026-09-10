@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ItemSpellEditorComponent } from './editors/item-spell-editor/item-spell-editor.component';
 import { MonsterEditorComponent } from './editors/monster-editor/monster-editor.component';
 import { auth, db } from '../player/firebase-config';
+import { formatDescriptionHtml } from '../services/format-description.pipe';
 
 import {
   collection,
@@ -941,10 +942,7 @@ export class StatblockComponent implements OnInit {
   }
 
   renderText(text: string): string {
-    return text
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/_(.*?)_/g, '<em>$1</em>')
-      .replace(/\n/g, '<br>');
+    return formatDescriptionHtml(text);
   }
 
   trackByIndex(index: number): number {

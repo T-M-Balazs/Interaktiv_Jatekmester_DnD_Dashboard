@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db } from '../../player/firebase-config';
+import { formatDescriptionHtml } from '../../services/format-description.pipe';
 
 type ContentType = 'monster' | 'item' | 'spell';
 type LibraryTab = 'mine' | 'community' | 'system';
@@ -425,9 +426,6 @@ export class StatblockWidgetComponent implements OnInit {
   }
 
   renderText(text: string): string {
-    return String(text || '')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/_(.*?)_/g, '<em>$1</em>')
-      .replace(/\n/g, '<br>');
+    return formatDescriptionHtml(text);
   }
 }

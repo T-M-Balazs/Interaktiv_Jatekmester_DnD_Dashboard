@@ -14,6 +14,7 @@ export class ChatSharedService {
   private static cachedIncomingRequests: any[] = [];
   private static cachedUnreadTotal = 0;
   private static cachedUserProfileCache: Record<string, UserResult & { profilePhotoUrl?: string; displayName?: string }> = {};
+  private static cachedMessages: Record<string, ChatMessage[]> = {};
   meUid = '';
   conversations: Conversation[] = [];
   conversationTitles: Record<string, string> = {};
@@ -39,6 +40,7 @@ export class ChatSharedService {
 
   private pageUnsubs: (() => void)[] = [];
   private messagesUnsub: (() => void) | null = null;
+  private messageUnsubs = new Map<string, () => void>();
   private authUnsub: AuthUnsubscribe | null = null;
 
   private readonly lastConversationStorageKey = 'chat_selected_conversation_id';
@@ -79,7 +81,7 @@ private applyCachedState(): void {
 
   destroy(): void {
     this.cleanupPageListeners();
-    this.cleanupMessageListener();
+    this.cleanupAllMessageListeners();
 
     if (this.authUnsub) {
       this.authUnsub();
@@ -89,12 +91,16 @@ private applyCachedState(): void {
 
   private handleAuthState(user: User | null): void {
     this.cleanupPageListeners();
-    this.cleanupMessageListener();
+    this.cleanupAllMessageListeners();
 
     if (!user) {
       this.resetStateForLoggedOutUser();
       this.canMessageSelectedConversation = true;
       return;
+    }
+
+    if (ChatSharedService.cachedUid !== user.uid) {
+      ChatSharedService.cachedMessages = {};
     }
 
     this.meUid = user.uid;
@@ -110,6 +116,8 @@ this.applyCachedState();
     const u1 = this.chat.listenMyConversations(this.meUid, async (items) => {
       this.conversations = items;
       ChatSharedService.cachedConversations = [...items];
+
+      this.prefetchConversationMessages(items);
 
       if (this.selectedConvId) {
         const selected = items.find((c) => c.id === this.selectedConvId) || null;
@@ -170,6 +178,7 @@ ChatSharedService.cachedUnreadTotal = count;
     this.activeGroupMembers = [];
     this.addableGroupMembers = [];
     this.selectedToAddToGroup = [];
+    ChatSharedService.cachedMessages = {};
     this.clearSelectedConversation();
   }
 
@@ -212,22 +221,62 @@ ChatSharedService.cachedUnreadTotal = count;
   }
 
  private subscribeToMessages(convId: string): void {
-  this.messages = [];
-  this.cleanupMessageListener();
+  const cached = ChatSharedService.cachedMessages[convId];
+  this.messages = cached ? [...cached] : [];
 
-  this.messagesUnsub = this.chat.listenMessages(convId, (msgs) => {
+  this.cleanupMessageListener();
+  this.messagesUnsub = this.messageUnsubs.get(convId) || null;
+
+  if (!this.messagesUnsub) {
+    this.startMessageListener(convId);
+  }
+}
+
+ private startMessageListener(convId: string): void {
+  const unsubscribe = this.chat.listenMessages(convId, (msgs) => {
     this.hydrateMessageProfiles(msgs).then(hydrated => {
+      ChatSharedService.cachedMessages[convId] = hydrated;
+
       this.zone.run(() => {
-        this.messages = hydrated;
+        if (this.selectedConvId === convId) {
+          this.messages = hydrated;
+        }
       });
 
-      this.scrollToBottom();
+      if (this.selectedConvId === convId) {
+        this.scrollToBottom();
+      }
     });
 
-    this.chat.markConversationAsRead(convId).catch((error) => {
-      console.error('markConversationAsRead hiba:', error);
-    });
+    if (this.selectedConvId === convId) {
+      this.chat.markConversationAsRead(convId).catch((error) => {
+        console.error('markConversationAsRead hiba:', error);
+      });
+    }
   });
+
+  this.messageUnsubs.set(convId, unsubscribe);
+  if (this.selectedConvId === convId) {
+    this.messagesUnsub = unsubscribe;
+  }
+}
+
+ private prefetchConversationMessages(items: Conversation[]): void {
+  const conversationIds = new Set(items.map(item => item.id));
+
+  items.forEach(item => {
+    if (!this.messageUnsubs.has(item.id)) {
+      this.startMessageListener(item.id);
+    }
+  });
+
+  for (const [conversationId, unsubscribe] of this.messageUnsubs) {
+    if (!conversationIds.has(conversationId)) {
+      unsubscribe();
+      this.messageUnsubs.delete(conversationId);
+      delete ChatSharedService.cachedMessages[conversationId];
+    }
+  }
 }
 
   async send(): Promise<void> {
@@ -374,7 +423,11 @@ ChatSharedService.cachedUserProfileCache = { ...this.userProfileCache };
       senderPhotoUrl:
         m.senderPhotoUrl ||
         profile?.profilePhotoUrl ||
-        ''
+        '',
+
+      senderPhotoSettings:
+        m.senderPhotoSettings ||
+        profile?.profilePhotoSettings
     };
   });
 }
@@ -385,6 +438,22 @@ getMessageSenderName(m: ChatMessage): string {
 
 getMessageSenderPhoto(m: ChatMessage): string {
   return m.senderPhotoUrl || this.userProfileCache[m.senderId]?.profilePhotoUrl || '';
+}
+
+getMessageSenderPhotoSettings(m: ChatMessage): any {
+  return this.userProfileCache[m.senderId]?.profilePhotoSettings || m.senderPhotoSettings;
+}
+
+updateCachedUserProfile(profile: UserResult): void {
+  this.userProfileCache[profile.uid] = { ...this.userProfileCache[profile.uid], ...profile };
+  ChatSharedService.cachedUserProfileCache = { ...this.userProfileCache };
+}
+
+getProfilePhotoTransform(settings: any): string {
+  const scale = Number(settings?.scale ?? 1);
+  const x = Number(settings?.x ?? 50);
+  const y = Number(settings?.y ?? 50);
+  return `translate(${x - 50}%, ${y - 50}%) scale(${scale})`;
 }
 
   private async resolveConversationTitles(items: Conversation[]): Promise<void> {
@@ -515,10 +584,13 @@ ChatSharedService.cachedConversationTitles = { ...nextTitles };
   }
 
   private cleanupMessageListener(): void {
-    if (this.messagesUnsub) {
-      this.messagesUnsub();
-      this.messagesUnsub = null;
-    }
+    this.messagesUnsub = null;
+  }
+
+  private cleanupAllMessageListeners(): void {
+    this.messageUnsubs.forEach(unsubscribe => unsubscribe());
+    this.messageUnsubs.clear();
+    this.messagesUnsub = null;
   }
 
   private scrollToBottom(): void {

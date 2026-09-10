@@ -41,13 +41,48 @@
     <aside class="side-panel">
       <h2>{{ viewMode === 'classes' ? 'Classes' : 'Races' }}</h2>
 
+      <div class="toolbar">
+        <input
+          type="text"
+          placeholder="Kereses..."
+          [(ngModel)]="searchText">
+        <button
+          type="button"
+          class="advanced-search-button"
+          *ngIf="viewMode === 'races'"
+          [class.active]="showAdvancedSearch"
+          title="Advanced Search"
+          aria-label="Advanced Search"
+          (click)="showAdvancedSearch = !showAdvancedSearch">
+          &#9881;
+        </button>
+      </div>
+
+      <div class="advanced-search-panel" *ngIf="showAdvancedSearch && viewMode === 'races'">
+        <div class="advanced-filter-group">
+          <strong>Ruleset / Edition</strong>
+          <label *ngFor="let ruleset of availableRulesets">
+            <input type="checkbox" [checked]="isFilterSelected('ruleset', ruleset)" (change)="toggleFilter('ruleset', ruleset)">
+            {{ ruleset }}
+          </label>
+        </div>
+        <div class="advanced-filter-group">
+          <strong>Source / Book</strong>
+          <label *ngFor="let source of availableSources">
+            <input type="checkbox" [checked]="isFilterSelected('source', source)" (change)="toggleFilter('source', source)">
+            {{ source }}
+          </label>
+        </div>
+        <button type="button" class="clear-advanced-button" (click)="clearAdvancedFilters()">Clear filters</button>
+      </div>
+
       <div class="entry-list">
         <button
           type="button"
           *ngFor="let entry of filteredEntries"
           [class.active]="selectedEntry?.id === entry.id"
           (click)="selectEntry(entry)">
-          {{ entry.name }}
+          {{ entry.name }} <small *ngIf="entry.source && entry.source !== 'PHB'">({{ entry.source }})</small>
         </button>
       </div>
     </aside>
@@ -63,44 +98,34 @@
         <article class="detail-card">
           <h2>{{ entry.name }}</h2>
 
+          <p class="detail-meta" *ngIf="entry.data.source">
+            Source: {{ entry.data.source }}
+          </p>
+
+          <p class="detail-meta" *ngIf="entry.source || entry.ruleset">
+            <span *ngIf="entry.source">Source: {{ entry.source }}</span>
+            <span *ngIf="entry.source && entry.ruleset"> - </span>
+            <span *ngIf="entry.ruleset">Edition: {{ entry.ruleset }}</span>
+          </p>
+
           <p class="detail-meta" *ngIf="entry.data.shortDescription">
             {{ entry.data.shortDescription }}
           </p>
 
           <div class="detail-rule"></div>
 
+          <section class="info-section" *ngIf="entry.data.description">
+            <div class="description-body" [innerHTML]="entry.data.description | formatDescription"></div>
+          </section>
+
           <ng-container *ngIf="entry.contentType === 'class'">
 
-            <section class="info-section" *ngIf="entry.data.hitPoints">
-              <h3>Hit Points</h3>
-              <p><strong>Hit Dice:</strong> {{ entry.data.hitPoints.hitDice }}</p>
-              <p><strong>Hit Points at 1st Level:</strong> {{ entry.data.hitPoints.firstLevel }}</p>
-              <p><strong>Hit Points at Higher Levels:</strong> {{ entry.data.hitPoints.higherLevels }}</p>
-            </section>
-
-            <section class="info-section" *ngIf="entry.data.proficiencies">
-              <h3>Proficiencies</h3>
-              <p><strong>Armor:</strong> {{ entry.data.proficiencies.armor }}</p>
-              <p><strong>Weapons:</strong> {{ entry.data.proficiencies.weapons }}</p>
-              <p><strong>Tools:</strong> {{ entry.data.proficiencies.tools }}</p>
-              <p><strong>Saving Throws:</strong> {{ entry.data.proficiencies.savingThrows }}</p>
-              <p><strong>Skills:</strong> {{ entry.data.proficiencies.skills }}</p>
-            </section>
-
-            <section class="info-section" *ngIf="entry.data.equipment?.length">
-              <h3>Equipment</h3>
-              <ul>
-                <li *ngFor="let item of entry.data.equipment">
-                  {{ item }}
-                </li>
-              </ul>
-            </section>
-
+            <!-- 1. Progression Table (Wikidot style: near top of class page) -->
             <section class="info-section" *ngIf="getTableRows(entry).length">
-              <h3>{{ entry.name }} Table</h3>
+              <h3>The {{ entry.name }} Table</h3>
 
               <div class="table-scroll">
-                <table>
+                <table class="entry-table">
                   <thead>
                     <tr>
                       <th *ngFor="let col of getTableColumns(entry)">
@@ -120,27 +145,61 @@
               </div>
             </section>
 
-            <section class="info-section" *ngIf="entry.data.features?.length">
+            <!-- 2. Class Features Overview & Basics -->
+            <section class="info-section">
               <h3>Class Features</h3>
+              <p>As a {{ entry.name.toLowerCase() }}, you gain the following class features.</p>
 
-              <div class="feature-card" *ngFor="let feature of entry.data.features">
-                <h4>
-                  {{ feature.title }}
-                  <span *ngIf="feature.level">Level {{ feature.level }}</span>
-                </h4>
+              <div class="class-basics-box">
+                <div class="basic-block" *ngIf="entry.data.hitPoints">
+                  <h4>Hit Points</h4>
+                  <p><strong>Hit Dice:</strong> {{ entry.data.hitPoints.hitDice }}</p>
+                  <p><strong>Hit Points at 1st Level:</strong> {{ entry.data.hitPoints.firstLevel }}</p>
+                  <p><strong>Hit Points at Higher Levels:</strong> {{ entry.data.hitPoints.higherLevels }}</p>
+                </div>
 
-                <p class="description">{{ feature.description }}</p>
+                <div class="basic-block" *ngIf="entry.data.proficiencies">
+                  <h4>Proficiencies</h4>
+                  <p *ngIf="entry.data.proficiencies.armor"><strong>Armor:</strong> {{ entry.data.proficiencies.armor }}</p>
+                  <p *ngIf="entry.data.proficiencies.weapons"><strong>Weapons:</strong> {{ entry.data.proficiencies.weapons }}</p>
+                  <p *ngIf="entry.data.proficiencies.tools"><strong>Tools:</strong> {{ entry.data.proficiencies.tools }}</p>
+                  <p *ngIf="entry.data.proficiencies.savingThrows"><strong>Saving Throws:</strong> {{ entry.data.proficiencies.savingThrows }}</p>
+                  <p *ngIf="entry.data.proficiencies.skills"><strong>Skills:</strong> {{ entry.data.proficiencies.skills }}</p>
+                </div>
+
+                <div class="basic-block" *ngIf="entry.data.equipment?.length">
+                  <h4>Equipment</h4>
+                  <p>You start with the following equipment, in addition to the equipment granted by your background:</p>
+                  <ul>
+                    <li *ngFor="let item of entry.data.equipment">
+                      {{ item }}
+                    </li>
+                  </ul>
+                </div>
               </div>
             </section>
 
-            <section class="info-section" *ngIf="entry.data.subclassRefs?.length">
-              <h3>{{ entry.data.subclassesTitle || 'Subclasses' }}</h3>
+            <!-- 3. Level-by-level Class Features -->
+            <section class="info-section" *ngIf="entry.data.features?.length">
+              <div class="feature-card" *ngFor="let feature of entry.data.features">
+                <h4>
+                  {{ feature.title }}
+                  <span class="level-badge" *ngIf="feature.level">Level {{ feature.level }}</span>
+                </h4>
+
+                <div class="description-body" [innerHTML]="feature.description | formatDescription"></div>
+              </div>
+            </section>
+
+            <!-- 4. Subclasses -->
+            <section class="info-section" *ngIf="(entry.data.subclasses || entry.data.subclassRefs)?.length">
+              <h3>Subclasses</h3>
 
               <div class="subclass-link-list">
                 <button
                   type="button"
-                  *ngFor="let subclass of entry.data.subclassRefs"
-                  [class.active]="selectedSubclass?.id === subclass.id"
+                  *ngFor="let subclass of (entry.data.subclasses || entry.data.subclassRefs)"
+                  [class.active]="selectedSubclass?.id === subclass.id || selectedSubclass?.name === subclass.name"
                   (click)="selectSubclass(subclass)">
                   {{ subclass.name }}
                 </button>
@@ -226,20 +285,25 @@
         <h2>{{ subclass.name }}</h2>
 
         <p class="detail-meta">
-          {{ subclass.className }}
+          {{ subclass.className || selectedEntry?.name }} Subclass
+          <span *ngIf="subclass.data?.source"> • Source: {{ subclass.data.source }}</span>
         </p>
 
-        <p class="detail-meta" *ngIf="subclass.data.shortDescription">
+        <p class="detail-meta" *ngIf="subclass.data?.shortDescription">
           {{ subclass.data.shortDescription }}
         </p>
 
         <div class="detail-rule"></div>
 
+        <section class="info-section" *ngIf="subclass.data?.description">
+          <div class="description-body" [innerHTML]="subclass.data.description | formatDescription"></div>
+        </section>
+
         <section class="info-section" *ngIf="getSubclassTableRows(subclass).length">
           <h3>{{ subclass.name }} Table</h3>
 
           <div class="table-scroll">
-            <table>
+            <table class="entry-table">
               <thead>
                 <tr>
                   <th *ngFor="let col of getSubclassTableColumns(subclass)">
@@ -268,7 +332,7 @@
               <span *ngIf="feature.level">Level {{ feature.level }}</span>
             </h4>
 
-            <p class="description">{{ feature.description }}</p>
+            <div class="description-body" [innerHTML]="feature.description | formatDescription"></div>
           </div>
         </section>
 

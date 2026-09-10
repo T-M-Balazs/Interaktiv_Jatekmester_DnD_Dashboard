@@ -35,7 +35,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 25px;
+  gap: 18px;
   width: 100%;
 }
 
@@ -56,6 +56,22 @@
   color: #ffd700;
 }
 
+.buttons .mode-btn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  color: #eee;
+  font-size: 16px;
+  padding: 0;
+}
+
+.buttons .mode-btn.mode-active {
+  background: #000;
+  border: 2px solid #fff;
+  color: #ffd700;
+}
+
 .buttons button:disabled {
   opacity: 0.2;
   cursor: default;
@@ -73,6 +89,9 @@
 
 .main-btn:hover {
   box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  transform: scale(1.1) !important;
+  background: linear-gradient(135deg, #ffd700 0%, #c9a84c 100%) !important;
+  color: #000 !important;
 }
 
 /* 3. Csúszkák (Idő és Hangerő) */

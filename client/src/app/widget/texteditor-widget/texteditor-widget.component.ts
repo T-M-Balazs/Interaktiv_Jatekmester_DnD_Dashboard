@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, SecurityContext } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { auth, db } from 'src/app/player/firebase-config';
+import { DomSanitizer } from '@angular/platform-browser';
+import { auth, db } from '../../player/firebase-config';
 import { 
   collection, addDoc, getDocs, updateDoc, deleteDoc, doc, 
   query, where, serverTimestamp 
@@ -28,6 +29,8 @@ export class TexteditorWidgetComponent implements OnInit {
   colors = ['#eeeeee', '#c9a84c', '#ef5350', '#4caf50', '#42a5f5', '#ab47bc', '#ffa726', '#26c6da'];
   selectedColor = '#eeeeee';
   private savedRange: Range | null = null;
+
+  constructor(private sanitizer: DomSanitizer) {}
 
   async ngOnInit() {
     onAuthStateChanged(auth, async (user) => {
@@ -64,7 +67,7 @@ export class TexteditorWidgetComponent implements OnInit {
   openNote(note: any) {
     this.selectedNoteId = note.id;
     this.title = note.title;
-    this.content = note.content || '';
+    this.content = this.sanitizeHtml(note.content || '');
     this.characterCount = note.characterCount || 0;
     const editor = this.getEditor();
     if (editor) editor.innerHTML = this.content;
@@ -142,6 +145,13 @@ export class TexteditorWidgetComponent implements OnInit {
   private getEditor() { return document.querySelector('.editor-area') as HTMLElement; }
   private updateContentFromEditor() {
     const ed = this.getEditor();
-    if (ed) { this.content = ed.innerHTML; this.characterCount = ed.innerText.length; }
+    if (ed) {
+      this.content = this.sanitizeHtml(ed.innerHTML);
+      this.characterCount = ed.innerText.length;
+    }
+  }
+
+  private sanitizeHtml(value: string): string {
+    return this.sanitizer.sanitize(SecurityContext.HTML, value) || '';
   }
 }

@@ -47,6 +47,7 @@
     <img
       *ngIf="chatState.getMessageSenderPhoto(m); else defaultWidgetAvatar"
       [src]="chatState.getMessageSenderPhoto(m)"
+      [style.transform]="chatState.getProfilePhotoTransform(chatState.getMessageSenderPhotoSettings(m))"
       alt="Profilkép"
     >
 

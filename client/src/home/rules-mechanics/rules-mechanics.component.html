@@ -22,6 +22,40 @@
 
     <section class="list-panel">
 
+      <div class="toolbar">
+        <input
+          type="text"
+          placeholder="Kereses nev, leiras vagy kategoria alapjan..."
+          [(ngModel)]="searchText">
+        <button
+          type="button"
+          class="advanced-search-button"
+          [class.active]="showAdvancedSearch"
+          title="Advanced Search"
+          aria-label="Advanced Search"
+          (click)="showAdvancedSearch = !showAdvancedSearch">
+          &#9881;
+        </button>
+      </div>
+
+      <div class="advanced-search-panel" *ngIf="showAdvancedSearch">
+        <div class="advanced-filter-group">
+          <strong>Ruleset / Edition</strong>
+          <label *ngFor="let ruleset of availableRulesets">
+            <input type="checkbox" [checked]="isFilterSelected('ruleset', ruleset)" (change)="toggleFilter('ruleset', ruleset)">
+            {{ ruleset }}
+          </label>
+        </div>
+        <div class="advanced-filter-group">
+          <strong>Source / Book</strong>
+          <label *ngFor="let source of availableSources">
+            <input type="checkbox" [checked]="isFilterSelected('source', source)" (change)="toggleFilter('source', source)">
+            {{ source }}
+          </label>
+        </div>
+        <button type="button" class="clear-advanced-button" (click)="clearAdvancedFilters()">Clear filters</button>
+      </div>
+
       <div *ngIf="isLoading" class="loading">
         Betöltés...
       </div>
@@ -47,7 +81,7 @@
                   *ngFor="let rule of filteredRules"
                   (click)="selectRule(rule)"
                   [class.selected]="selectedRule?.id === rule.id">
-                  <td>{{ rule.name }}</td>
+                  <td>{{ rule.name }} <small class="source-label" *ngIf="rule.source && rule.source !== 'PHB'">({{ rule.source }})</small></td>
                   <td>{{ rule.category }}</td>
                   <td>{{ rule.data.summary || rule.data.shortDescription || '—' }}</td>
                 </tr>
@@ -77,6 +111,8 @@
 
         <p class="detail-meta">
           {{ rule.category }}
+          <span *ngIf="rule.source"> - {{ rule.source }}</span>
+          <span *ngIf="rule.ruleset"> - {{ rule.ruleset }}</span>
         </p>
 
         <p class="description" *ngIf="rule.data.shortDescription">
@@ -87,7 +123,7 @@
 
         <section class="info-section" *ngIf="rule.data.description">
           <h3>Description</h3>
-          <p class="description">{{ rule.data.description }}</p>
+          <div class="description-body" [innerHTML]="rule.data.description | formatDescription"></div>
         </section>
 
         <section class="info-section" *ngIf="rule.data.steps?.length">

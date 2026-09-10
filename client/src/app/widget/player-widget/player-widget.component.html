@@ -10,6 +10,9 @@
   </div>
 
   <div class="buttons">
+    <button class="mode-btn" [class.mode-active]="player.isShuffleEnabled" (click)="player.toggleShuffle()" title="Véletlenszerű lejátszás">
+      <span class="material-icons">shuffle</span>
+    </button>
     <button (click)="player.prevTrack()" [disabled]="player.playlist.length === 0">
       <span class="material-icons">skip_previous</span>
     </button>
@@ -23,6 +26,9 @@
 
     <button (click)="player.nextTrack()" [disabled]="player.playlist.length === 0">
       <span class="material-icons">skip_next</span>
+    </button>
+    <button class="mode-btn" [class.mode-active]="player.isRepeatEnabled" (click)="player.toggleRepeat()" title="Playlist ismétlése">
+      <span class="material-icons">repeat</span>
     </button>
   </div>
 

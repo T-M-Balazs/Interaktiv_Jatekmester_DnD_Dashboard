@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../player/auth.service';
+import { ChatSharedService } from '../services/chat-shared.service';
 
 import { auth, db, storage } from '../player/firebase-config';
 
@@ -53,6 +55,11 @@ interface UserFile {
   styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent implements OnInit, OnDestroy {
+  constructor(
+    private authService: AuthService,
+    private chatState: ChatSharedService
+  ) {}
+
   currentUser: User | null = null;
   currentUserName = '';
   currentUserEmail = '';
@@ -78,6 +85,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
   isDeletingFileId: string | null = null;
 
   private authUnsubscribe: Unsubscribe | null = null;
+  private isDraggingAvatar = false;
+  private lastAvatarPointerX = 0;
+  private lastAvatarPointerY = 0;
+
+  readonly Math = Math;
 
   ngOnInit(): void {
     this.authUnsubscribe = onAuthStateChanged(auth, async user => {
@@ -211,6 +223,53 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.avatarY = 50;
   }
 
+  onAvatarPointerDown(event: PointerEvent): void {
+    if (!this.hasSelectedNewProfileImage) {
+      return;
+    }
+
+    this.isDraggingAvatar = true;
+    this.lastAvatarPointerX = event.clientX;
+    this.lastAvatarPointerY = event.clientY;
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+    event.preventDefault();
+  }
+
+  onAvatarPointerMove(event: PointerEvent): void {
+    if (!this.isDraggingAvatar) {
+      return;
+    }
+
+    const cropper = event.currentTarget as HTMLElement;
+    const movementScale = 100 / cropper.clientWidth / this.avatarScale;
+    this.avatarX = this.clampAvatarPosition(
+      this.avatarX + (event.clientX - this.lastAvatarPointerX) * movementScale
+    );
+    this.avatarY = this.clampAvatarPosition(
+      this.avatarY + (event.clientY - this.lastAvatarPointerY) * movementScale
+    );
+    this.lastAvatarPointerX = event.clientX;
+    this.lastAvatarPointerY = event.clientY;
+  }
+
+  onAvatarPointerUp(): void {
+    this.isDraggingAvatar = false;
+  }
+
+  onAvatarWheel(event: WheelEvent): void {
+    if (!this.hasSelectedNewProfileImage) {
+      return;
+    }
+
+    event.preventDefault();
+    const zoomStep = event.deltaY < 0 ? 0.08 : -0.08;
+    this.avatarScale = Math.min(2.5, Math.max(1, this.avatarScale + zoomStep));
+  }
+
+  private clampAvatarPosition(value: number): number {
+    return Math.min(100, Math.max(0, value));
+  }
+
   cancelProfileImageSelection(): void {
     this.profileImageFile = null;
 
@@ -282,6 +341,20 @@ export class ProfileComponent implements OnInit, OnDestroy {
         },
         { merge: true }
       );
+
+      const profile = {
+        uid: user.uid,
+        username: this.currentUserName,
+        displayName: this.currentUserName,
+        profilePhotoUrl: url,
+        profilePhotoSettings: {
+          scale: this.avatarScale,
+          x: this.avatarX,
+          y: this.avatarY
+        }
+      };
+      this.authService.updateUserProfile(profile);
+      this.chatState.updateCachedUserProfile(profile);
 
       this.currentProfilePhotoUrl = url;
       this.profileImageFile = null;

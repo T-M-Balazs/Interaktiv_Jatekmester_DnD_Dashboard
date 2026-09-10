@@ -1,11 +1,10 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { UserResult } from '../../chat/chat.service';
-import { ChatSharedService } from 'src/app/services/chat-shared.service';
+import { ChatSharedService } from '../../services/chat-shared.service';
 @Component({
   selector: 'app-chat-widget',
   templateUrl: './chat-widget.component.html',
-  styleUrls: ['./chat-widget.component.css'],
-  providers: [ChatSharedService]
+  styleUrls: ['./chat-widget.component.css']
 })
 export class ChatWidgetComponent implements OnInit {
   showEmojiPicker = false;

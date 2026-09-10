@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AuthService } from './player/auth.service';
 import { Router } from '@angular/router';
 import { ChatService } from './chat/chat.service';
@@ -22,8 +22,10 @@ interface GlobalSearchResult {
     | 'background'
     | 'feat'
     | 'rule'
-    | 'monster';
+    | 'monster'
+    | 'content';
   route: string;
+  searchText: string;
 }
 
 @Component({
@@ -32,10 +34,12 @@ interface GlobalSearchResult {
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit, OnDestroy {
-      audioState: AudioState = {
-  isPlaying: false,
-  source: null
-};
+  audioState: AudioState = {
+    isPlaying: false,
+    source: null,
+    activeSources: []
+  };
+
   currentUser: any = null;
   unreadChatTotal = 0;
 
@@ -60,16 +64,12 @@ export class AppComponent implements OnInit, OnDestroy {
     this.systemData.loadAllData().catch(err => {
       console.error('System data preload error:', err);
     });
-this.audioStateService.state$.subscribe(state => {
-  this.audioState = state;
-});
-    this.player.ensureLoaded().catch(err => {
-  console.error('Player preload error:', err);
-});
-this.soundboard.ensureLoaded().catch(err => {
-  console.error('Soundboard preload error:', err);
-});
-this.chatState.init();
+
+    this.audioStateService.state$.subscribe(state => {
+      this.audioState = state;
+    });
+
+    this.chatState.init();
 
     this.authService.userProfile$.subscribe(user => {
       this.currentUser = user;
@@ -85,7 +85,13 @@ this.chatState.init();
         this.unreadChatTotal = 0;
         return;
       }
-  
+
+      Promise.all([
+        this.player.ensureLoaded(),
+        this.soundboard.ensureLoaded()
+      ]).catch(err => {
+        console.error('User data preload error:', err);
+      });
 
       this.unreadUnsub = this.chatService.listenUnreadTotal(user.uid, (count) => {
         this.unreadChatTotal = count;
@@ -97,6 +103,13 @@ this.chatState.init();
     this.authService.logout().then(() => {
       this.router.navigate(['/login']);
     });
+  }
+
+  getProfilePhotoTransform(settings: any): string {
+    const scale = Number(settings?.scale ?? 1);
+    const x = Number(settings?.x ?? 50);
+    const y = Number(settings?.y ?? 50);
+    return `translate(${x - 50}%, ${y - 50}%) scale(${scale})`;
   }
 
   async onGlobalSearchChange(): Promise<void> {
@@ -134,7 +147,8 @@ this.chatState.init();
       id: item.id,
       name: item.name,
       type: item.type,
-      route: this.getRouteForSearchType(item.type)
+      route: this.getRouteForSearchType(item.type),
+      searchText: this.systemData.getSearchText(item)
     }));
   }
 
@@ -158,6 +172,9 @@ this.chatState.init();
 
       case 'monster':
         return '/monsters';
+
+      case 'content':
+        return '/system-content';
 
       default:
         return '/';

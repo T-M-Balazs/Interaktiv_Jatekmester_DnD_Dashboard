@@ -13,6 +13,9 @@ interface MonsterEntry {
   hitPoints?: number;
   speed?: string;
   sourceType?: 'system' | 'user';
+  searchText: string;
+  source?: string;
+  ruleset?: string;
   data: {
     shortDescription?: string;
     description?: string;
@@ -83,6 +86,8 @@ export class MonstersComponent implements OnInit {
   hasDamageImmunities = false;
   hasConditionImmunities = false;
   hasSpellcasting = false;
+  selectedSources: string[] = ['MM'];
+  selectedRulesets: string[] = ['2014'];
 
   sortColumn: SortColumn = 'name';
   sortDirection: 'asc' | 'desc' = 'asc';
@@ -121,7 +126,10 @@ export class MonstersComponent implements OnInit {
           hitPoints: raw.hitPoints || raw.hp || data.hitPoints || undefined,
           speed: raw.speed || data.speed || '',
           sourceType: item.sourceType || raw.sourceType || 'system',
-          data
+          data,
+          searchText: this.systemData.getSearchText(item),
+          source: item.source,
+          ruleset: item.ruleset
         };
       });
     } finally {
@@ -184,6 +192,8 @@ export class MonstersComponent implements OnInit {
     this.hasDamageImmunities = false;
     this.hasConditionImmunities = false;
     this.hasSpellcasting = false;
+    this.selectedSources = ['MM'];
+    this.selectedRulesets = ['2014'];
   }
 
   get filteredMonsters(): MonsterEntry[] {
@@ -203,14 +213,7 @@ export class MonstersComponent implements OnInit {
 
       const matchesSearch =
         !search ||
-        monster.name.toLowerCase().includes(search) ||
-        monster.type?.toLowerCase().includes(search) ||
-        monster.alignment?.toLowerCase().includes(search) ||
-        monster.speed?.toLowerCase().includes(search) ||
-        monster.data.shortDescription?.toLowerCase().includes(search) ||
-        monster.data.description?.toLowerCase().includes(search) ||
-        monster.data.languages?.toLowerCase().includes(search) ||
-        monster.data.senses?.toLowerCase().includes(search);
+        monster.searchText.includes(search);
 
       const matchesType =
         !this.selectedType || monster.type === this.selectedType;
@@ -264,6 +267,12 @@ export class MonstersComponent implements OnInit {
           trait.description?.toLowerCase().includes('spellcasting')
         );
 
+      const matchesSource =
+        this.selectedSources.length === 0 || this.selectedSources.includes(monster.source || '');
+
+      const matchesRuleset =
+        this.selectedRulesets.length === 0 || this.selectedRulesets.includes(monster.ruleset || '');
+
       return (
         matchesSearch &&
         matchesType &&
@@ -278,7 +287,9 @@ export class MonstersComponent implements OnInit {
         matchesResistances &&
         matchesDamageImmunities &&
         matchesConditionImmunities &&
-        matchesSpellcasting
+        matchesSpellcasting &&
+        matchesSource &&
+        matchesRuleset
       );
     });
 
@@ -295,6 +306,25 @@ export class MonstersComponent implements OnInit {
 
   get monsterAlignments(): string[] {
     return this.uniqueValues(this.monsters.map(monster => monster.alignment));
+  }
+
+  get availableSources(): string[] {
+    return this.uniqueValues(this.monsters.map(monster => monster.source));
+  }
+
+  get availableRulesets(): string[] {
+    return this.uniqueValues(this.monsters.map(monster => monster.ruleset));
+  }
+
+  isFilterSelected(filter: 'source' | 'ruleset', value: string): boolean {
+    const selected = filter === 'source' ? this.selectedSources : this.selectedRulesets;
+    return selected.includes(value);
+  }
+
+  toggleFilter(filter: 'source' | 'ruleset', value: string): void {
+    const selected = filter === 'source' ? this.selectedSources : this.selectedRulesets;
+    const index = selected.indexOf(value);
+    index >= 0 ? selected.splice(index, 1) : selected.push(value);
   }
 
   private compareMonsters(a: MonsterEntry, b: MonsterEntry): number {

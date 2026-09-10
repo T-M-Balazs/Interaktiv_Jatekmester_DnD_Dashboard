@@ -1,0 +1,146 @@
+<div class="session-page">
+  <aside class="session-sidebar">
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow">Játékmester eszköz</span>
+        <h1>Sessionek</h1>
+      </div>
+      <span class="session-mark">✦</span>
+    </div>
+
+    <div class="new-session-form">
+      <input [(ngModel)]="newSessionName" placeholder="Új session neve" (keyup.enter)="createSession()" />
+      <textarea [(ngModel)]="newSessionDescription" rows="2" placeholder="Rövid leírás (opcionális)"></textarea>
+      <button class="gold-btn" type="button" (click)="createSession()" [disabled]="!newSessionName.trim()">+ Session létrehozása</button>
+    </div>
+
+    <div class="session-list" *ngIf="!loading; else loadingSessions">
+      <button class="session-list-item" *ngFor="let session of sessions" [class.selected]="selectedSession?.id === session.id" (click)="selectSession(session)">
+        <span class="session-list-icon">◈</span>
+        <span class="session-list-copy"><strong>{{ session.name }}</strong><small>{{ session.players.length }} játékos · {{ session.npcs.length }} NPC</small></span>
+        <span class="session-list-arrow">›</span>
+      </button>
+      <div class="empty-sidebar" *ngIf="sessions.length === 0">Még nincs sessionöd.</div>
+    </div>
+    <ng-template #loadingSessions><div class="empty-sidebar">Sessionek betöltése...</div></ng-template>
+  </aside>
+
+  <main class="session-main" *ngIf="selectedSession; else emptySession">
+    <header class="session-header">
+      <div *ngIf="!editingSession">
+        <span class="eyebrow">Aktív session</span>
+        <h2>{{ selectedSession.name }}</h2>
+        <p *ngIf="selectedSession.description">{{ selectedSession.description }}</p>
+      </div>
+      <div class="session-edit-fields" *ngIf="editingSession">
+        <input [(ngModel)]="selectedSession.name" placeholder="Session neve" />
+        <textarea [(ngModel)]="selectedSession.description" rows="2" placeholder="Leírás"></textarea>
+      </div>
+      <div class="header-actions">
+        <button class="ghost-btn" type="button" *ngIf="!editingSession" (click)="startEditSession()">Szerkesztés</button>
+        <button class="gold-btn" type="button" *ngIf="editingSession" (click)="saveSessionDetails()">Mentés</button>
+        <button class="ghost-btn danger" type="button" (click)="deleteSession(selectedSession)">Törlés</button>
+      </div>
+    </header>
+
+    <div class="status-line" *ngIf="saving || notice || error"><span *ngIf="saving">Mentés...</span><span *ngIf="notice" class="success">{{ notice }}</span><span *ngIf="error" class="error">{{ error }}</span></div>
+
+    <section class="dashboard-grid">
+      <div class="content-card wide-card">
+        <div class="card-heading"><div><span class="eyebrow">A csapat</span><h3>Player karakterek</h3></div><button class="gold-btn compact" (click)="openEntityEditor('player')">+ Karakter hozzáadása</button></div>
+        <div class="entity-grid">
+          <article class="entity-card" *ngFor="let player of selectedSession.players">
+            <div class="entity-image" [style.backgroundImage]="player.imageUrl ? 'url(' + player.imageUrl + ')' : ''"><span *ngIf="!player.imageUrl">♙</span></div>
+            <div class="entity-copy"><h4>{{ player.name }}</h4><span class="tag">{{ player.race }}</span><p>{{ player.description || 'Nincs leírás.' }}</p></div>
+            <div class="entity-actions"><button (click)="openEntityEditor('player', player)">Szerkesztés</button><button class="danger-text" (click)="deleteEntity('player', player.id)">Törlés</button></div>
+          </article>
+          <div class="empty-card" *ngIf="selectedSession.players.length === 0">Adj hozzá player karaktereket, hogy a session közben gyorsan elérd őket.</div>
+        </div>
+      </div>
+
+      <div class="content-card wide-card">
+        <div class="card-heading"><div><span class="eyebrow">Szereplők</span><h3>NPC-k</h3></div><button class="gold-btn compact" (click)="openEntityEditor('npc')">+ NPC hozzáadása</button></div>
+        <div class="entity-grid">
+          <article class="entity-card" *ngFor="let npc of selectedSession.npcs">
+            <div class="entity-image" [style.backgroundImage]="npc.imageUrl ? 'url(' + npc.imageUrl + ')' : ''"><span *ngIf="!npc.imageUrl">♟</span></div>
+            <div class="entity-copy"><h4>{{ npc.name }}</h4><span class="tag">{{ npc.race }}</span><p>{{ npc.description || 'Nincs leírás.' }}</p></div>
+            <div class="entity-actions"><button (click)="openEntityEditor('npc', npc)">Szerkesztés</button><button class="danger-text" (click)="deleteEntity('npc', npc.id)">Törlés</button></div>
+          </article>
+          <div class="empty-card" *ngIf="selectedSession.npcs.length === 0">Az NPC-k és fontos mellékszereplők itt lesznek elérhetők.</div>
+        </div>
+      </div>
+
+      <div class="content-card wide-card">
+        <div class="card-heading"><div><span class="eyebrow">A világ</span><h3>Helyszínek</h3></div><button class="gold-btn compact" (click)="openEntityEditor('location')">+ Helyszín hozzáadása</button></div>
+        <div class="location-list">
+          <article class="location-row" *ngFor="let location of selectedSession.locations">
+            <div><h4>{{ location.name }}</h4><p>{{ location.description || 'Nincs leírás.' }}</p><small *ngIf="location.imageUrl">Kép csatolva</small></div>
+            <div class="entity-actions"><button (click)="openEntityEditor('location', location)">Szerkesztés</button><button class="danger-text" (click)="deleteEntity('location', location.id)">Törlés</button></div>
+          </article>
+          <div class="empty-card" *ngIf="selectedSession.locations.length === 0">Adj hozzá helyszíneket a kaland fontos pontjaihoz.</div>
+        </div>
+      </div>
+
+      <div class="content-card wide-card mechanics-card">
+        <div class="card-heading"><div><span class="eyebrow">Játék közbeni állapot</span><h3>Mechanikák</h3></div><button class="gold-btn compact" (click)="openMechanicEditor()">+ Mechanika hozzáadása</button></div>
+        <div class="mechanic-list">
+          <article class="mechanic-card" *ngFor="let mechanic of selectedSession.mechanics">
+            <div class="mechanic-heading"><div><h4>{{ mechanic.name }}</h4><span class="tag">{{ mechanic.scope === 'global' ? 'Globális' : 'Karakterenkénti' }} · {{ mechanic.type }}</span></div><div class="entity-actions"><button (click)="openMechanicEditor(mechanic)">Szerkesztés</button><button class="danger-text" (click)="deleteMechanic(mechanic.id)">Törlés</button></div></div>
+            <details *ngIf="mechanic.description"><summary>Leírás megjelenítése</summary><p class="mechanic-description">{{ mechanic.description }}</p></details>
+            <div class="mechanic-control" *ngIf="mechanic.scope === 'global'">
+              <strong>Session értéke</strong>
+              <ng-container *ngTemplateOutlet="mechanicControl; context: { mechanic: mechanic }"></ng-container>
+            </div>
+            <div class="character-mechanics" *ngIf="mechanic.scope === 'perCharacter'">
+              <div class="character-value" *ngFor="let player of selectedSession.players"><span>{{ player.name }}</span><ng-container *ngTemplateOutlet="mechanicControl; context: { mechanic: mechanic, characterId: player.id }"></ng-container></div>
+              <div class="empty-inline" *ngIf="selectedSession.players.length === 0">Adj hozzá karaktert a karakterenkénti értékekhez.</div>
+            </div>
+          </article>
+          <div class="empty-card" *ngIf="selectedSession.mechanics.length === 0">A saját mechanikáid itt jelennek meg: mérgezés, félelem, haladás, állapotok és számlálók.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <ng-template #mechanicControl let-mechanic="mechanic" let-characterId="characterId">
+    <div class="mechanic-control-inner" [ngSwitch]="mechanic.type">
+      <div class="counter-control" *ngSwitchCase="'counter'"><button (click)="changeMechanicValue(mechanic, characterId, -1)">−</button><strong>{{ getMechanicValue(mechanic, characterId) }}</strong><button (click)="changeMechanicValue(mechanic, characterId, 1)">+</button></div>
+      <label class="checkbox-control" *ngSwitchCase="'checkbox'"><input type="checkbox" [checked]="getMechanicValue(mechanic, characterId)" (change)="changeMechanicValue(mechanic, characterId)"><span>{{ getMechanicValue(mechanic, characterId) ? 'Aktív' : 'Nincs' }}</span></label>
+      <div class="progress-control" *ngSwitchCase="'progress'"><div class="progress-track"><span [style.width.%]="getProgressPercent(mechanic, characterId)"></span></div><div class="progress-row"><button (click)="changeMechanicValue(mechanic, characterId, -1)">−</button><strong>{{ getMechanicValue(mechanic, characterId) }} / {{ mechanic.max }}</strong><button (click)="changeMechanicValue(mechanic, characterId, 1)">+</button></div></div>
+      <div class="slider-control" *ngSwitchCase="'slider'"><input type="range" [min]="mechanic.min" [max]="mechanic.max" [value]="getMechanicValue(mechanic, characterId)" (input)="setMechanicValue(mechanic, $any($event.target).valueAsNumber, characterId)"><strong>{{ getMechanicValue(mechanic, characterId) }}</strong></div>
+      <div class="dropdown-control" *ngSwitchCase="'dropdown'"><select [value]="getMechanicValue(mechanic, characterId)" (change)="setMechanicValue(mechanic, $any($event.target).value, characterId)"><option *ngFor="let option of mechanic.options" [value]="option">{{ option }}</option></select></div>
+    </div>
+  </ng-template>
+
+  <div class="editor-panel" *ngIf="editorSection">
+    <div class="editor-backdrop" (click)="closeEditor()"></div>
+    <section class="editor-modal">
+      <button class="modal-close" (click)="closeEditor()">×</button>
+      <ng-container *ngIf="editorSection !== 'mechanic'; else mechanicEditor">
+        <span class="eyebrow">{{ editorSection === 'player' ? 'Player karakter' : editorSection === 'npc' ? 'NPC' : 'Helyszín' }}</span>
+        <h3>{{ editingEntityId ? 'Szerkesztés' : 'Új elem' }}</h3>
+        <label>Név<input [(ngModel)]="entityForm.name" placeholder="Név"></label>
+        <label *ngIf="editorSection !== 'location'">Faj<input [(ngModel)]="entityForm.race" placeholder="Elf, Human..." /></label>
+        <div class="generator" *ngIf="editorSection === 'npc'">
+          <select [value]="selectedNameCategory" (change)="selectNameCategory($any($event.target).value)"><option *ngFor="let category of nameCategories" [value]="category">{{ category }}</option></select>
+          <select [(ngModel)]="npcGender"><option *ngFor="let gender of genders" [value]="gender.value">{{ gender.label }}</option></select>
+          <button class="ghost-btn" type="button" (click)="generateNpcName()">Név generálása</button>
+        </div>
+        <label>Leírás<textarea [(ngModel)]="entityForm.description" rows="5" placeholder="Rövid leírás"></textarea></label>
+        <label>Kép URL (opcionális)<input [(ngModel)]="entityForm.imageUrl" placeholder="https://..."></label>
+        <button class="gold-btn full-btn" type="button" (click)="saveEntity()" [disabled]="!entityForm.name.trim()">Mentés</button>
+      </ng-container>
+      <ng-template #mechanicEditor>
+        <span class="eyebrow">Egyedi játékmechanika</span><h3>{{ editingMechanicId ? 'Mechanika szerkesztése' : 'Új mechanika' }}</h3>
+        <label>Név<input [(ngModel)]="mechanicName" placeholder="Mérgezés, Félelem..." /></label>
+        <label>Leírás<textarea [(ngModel)]="mechanicDescription" rows="4" placeholder="Mit jelent ez az állapot?"></textarea></label>
+        <div class="form-grid"><label>Típus<select [(ngModel)]="mechanicType"><option value="counter">Counter</option><option value="checkbox">Checkbox</option><option value="progress">Progress bar</option><option value="slider">Slider</option><option value="dropdown">Dropdown</option></select></label><label>Alkalmazás<select [(ngModel)]="mechanicScope"><option value="global">Globális</option><option value="perCharacter">Karakterenkénti</option></select></label></div>
+        <div class="form-grid" *ngIf="mechanicType !== 'checkbox' && mechanicType !== 'dropdown'"><label>Minimum<input type="number" [(ngModel)]="mechanicMin"></label><label>Maximum<input type="number" [(ngModel)]="mechanicMax"></label><label>Kezdőérték<input [(ngModel)]="mechanicDefault"></label></div>
+        <label *ngIf="mechanicType === 'dropdown'">Állapotok, vesszővel elválasztva<input [(ngModel)]="mechanicOptions" placeholder="Nincs, Enyhe, Súlyos"></label>
+        <button class="gold-btn full-btn" type="button" (click)="saveMechanic()" [disabled]="!mechanicName.trim()">Mentés</button>
+      </ng-template>
+    </section>
+  </div>
+</div>
+
+<ng-template #emptySession><main class="empty-session-main"><div><span class="session-mark">✦</span><h2>Hozd létre az első sessionödet</h2><p>A bal oldalon készíthetsz egy új sessiont a következő játékalkalmadhoz.</p></div></main></ng-template>

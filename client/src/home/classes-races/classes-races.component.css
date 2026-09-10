@@ -13,9 +13,8 @@
   overflow-y: auto;
 
   background:
-    radial-gradient(circle at top left, rgba(255, 165, 0, 0.18), transparent 26%),
-    radial-gradient(circle at bottom right, rgba(138, 43, 226, 0.14), transparent 28%),
-    linear-gradient(180deg, #050505 0%, #111 100%);
+    linear-gradient(rgba(8, 8, 8, 0.10), rgba(8, 8, 8, 0.10)),
+    url('/assets/Kepek/races-classes%20picture.png') center / cover fixed no-repeat;
 
   color: #fff;
   font-family: 'Cinzel Decorative', system-ui, sans-serif;
@@ -55,7 +54,7 @@
   margin-bottom: 18px;
   padding: 18px;
   border-radius: 18px;
-  background: rgba(0, 0, 0, 0.72);
+  background: rgba(0, 0, 0, 0.90);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 14px 35px rgba(0, 0, 0, 0.45);
   box-sizing: border-box;
@@ -126,7 +125,7 @@
 .side-panel,
 .detail-panel,
 .subclass-panel {
-  background: rgba(0, 0, 0, 0.78);
+  background: rgba(0, 0, 0, 0.90);
   border-radius: 18px;
   padding: 14px;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -314,6 +313,47 @@ tbody tr:hover {
   background: rgba(255, 165, 0, 0.12);
 }
 
+.class-basics-box {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.basic-block {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.basic-block h4 {
+  margin: 0 0 10px 0;
+  color: #ffd2a3;
+  font-family: 'Cinzel Decorative', Georgia, serif;
+  font-size: 1.05rem;
+  letter-spacing: 0.5px;
+}
+
+.basic-block p {
+  margin: 0 0 6px 0;
+  line-height: 1.5;
+}
+
+.level-badge {
+  display: inline-block;
+  background: rgba(255, 165, 0, 0.25);
+  border: 1px solid rgba(255, 165, 0, 0.6);
+  color: #ffe0b2;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 8px;
+  font-family: system-ui, sans-serif;
+  vertical-align: middle;
+}
+
 .feature-card {
   background: rgba(255, 255, 255, 0.035);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -461,5 +501,141 @@ tbody tr:hover {
 
   .main-nav button {
     flex: 1 1 auto;
+  }
+}
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.toolbar input {
+  width: 100%;
+  min-width: 0;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-family: system-ui, sans-serif;
+}
+
+.advanced-search-button,
+.clear-advanced-button {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  cursor: pointer;
+  font-family: system-ui, sans-serif;
+}
+
+.advanced-search-button {
+  width: 36px;
+  flex: 0 0 36px;
+  font-size: 1.1rem;
+}
+
+.advanced-search-button:hover,
+.advanced-search-button.active,
+.clear-advanced-button:hover {
+  border-color: rgba(255, 165, 0, 0.8);
+  background: rgba(255, 165, 0, 0.45);
+}
+
+.advanced-search-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid rgba(255, 165, 0, 0.35);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  font-family: system-ui, sans-serif;
+}
+
+.advanced-filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+}
+
+.advanced-filter-group strong {
+  width: 100%;
+  color: #ffd2a3;
+}
+
+.advanced-filter-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #eee;
+  white-space: nowrap;
+}
+
+.advanced-filter-group input {
+  accent-color: orange;
+}
+
+.clear-advanced-button {
+  padding: 7px 9px;
+}
+
+.entry-list small {
+  color: #ffd2a3;
+  font-family: system-ui, sans-serif;
+}
+
+@media (min-width: 1251px) {
+  .classes-races-page {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .page-header {
+    flex: 0 0 auto;
+  }
+
+  .content-layout {
+    min-height: 0;
+    flex: 1 1 auto;
+    align-items: stretch;
+  }
+
+  .side-panel,
+  .detail-panel,
+  .subclass-panel {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .side-panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .entry-list {
+    max-height: none;
+    min-height: 0;
+    flex: 1 1 auto;
+  }
+
+  .detail-panel {
+    overflow: hidden;
+  }
+
+  .detail-panel .detail-card {
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 10px;
+  }
+
+  .subclass-panel {
+    max-height: none;
   }
 }

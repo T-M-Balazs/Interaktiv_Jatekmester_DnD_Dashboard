@@ -32,3 +32,437 @@ code {
   background-color: #1b6ec2;
   border-color: #1861ac;
 }
+
+/* ==========================================================================
+   D&D Beyond Style Spell Header Stat Grid
+   ========================================================================== */
+.spell-header-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 12px 0 14px 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body.dark-theme .spell-header-grid,
+.dark .spell-header-grid,
+[data-theme="dark"] .spell-header-grid,
+.spells-items-page .spell-header-grid {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.spell-stat-box {
+  background: rgba(0, 0, 0, 0.55);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+body.dark-theme .spell-stat-box,
+.dark .spell-stat-box,
+[data-theme="dark"] .spell-stat-box,
+.spells-items-page .spell-stat-box {
+  background: rgba(18, 16, 14, 0.85);
+}
+
+.spell-stat-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: #c9ad6a;
+  text-transform: uppercase;
+}
+
+.spell-stat-value {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #f7f2e7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spell-classes-line {
+  margin: 8px 0 12px 0;
+  font-size: 0.9rem;
+  color: #eee;
+}
+
+@media (max-width: 600px) {
+  .spell-header-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ==========================================================================
+   D&D Statblock Card & Description Formatting Styles
+   ========================================================================== */
+
+/* Headings in Detail Card & Descriptions */
+.detail-card h2 {
+  font-family: 'Cinzel Decorative', system-ui, sans-serif;
+  text-transform: uppercase;
+  color: #fff;
+  margin: 0 0 12px;
+  font-size: 1.7rem;
+  letter-spacing: 1px;
+}
+
+.detail-card h3,
+.description-body h3,
+.description-body h4,
+.info-section h3 {
+  font-family: 'Cinzel Decorative', system-ui, sans-serif;
+  text-transform: uppercase;
+  color: #ffb5a8;
+  margin: 16px 0 8px;
+  font-size: 1.1rem;
+  letter-spacing: 0.8px;
+}
+
+/* Body Text for Descriptions and Detail Panels */
+.description-body,
+.description-body p,
+.description-body li,
+.description-body span,
+.description-body div,
+.description-body td,
+.description-body th,
+.description {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  text-transform: none;
+  line-height: 1.6;
+  color: inherit;
+}
+
+.description-body p {
+  margin: 0 0 10px 0;
+}
+
+/* Statblock Card Body Text */
+.statblock-card,
+.statblock-card p,
+.statblock-card div,
+.statblock-card span,
+.statblock-card td,
+.statblock-card th,
+.statblock-card li {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  text-transform: none;
+}
+
+.statblock-card {
+  background: #fdfaf2;
+  color: #231f20;
+  border: 2px solid #7a200d;
+  border-top: 4px solid #7a200d;
+  border-radius: 6px;
+  padding: 14px 18px;
+  margin: 14px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+/* Dark mode adjustments */
+body.dark-theme .statblock-card,
+.dark .statblock-card,
+[data-theme="dark"] .statblock-card,
+.detail-card.dark .statblock-card {
+  background: #25211b;
+  color: #e6dfcc;
+  border-color: #c9933b;
+  border-top-color: #c9933b;
+}
+
+/* Statblock Title & Subtitle */
+.statblock-card .statblock-title {
+  color: #7a200d;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin: 0 0 2px 0;
+  text-transform: uppercase;
+}
+
+body.dark-theme .statblock-card .statblock-title,
+.dark .statblock-card .statblock-title,
+[data-theme="dark"] .statblock-card .statblock-title {
+  color: #e24a4a;
+}
+
+.statblock-card .statblock-subtitle {
+  font-style: italic;
+  font-size: 0.9rem;
+  color: #58180d;
+  margin-bottom: 8px;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+body.dark-theme .statblock-card .statblock-subtitle,
+.dark .statblock-card .statblock-subtitle,
+[data-theme="dark"] .statblock-card .statblock-subtitle {
+  color: #cda885;
+}
+
+/* Divider Line */
+.statblock-card .statblock-hr {
+  height: 2px;
+  background: linear-gradient(90deg, #7a200d 0%, #c9ad6a 50%, #7a200d 100%);
+  border: none;
+  margin: 8px 0 10px 0;
+}
+
+/* Top Stats Grid (2 Columns: Left vs Right) */
+.sb-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 600px) {
+  .sb-card-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+.sb-card-left, .sb-card-right {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Condition & Sense Highlighting */
+.sb-condition {
+  color: #2e7d32;
+  font-weight: 700;
+}
+
+.sb-sense {
+  color: #8e24aa;
+  font-weight: 700;
+}
+
+body.dark-theme .sb-condition,
+.dark .sb-condition,
+[data-theme="dark"] .sb-condition {
+  color: #66bb6a;
+}
+
+body.dark-theme .sb-sense,
+.dark .sb-sense,
+[data-theme="dark"] .sb-sense {
+  color: #ba68c8;
+}
+
+/* Stat Lines (AC, HP, Speed, Immunities, Senses, Languages, CR) */
+.statblock-card .sb-stat-line {
+  margin-bottom: 2px;
+  color: #3b2c28;
+  font-size: 0.9rem;
+}
+
+body.dark-theme .statblock-card .sb-stat-line,
+.dark .statblock-card .sb-stat-line,
+[data-theme="dark"] .statblock-card .sb-stat-line {
+  color: #ddcad0;
+}
+
+.statblock-card .sb-stat-line strong {
+  color: #222;
+  font-weight: 700;
+}
+
+body.dark-theme .statblock-card .sb-stat-line strong,
+.dark .statblock-card .sb-stat-line strong,
+[data-theme="dark"] .statblock-card .sb-stat-line strong {
+  color: #f17878;
+}
+
+/* Ability Table Grid (2 Columns: STR-DEX-CON vs INT-WIS-CHA) */
+.sb-abilities-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  background: #f4efe4;
+  border: 1px solid #e0d8c3;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin: 12px 0;
+  font-size: 0.88rem;
+}
+
+body.dark-theme .sb-abilities-grid,
+.dark .sb-abilities-grid,
+[data-theme="dark"] .sb-abilities-grid {
+  background: #2a251e;
+  border-color: #3d352b;
+}
+
+.sb-abil-table-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sb-abil-table-header {
+  display: grid;
+  grid-template-columns: 1fr 42px 42px;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #555;
+  text-align: center;
+}
+
+.sb-abil-table-header .col-abil {
+  text-align: left;
+}
+
+.sb-abil-table-row {
+  display: grid;
+  grid-template-columns: 1fr 42px 42px;
+  gap: 4px;
+  align-items: center;
+  text-align: center;
+}
+
+.sb-abil-table-row .col-abil {
+  text-align: left;
+  font-size: 0.88rem;
+}
+
+.sb-abil-table-row .col-val.shaded {
+  background: #e3d9c6;
+  border-radius: 3px;
+  padding: 2px 0;
+  font-weight: 600;
+  color: #222;
+}
+
+body.dark-theme .sb-abil-table-row .col-val.shaded,
+.dark .sb-abil-table-row .col-val.shaded,
+[data-theme="dark"] .sb-abil-table-row .col-val.shaded {
+  background: #3a3328;
+  color: #eee;
+}
+
+/* Section Header (Actions, Traits, Reactions) */
+.statblock-card .sb-card-section-title {
+  color: #7a200d;
+  font-size: 1.05rem;
+  font-weight: 700;
+  border-bottom: 1px solid #7a200d;
+  margin: 12px 0 8px 0;
+  padding-bottom: 2px;
+}
+
+body.dark-theme .statblock-card .sb-card-section-title,
+.dark .statblock-card .sb-card-section-title,
+[data-theme="dark"] .statblock-card .sb-card-section-title {
+  color: #e24a4a;
+  border-bottom-color: #e24a4a;
+}
+
+/* Action Entries */
+.statblock-card .sb-card-entry {
+  margin-bottom: 8px;
+}
+
+.statblock-card .sb-card-entry strong em,
+.statblock-card .sb-card-entry em strong {
+  color: #58180d;
+  font-style: italic;
+  font-weight: 700;
+}
+
+body.dark-theme .statblock-card .sb-card-entry strong em,
+body.dark-theme .statblock-card .sb-card-entry em strong {
+  color: #ff9d9d;
+}
+
+/* Entry Tables (D&D Tables in Spells / Rules) */
+.entry-table-wrapper {
+  overflow-x: auto;
+  margin: 12px 0;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 99, 71, 0.35);
+  background: rgba(12, 10, 8, 0.85);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.entry-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  color: #f7f2e7;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.entry-table caption {
+  font-family: 'Cinzel Decorative', Georgia, serif;
+  font-weight: 700;
+  color: #ffb5a8;
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  background: rgba(255, 99, 71, 0.18);
+  border-bottom: 1px solid rgba(255, 99, 71, 0.35);
+}
+
+.entry-table th {
+  background: rgba(255, 99, 71, 0.28);
+  color: #ffffff;
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(255, 99, 71, 0.35);
+}
+
+.entry-table td {
+  padding: 8px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: #eee;
+  vertical-align: middle;
+}
+
+.entry-table tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.entry-table tr:hover {
+  background: rgba(255, 99, 71, 0.14);
+}
+
+/* Entry Lists & Quotes */
+.entry-list {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.entry-list li {
+  margin-bottom: 4px;
+}
+
+.entry-quote {
+  border-left: 3px solid #7a200d;
+  margin: 10px 0;
+  padding: 6px 14px;
+  background: rgba(122, 32, 13, 0.05);
+  font-style: italic;
+}
+

@@ -1,0 +1,132 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function ownsExisting() {
+      return signedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    function ownsNew() {
+      return signedIn() && request.resource.data.ownerId == request.auth.uid;
+    }
+
+    function keepsOwner() {
+      return request.resource.data.ownerId == resource.data.ownerId;
+    }
+
+    match /users/{userId} {
+      allow read: if signedIn();
+      allow create, update, delete: if signedIn() && request.auth.uid == userId;
+    }
+
+    match /playlists/{playlistId} {
+      allow read: if ownsExisting();
+      allow create: if ownsNew();
+      allow update, delete: if ownsExisting() && keepsOwner();
+    }
+
+    match /soundboards/{boardId} {
+      allow read: if ownsExisting();
+      allow create: if ownsNew();
+      allow update, delete: if ownsExisting() && keepsOwner();
+    }
+
+    match /notes/{noteId} {
+      allow read: if ownsExisting();
+      allow create: if ownsNew();
+      allow update, delete: if ownsExisting() && keepsOwner();
+    }
+
+    match /userFiles/{fileId} {
+      allow read: if ownsExisting();
+      allow create: if ownsNew();
+      allow update, delete: if ownsExisting() && keepsOwner();
+    }
+
+    match /sessions/{sessionId} {
+      allow read: if ownsExisting();
+      allow create: if ownsNew();
+      allow update, delete: if ownsExisting() && keepsOwner();
+    }
+
+    match /statblocks/{statblockId} {
+      allow read: if resource.data.sourceType == 'system'
+        || resource.data.visibility == 'public'
+        || ownsExisting();
+      allow create: if ownsNew();
+      allow update, delete: if ownsExisting() && keepsOwner();
+    }
+
+    match /spells/{documentId} {
+      allow read: if true;
+    }
+
+    match /items/{documentId} {
+      allow read: if true;
+    }
+
+    match /classes/{documentId} {
+      allow read: if true;
+    }
+
+    match /subclasses/{documentId} {
+      allow read: if true;
+    }
+
+    match /races/{documentId} {
+      allow read: if true;
+    }
+
+    match /backgrounds/{documentId} {
+      allow read: if true;
+    }
+
+    match /feats/{documentId} {
+      allow read: if true;
+    }
+
+    match /rules/{documentId} {
+      allow read: if true;
+    }
+
+    match /monsters/{documentId} {
+      allow read: if true;
+    }
+
+    match /systemContent/{documentId} {
+      allow read: if true;
+    }
+
+    match /systemCatalog/{documentId} {
+      allow read: if signedIn();
+    }
+
+    match /friendRequests/{requestId} {
+      allow read: if signedIn()
+        && (resource.data.fromUid == request.auth.uid || resource.data.toUid == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.fromUid == request.auth.uid;
+      allow update, delete: if signedIn()
+        && (resource.data.fromUid == request.auth.uid || resource.data.toUid == request.auth.uid);
+    }
+
+    match /conversations/{conversationId} {
+      allow read: if signedIn() && request.auth.uid in resource.data.participants;
+      allow create: if signedIn() && request.auth.uid in request.resource.data.participants;
+      allow update, delete: if signedIn() && request.auth.uid in resource.data.participants;
+
+      match /messages/{messageId} {
+        allow read, create: if signedIn()
+          && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+      }
+    }
+
+    match /{document=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}

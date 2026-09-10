@@ -1,0 +1,85 @@
+<div class="system-content-page">
+  <header class="page-header">
+    <div>
+      <h1>System Content</h1>
+      <p>Az importált, külön oldallal nem rendelkező 5eTools-adatok.</p>
+    </div>
+
+    <nav class="main-nav">
+      <button routerLink="/spells-items">Spells / Items</button>
+      <button routerLink="/classes-races">Classes / Races</button>
+      <button routerLink="/backgrounds-feats">Backgrounds / Feats</button>
+      <button routerLink="/rules-mechanics">Rules / Mechanics</button>
+      <button routerLink="/monsters">Monsters</button>
+      <button routerLink="/">Home</button>
+    </nav>
+  </header>
+
+  <main class="content-layout" [class.has-detail-panel]="selectedItem">
+    <section class="list-panel">
+      <div class="toolbar">
+        <input
+          type="text"
+          [(ngModel)]="searchText"
+          placeholder="Keresés névben, forrásban vagy mezőkben...">
+      </div>
+
+      <div *ngIf="isLoading" class="loading">Betöltés...</div>
+
+      <div class="table-wrapper" *ngIf="!isLoading && filteredContent.length > 0; else noContent">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Source</th>
+              <th>Ruleset</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let item of filteredContent"
+              (click)="selectItem(item)"
+              [class.selected]="selectedItem?.id === item.id">
+              <td>{{ item.name }}</td>
+              <td>{{ item.data.contentType || item.type }}</td>
+              <td>{{ item.source || '—' }}</td>
+              <td>{{ item.ruleset || '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #noContent>
+        <div class="empty-row">Nincs találat.</div>
+      </ng-template>
+    </section>
+
+    <aside class="detail-panel" *ngIf="selectedItem as item">
+      <button type="button" class="close-button" (click)="closeDetailPanel()">×</button>
+
+      <article class="detail-card">
+        <h2>{{ item.name }}</h2>
+        <p class="detail-meta">
+          {{ item.data.contentType || item.type }}
+          <span *ngIf="item.source"> • {{ item.source }}</span>
+          <span *ngIf="item.ruleset"> • {{ item.ruleset }}</span>
+        </p>
+
+        <div class="detail-rule"></div>
+
+        <div class="description-body" *ngIf="item.data.description" [innerHTML]="item.data.description | formatDescription"></div>
+
+        <section class="info-section" *ngIf="getFields(item).length">
+          <h3>All imported fields</h3>
+          <dl class="field-list">
+            <ng-container *ngFor="let field of getFields(item)">
+              <dt>{{ field.label }}</dt>
+              <dd>{{ field.value }}</dd>
+            </ng-container>
+          </dl>
+        </section>
+      </article>
+    </aside>
+  </main>
+</div>

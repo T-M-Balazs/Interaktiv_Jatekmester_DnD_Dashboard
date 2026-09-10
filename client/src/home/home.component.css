@@ -6,77 +6,164 @@
 
 .home-menu {
   display: flex;
-  flex-direction: row; /* vízszintesen egymás mellett */
+  flex-direction: row;
   height: 100%;
   width: 100%;
 }
 
-/* Általános menüsor stílus */
 .menu-row {
-  font-family: 'Cinzel Decorative', system-ui, sans-serif;
+  position: relative;
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #fff;
-  font-size: 1.6rem;
+  overflow: hidden;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  isolation: isolate;
+  transition: background-color 0.35s ease, transform 0.25s ease, box-shadow 0.35s ease;
+}
+
+.menu-row::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  content: '';
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transform: scale(1.04);
+  transition: opacity 1s ease, transform 1s ease;
+  pointer-events: none;
+}
+
+.menu-row:hover::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.menu-row:last-child {
+  border-right: none;
+}
+
+.menu-row:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.menu-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 1rem 0.5rem;
+  z-index: 1;
+}
+
+.menu-row span {
+  position: relative;
+  z-index: 2;
+  display: inline-block;
+  font-family: 'Cinzel Decorative', system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f8f8f8;
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 2px;
-  text-shadow: 0 3px 8px rgba(0, 0, 0, 3);
-  
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-  .menu-row:last-child {
-    border-right: none;
-  }
-
-/* 🔹 Egyedi háttérszínek áttetszővel */
-#m1 {
-  background-color: rgba(255, 99, 71, 0); /* pirosas (tomato) */
-}
-
-  #m1:hover {
-    background-color: rgba(255, 99, 71, 0.4);
-    font-size:1.2 ;
-  }
-
-#m2 {
-  background-color: rgba(255, 165, 0, 0); /* narancs */
-}
-
-  #m2:hover {
-    background-color: rgba(255, 165, 0, 0.4);
-  }
-
-#m3 {
-  background-color: rgba(60, 179, 113, 0); /* zöld */
-}
-
-  #m3:hover {
-    background-color: rgba(60, 179, 113, 0.4);
-  }
-
-#m4 {
-  background-color: rgba(30, 144, 255, 0); /* kék */
-}
-
-  #m4:hover {
-    background-color: rgba(30, 144, 255, 0.4);
-  }
-
-#m5 {
-  background-color: rgba(138, 43, 226, 0); /* lila */
-}
-
-  #m5:hover {
-    background-color: rgba(138, 43, 226, 0.4);
-  }
-.menu-row span {
-  font-weight: 700;
-  color: #f8f8f8;
+  text-shadow:
+    0 6px 20px #000,
+    0 0 12px #000,
+    0 0 3px #000;
   -webkit-text-stroke: 0.2px #000;
+  transition: transform 0.3s ease, text-shadow 0.3s ease;
+}
+
+.menu-row:hover span {
+  transform: translateY(-12%);
+  text-shadow:
+    0 7px 24px #000,
+    0 0 14px #000,
+    0 0 4px #000;
+}
+
+.menu-row img {
+  position: absolute;
+  left: 50%;
+  bottom: 8%;
+  z-index: 2;
+  width: 55%;
+  max-width: 220px;
+  height: auto;
+  object-fit: contain;
+  opacity: 0;
+  transform: translate(-50%, 20%) scale(0.88);
+  filter:
+    drop-shadow(0 0 5px rgba(255, 255, 255, 0.58))
+    drop-shadow(0 14px 18px rgba(0, 0, 0, 0.58));
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  pointer-events: none;
+}
+
+.menu-row:hover img {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+#m1::before {
+  background-image: url('/assets/Kepek/spells%20items%20picture.png');
+}
+
+#m1:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+#m2::before {
+  background-image: url('/assets/Kepek/races-classes%20picture.png');
+}
+
+#m2:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+#m3::before {
+  background-image: url('/assets/Kepek/background%20feets%20picture.png');
+}
+
+#m3:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+#m4::before {
+  background-image: url('/assets/Kepek/rules%20mechaniks%20picture.png');
+}
+
+#m4:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+#m5::before {
+  background-image: url('/assets/Kepek/monsters%20picture.png');
+}
+
+#m5:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+@media (max-width: 900px) {
+  .home-menu {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .menu-row {
+    min-height: 180px;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
 }

@@ -17,14 +17,22 @@
       <div class="profile-main-row">
         <div
           class="avatar-preview-large"
+          [class.avatar-cropper]="hasSelectedNewProfileImage"
           *ngIf="profilePreviewUrl || currentProfilePhotoUrl; else emptyAvatar"
+          (pointerdown)="onAvatarPointerDown($event)"
+          (pointermove)="onAvatarPointerMove($event)"
+          (pointerup)="onAvatarPointerUp()"
+          (pointercancel)="onAvatarPointerUp()"
+          (wheel)="onAvatarWheel($event)"
         >
           <img
             [src]="profilePreviewUrl || currentProfilePhotoUrl"
             alt="Profilkép előnézet"
-            [style.transform]="'scale(' + avatarScale + ')'"
-            [style.object-position]="avatarX + '% ' + avatarY + '%'"
+            [style.transform]="'translate(' + (avatarX - 50) + '%, ' + (avatarY - 50) + '%) scale(' + avatarScale + ')'"
           >
+          <span class="cropper-hint" *ngIf="hasSelectedNewProfileImage">
+            Húzd a képet a beállításhoz
+          </span>
         </div>
 
         <ng-template #emptyAvatar>
@@ -41,44 +49,22 @@
 
           <div class="profile-image-tools">
             <input
+              id="profile-image-input"
+              class="visually-hidden-input"
               type="file"
               accept="image/*"
               (change)="onProfileImageSelected($event)"
             >
+            <label class="file-picker-btn" for="profile-image-input">
+              <span class="file-picker-icon">✦</span>
+              Profilkép kiválasztása
+            </label>
 
             <div class="avatar-controls" *ngIf="hasSelectedNewProfileImage">
-              <label>
-                Nagyítás
-                <input
-                  type="range"
-                  min="1"
-                  max="2.5"
-                  step="0.05"
-                  [(ngModel)]="avatarScale"
-                >
-              </label>
-
-              <label>
-                Vízszintes pozíció
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  step="1"
-                  [(ngModel)]="avatarX"
-                >
-              </label>
-
-              <label>
-                Függőleges pozíció
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  step="1"
-                  [(ngModel)]="avatarY"
-                >
-              </label>
+              <div class="cropper-status">
+                <span>Kép beállítása</span>
+                <strong>{{ Math.round(avatarScale * 100) }}%</strong>
+              </div>
 
               <div class="avatar-button-row">
                 <button
@@ -118,11 +104,18 @@
 
       <div class="upload-controls merged-upload">
         <input
+          id="user-files-input"
+          class="visually-hidden-input"
           type="file"
           multiple
           accept=".pdf,image/*"
           (change)="onFilesSelected($event)"
         >
+
+        <label class="file-picker-btn" for="user-files-input">
+          <span class="file-picker-icon">＋</span>
+          Fájlok kiválasztása
+        </label>
 
         <button
           class="primary-btn"

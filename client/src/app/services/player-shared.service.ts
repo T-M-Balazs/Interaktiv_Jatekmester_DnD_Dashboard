@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
-import { db, storage } from '../player/firebase-config';
+import { auth, db, storage } from '../player/firebase-config';
 import { ref, listAll, getDownloadURL } from 'firebase/storage';
 import { AudioStateService, AudioSource } from './audio-state.service';
 import {
   collection,
   getDocs,
   query,
-  orderBy
+  where
 } from 'firebase/firestore';
 
 export interface Track {
@@ -19,6 +19,7 @@ export interface Playlist {
   id: string;
   name: string;
   trackUrls: string[];
+  ownerId?: string;
 }
 
 @Injectable({
@@ -35,6 +36,7 @@ export class PlayerSharedService {
   private static cachedPlaylists: Playlist[] = [
     { id: 'all', name: 'Összes zene', trackUrls: [] }
   ];
+  private static cachedPlaylistsOwnerId: string | null = null;
 
   allTracks: Track[] = [];
   filteredTracks: Track[] = [];
@@ -48,8 +50,12 @@ export class PlayerSharedService {
   duration = 0;
   volume = 1;
   searchTerm = '';
+  isShuffleEnabled = false;
+  isRepeatEnabled = false;
+  private selectionInitialized = false;
 
   private audio = new Audio();
+  private readonly audioInstanceId = `player-${Math.random().toString(36).slice(2)}`;
 
  constructor(private audioState: AudioStateService) {
     this.audio.preload = 'metadata';
@@ -64,12 +70,24 @@ export class PlayerSharedService {
     });
 
     this.audio.addEventListener('ended', () => {
-  this.nextTrack();
+      if (this.isRepeatEnabled && this.playlist.length > 0) {
+        this.playTrack(this.isShuffleEnabled ? this.getRandomTrackIndex() : 0);
+        return;
+      }
 
-  if (this.currentTrackIndex >= this.playlist.length - 1) {
-    this.audioState.stop(this.audioSource);
-  }
-});
+      if (this.isShuffleEnabled && this.playlist.length > 1) {
+        this.playTrack(this.getRandomTrackIndex());
+        return;
+      }
+
+      if (this.currentTrackIndex < this.playlist.length - 1) {
+        this.playTrack(this.currentTrackIndex + 1);
+        return;
+      }
+
+      this.isPlaying = false;
+      this.audioState.stopForInstance(this.audioSource, this.audioInstanceId);
+    });
   }
 setAudioSource(source: AudioSource): void {
   this.audioSource = source;
@@ -103,7 +121,10 @@ setAudioSource(source: AudioSource): void {
   async ensureLoaded(): Promise<void> {
     await this.loadTracks();
     await this.loadPlaylists();
-    this.selectPlaylist(this.selectedPlaylistId);
+
+    if (!this.selectionInitialized) {
+      this.selectPlaylist(this.selectedPlaylistId);
+    }
   }
 
   async refreshAll(forceReload = false): Promise<void> {
@@ -167,7 +188,18 @@ setAudioSource(source: AudioSource): void {
   }
 
   async loadPlaylists(forceReload = false): Promise<Playlist[]> {
-    if (PlayerSharedService.playlistsLoaded && !forceReload) {
+    const ownerId = auth.currentUser?.uid;
+
+    if (!ownerId) {
+      this.playlists = [{ id: 'all', name: 'Összes zene', trackUrls: [] }];
+      return this.playlists;
+    }
+
+    if (
+      PlayerSharedService.playlistsLoaded &&
+      PlayerSharedService.cachedPlaylistsOwnerId === ownerId &&
+      !forceReload
+    ) {
       this.playlists = [...PlayerSharedService.cachedPlaylists];
       return this.playlists;
     }
@@ -184,6 +216,7 @@ setAudioSource(source: AudioSource): void {
       const playlists = await PlayerSharedService.playlistsLoadingPromise;
 
       PlayerSharedService.cachedPlaylists = playlists;
+      PlayerSharedService.cachedPlaylistsOwnerId = ownerId;
       PlayerSharedService.playlistsLoaded = true;
 
       this.playlists = [...playlists];
@@ -195,7 +228,16 @@ setAudioSource(source: AudioSource): void {
   }
 
   private async loadPlaylistsFromFirestore(): Promise<Playlist[]> {
-    const q = query(collection(db, 'playlists'), orderBy('createdAt', 'asc'));
+    const ownerId = auth.currentUser?.uid;
+
+    if (!ownerId) {
+      return [{ id: 'all', name: 'Összes zene', trackUrls: [] }];
+    }
+
+    const q = query(
+      collection(db, 'playlists'),
+      where('ownerId', '==', ownerId)
+    );
     const snap = await getDocs(q);
 
     const loadedPlaylists: Playlist[] = snap.docs.map(d => {
@@ -204,9 +246,12 @@ setAudioSource(source: AudioSource): void {
       return {
         id: d.id,
         name: typeof data['name'] === 'string' ? data['name'] : 'Névtelen lista',
-        trackUrls: Array.isArray(data['trackUrls']) ? data['trackUrls'] : []
+        trackUrls: Array.isArray(data['trackUrls']) ? data['trackUrls'] : [],
+        ownerId: typeof data['ownerId'] === 'string' ? data['ownerId'] : undefined
       };
     });
+
+    loadedPlaylists.sort((a, b) => a.name.localeCompare(b.name));
 
     return [
       { id: 'all', name: 'Összes zene', trackUrls: [] },
@@ -223,6 +268,8 @@ setAudioSource(source: AudioSource): void {
     PlayerSharedService.cachedPlaylists = [
       { id: 'all', name: 'Összes zene', trackUrls: [] }
     ];
+    PlayerSharedService.cachedPlaylistsOwnerId = null;
+    this.selectionInitialized = false;
   }
 
   updateFilteredTracks(): void {
@@ -238,8 +285,14 @@ setAudioSource(source: AudioSource): void {
     this.updateFilteredTracks();
   }
 
+  getSelectedPlaylistName(): string {
+    return this.playlists.find(playlist => playlist.id === this.selectedPlaylistId)?.name
+      || 'Összes zene';
+  }
+
   selectPlaylist(id: string): void {
     this.selectedPlaylistId = id;
+    this.selectionInitialized = true;
 
     if (id === 'all') {
       this.playlist = [...this.allTracks];
@@ -254,7 +307,7 @@ setAudioSource(source: AudioSource): void {
 
   resetPlayerState(stopAudio = true): void {
     this.isPlaying = false;
-    this.audioState.stop(this.audioSource);
+    this.audioState.stopForInstance(this.audioSource, this.audioInstanceId);
     this.currentTime = 0;
     this.duration = 0;
     this.currentTrackIndex = -1;
@@ -283,7 +336,7 @@ setAudioSource(source: AudioSource): void {
     try {
       await this.audio.play();
       this.isPlaying = true;
-      this.audioState.setPlaying(this.audioSource);
+      this.audioState.setPlayingForInstance(this.audioSource, this.audioInstanceId);
     } catch (err) {
       console.error('Track lejátszása sikertelen:', err);
       this.isPlaying = false;
@@ -302,7 +355,7 @@ setAudioSource(source: AudioSource): void {
       try {
         await this.audio.play();
         this.isPlaying = true;
-        this.audioState.setPlaying(this.audioSource);
+        this.audioState.setPlayingForInstance(this.audioSource, this.audioInstanceId);
       } catch (err) {
         console.error('Lejátszás indítása sikertelen:', err);
         this.isPlaying = false;
@@ -310,15 +363,20 @@ setAudioSource(source: AudioSource): void {
     } else {
       this.audio.pause();
       this.isPlaying = false;
-      this.audioState.stop(this.audioSource);
+      this.audioState.stopForInstance(this.audioSource, this.audioInstanceId);
     }
   }
 
   nextTrack(): void {
+    if (this.playlist.length === 0) return;
+
+    if (this.isShuffleEnabled) {
+      this.playTrack(this.getRandomTrackIndex());
+      return;
+    }
+
     if (this.currentTrackIndex < this.playlist.length - 1) {
       this.playTrack(this.currentTrackIndex + 1);
-    } else {
-      this.isPlaying = false;
     }
   }
 
@@ -329,6 +387,30 @@ setAudioSource(source: AudioSource): void {
       this.audio.currentTime = 0;
       this.currentTime = 0;
     }
+  }
+
+  toggleShuffle(): void {
+    this.isShuffleEnabled = !this.isShuffleEnabled;
+    if (this.isShuffleEnabled) {
+      this.isRepeatEnabled = false;
+    }
+  }
+
+  toggleRepeat(): void {
+    this.isRepeatEnabled = !this.isRepeatEnabled;
+    if (this.isRepeatEnabled) {
+      this.isShuffleEnabled = false;
+    }
+  }
+
+  private getRandomTrackIndex(): number {
+    if (this.playlist.length <= 1) return 0;
+
+    let nextIndex = this.currentTrackIndex;
+    while (nextIndex === this.currentTrackIndex) {
+      nextIndex = Math.floor(Math.random() * this.playlist.length);
+    }
+    return nextIndex;
   }
 
   seek(value: number): void {

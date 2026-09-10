@@ -40,6 +40,9 @@
               <span *ngIf="chatState.getConversationUnreadCount(c) > 0" class="badge">
                 {{ chatState.getConversationUnreadCount(c) }}
               </span>
+              <span *ngIf="isCallActive(c)" class="active-call-badge">
+                Aktív hívás
+              </span>
             </span>
 
             <button
@@ -113,12 +116,18 @@
     <div class="chat-header">
       <div class="chat-header-top">
         <h3>{{ chatState.getConversationTitle(chatState.selectedConvData) }}</h3>
+        <span class="call-context" *ngIf="voiceCall.isConnected || chatState.selectedConvData?.call?.status === 'ringing'">
+          Hívás: {{ chatState.getConversationTitle(chatState.selectedConvData) }}
+        </span>
+        <span class="active-call-label" *ngIf="isCallActive(chatState.selectedConvData)">
+          Aktív hívás
+        </span>
 
-        <div class="chat-header-actions" *ngIf="chatState.selectedConvData?.type === 'group'">
+        <div class="chat-header-actions">
           <button
             type="button"
             class="header-action-btn secondary"
-            *ngIf="chatState.isSelectedGroupOwner()"
+            *ngIf="chatState.selectedConvData?.type === 'group' && chatState.isSelectedGroupOwner()"
             (click)="openManageMembersModal()">
             Hozzáadás / Kitiltás
           </button>
@@ -126,10 +135,73 @@
           <button
             type="button"
             class="header-action-btn danger"
-            *ngIf="!chatState.isRemovedFromSelectedGroup()"
+            *ngIf="chatState.selectedConvData?.type === 'group' && !chatState.isRemovedFromSelectedGroup()"
             (click)="leaveSelectedGroup()">
             Csoport elhagyása
           </button>
+
+          <button
+            type="button"
+            class="header-action-btn voice"
+            *ngIf="chatState.selectedConvData && !voiceCall.isConnected && (!chatState.selectedConvData.call || chatState.selectedConvData.call.status === 'ended' || (chatState.selectedConvData.call.status === 'active' && !isCallActive(chatState.selectedConvData)))"
+            (click)="startVoiceCall()">
+            Hanghívás
+          </button>
+
+          <button
+            type="button"
+            class="header-action-btn voice"
+            *ngIf="isCallActive(chatState.selectedConvData) && !voiceCall.isConnected && !incomingCall && (chatState.selectedConvData?.type === 'group' || !!chatState.selectedConvData?.call?.acceptedBy)"
+            (click)="startVoiceCall()">
+            Csatlakozás a híváshoz
+          </button>
+
+          <span
+            class="call-pending"
+            *ngIf="chatState.selectedConvData?.type === 'private' && chatState.selectedConvData?.call?.status === 'ringing' && chatState.selectedConvData?.call?.callerId === chatState.meUid">
+            Kicsöng...
+          </span>
+
+          <button
+            type="button"
+            class="header-action-btn voice-muted"
+            *ngIf="chatState.selectedConvData?.type === 'private' && chatState.selectedConvData?.call?.status === 'ringing' && chatState.selectedConvData?.call?.callerId === chatState.meUid"
+            (click)="stopVoiceCall()">
+            Hívás megszakítása
+          </button>
+
+          <button
+            type="button"
+            class="header-action-btn voice"
+            *ngIf="voiceCall.isConnected"
+            (click)="stopVoiceCall()">
+            Hanghívás leállítása
+          </button>
+
+          <button
+            type="button"
+            class="header-action-btn voice-muted"
+            *ngIf="voiceCall.isConnected"
+            (click)="toggleVoiceMute()">
+            {{ voiceCall.isMuted ? 'Némítás feloldása' : 'Némítás' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="remote-controls" *ngIf="voiceCall.isConnected && voiceCall.remoteParticipants.length">
+        <div class="remote-control" *ngFor="let participant of voiceCall.remoteParticipants">
+          <span class="remote-name">{{ participant.name }}</span>
+          <button type="button" class="icon-btn" [attr.aria-label]="participant.name + ' némítása'" (click)="toggleRemoteMute(participant)">
+            {{ participant.muted ? '🔇' : '🔊' }}
+          </button>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.05"
+            [value]="participant.volume"
+            (input)="setRemoteVolume(participant, $event)"
+            [attr.aria-label]="participant.name + ' hangereje'" />
         </div>
       </div>
     </div>
@@ -144,6 +216,7 @@
       <img
         *ngIf="m.senderPhotoUrl; else defaultMessageAvatar"
         [src]="m.senderPhotoUrl"
+        [style.transform]="chatState.getProfilePhotoTransform(chatState.getMessageSenderPhotoSettings(m))"
         alt="Profilkép"
       >
 
@@ -328,6 +401,17 @@
         [src]="chatState.imagePreviewUrl"
         class="image-preview-full"
         alt="Nagyított kép" />
+    </div>
+  </div>
+
+  <div class="modal-overlay incoming-call-overlay" *ngIf="incomingCall">
+    <div class="modal-card incoming-call-card">
+      <h4>Bejövő hanghívás</h4>
+      <p>{{ incomingCall.callerName }} hív téged.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="rejectIncomingCall()">Elutasítás</button>
+        <button type="button" class="btn-confirm" (click)="acceptIncomingCall()">Elfogadás</button>
+      </div>
     </div>
   </div>
   </div>

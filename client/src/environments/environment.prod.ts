@@ -1,3 +1,4 @@
 export const environment = {
-  production: true
+  production: true,
+  livekitUrl: 'wss://dnddashboard-w7r4054w.livekit.cloud'
 };

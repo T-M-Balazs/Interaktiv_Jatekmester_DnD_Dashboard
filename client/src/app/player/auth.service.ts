@@ -60,4 +60,8 @@ currentUser: User | null = null;
   async logout() {
     return signOut(auth);
   }
+
+  updateUserProfile(profile: any): void {
+    this.userProfileSubject.next(profile);
+  }
 }

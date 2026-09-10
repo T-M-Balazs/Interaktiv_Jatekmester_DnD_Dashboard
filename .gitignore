@@ -4,3 +4,22 @@ dist/
 .firebase/
 server/firebase-key.json
 firebase-key.json
+
+server/firebase-key.json
+.env
+.env.*
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Local / sensitive files
+server/firebase-key.json
+.env
+.env.*
+.import-data/
+node_modules/
+client/node_modules/
+server/node_modules/
+livekit-server.exe
+server/firestore-structure.json
+server/subclass_dryrun_output.json

@@ -53,9 +53,10 @@ cd Interaktiv_Jatekmester_DnD_Dashboard
 
 ## 5. Függőségek telepítése
 
-A projekt működéséhez szükséges npm csomagokat telepíteni kell. Ezt a projekt fő mappájában az alábbi paranccsal lehet megtenni:
+A projekt működéséhez szükséges klienscsomagokat a `client` mappában kell telepíteni:
 
 ```bash
+cd client
 npm install
 ```
 
@@ -63,7 +64,7 @@ A projekt tartalmaz külön `server` mappát is, akkor annak a függőségeit is
 Belépés a `server` mappába:
 
 ```bash
-cd server
+cd ../server
 ```
 
 A szerveroldali függőségek telepítése:
@@ -73,21 +74,64 @@ npm install
 ```
 
 
-## 6. Projekt futtatása lokálisan
+## 6. 5eTools adatok importálása
 
-A projekt fejlesztői szerverrel indítható el. A fő projektmappában a következő parancsot kell futtatni:
+Az importer a letöltött 5eTools repository `data` mappájából a jelenlegi Firestore-kollekciókba alakítja az adatokat. A `server` mappából futtasd:
+
+```powershell
+node import-5etools.js --data "C:\utvonal\5etools-src\data" --dry-run --limit 1
+node import-5etools.js --data "C:\utvonal\5etools-src\data" --collections spells,monsters
+node import-5etools.js --data "C:\utvonal\5etools-src\data" --init-only
+```
+
+A `--dry-run` csak megmutatja az első normalizált rekordot. A tényleges feltöltéshez a `server/firebase-key.json` szükséges. A `--replace` kapcsoló a korábbi dokumentumok összeolvasztása helyett teljesen lecseréli őket. Az `--init-only` csak a Firestore-struktúrát hozza létre, rekordokat nem tölt fel.
+
+Az import a következő Firestore-struktúrát használja:
+
+- `spells`, `items`, `monsters`, `classes`, `subclasses`, `races`, `backgrounds`, `feats`: a tényleges rendszerrekordok, dokumentumonként egy tartalommal
+- `systemContent`: minden további 5eTools-típus (például condition, action, vehicle, trap, hazard, language és variant rule), amelyhez nincs külön oldal
+- `systemCatalog/structure`: az importált rendszer tartalomjegyzéke
+- `systemCatalog/collections/items/{collection}`: az egyes tartalmi kollekciók metaadatai
+
+Firestore-ban nincsenek klasszikus mappák; a kollekciók az első dokumentum írásakor jelennek meg. A `systemCatalog` külön meta-struktúrája ezért nyilvántartja az üresen maradó kollekciókat is, és nem kerül be a meglévő Angular keresési eredmények közé.
+
+Az importált, külön oldallal nem rendelkező rekordok az alkalmazás globális keresőjéből a `System Content` oldalra nyithatók meg. Ott minden megőrzött mező megjelenik, a beágyazott objektumok és tömbök is.
+
+Az importer a rekordokat `name_source_ruleset` formájú ID-val menti, így a 2014-es és 2024-es azonos nevű tartalmak nem írják felül egymást.
+
+## 7. Projekt futtatása lokálisan
+
+A projekt fejlesztői szerverrel indítható el a `client` mappából:
 
 ```bash
-ng serve --host 0.0.0.0 --port 4200 --disable-host-check
+cd ../client
+npm start
 ```
 
 Sikeres indítás után az alkalmazás böngészőből elérhető az alábbi címen:
 
 ```text
-http://localhost:4200
+https://localhost:44491
 ```
 
-## 7. Ngrok használata külső eléréshez
+## 7. LiveKit Cloud voice chat
+
+A voice chat az ingyenes LiveKit Cloud projekthez csatlakozik. A kliens projektcíme:
+
+```text
+wss://dnddashboard-w7r4054w.livekit.cloud
+```
+
+A tokeneket kiadó Express API-nak szüksége van a LiveKit Cloud projekt **API key** és **API secret** értékeire. Ezeket környezeti változóként kell beállítani, mielőtt elindítod a `start-local-voice.bat` vagy `start-dnd-dashboard.bat` fájlt:
+
+```powershell
+$env:LIVEKIT_API_KEY = "a LiveKit Cloud API key értéke"
+$env:LIVEKIT_API_SECRET = "a LiveKit Cloud API secret értéke"
+```
+
+Az indítófájlok már nem indítanak saját `livekit-server.exe` folyamatot, és nem igényelnek IP-cím vagy porttovábbítás beállítást.
+
+## 8. Ngrok használata külső eléréshez
 
 Ha az alkalmazást interneten keresztül is el szeretnénk érni, akkor használható az ngrok. Ez akkor hasznos, ha a lokálisan futó projektet másik eszközről vagy külső hálózatról is meg szeretnénk nyitni.
 Először be kell állítani az ngrok hitelesítési tokent:

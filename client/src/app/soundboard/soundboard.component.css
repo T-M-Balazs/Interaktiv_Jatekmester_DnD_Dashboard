@@ -8,34 +8,63 @@
 .scroll-container {
   width: 100%;
   height: 100%;
+
   overflow-y: auto;
   overflow-x: hidden;
+
   scrollbar-width: thin;
   scrollbar-color: #ffd700 #222;
-  background:
-    radial-gradient(circle at top left, rgba(255, 215, 0, 0.08), transparent 25%),
-    linear-gradient(180deg, #111 0%, #181818 100%);
+
+  background-image:
+    url('/assets/Kepek/soundborad-background.png');
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
+
+
+/* =========================================================
+   ALAP ELRENDEZÉS
+   ========================================================= */
 
 .soundboard-layout {
   display: grid;
-  grid-template-columns: 260px minmax(420px, 1fr) minmax(340px, 420px);
+
+  grid-template-columns:
+    260px
+    minmax(420px, 1fr)
+    minmax(340px, 420px);
+
   gap: 20px;
   padding: 20px;
+
   box-sizing: border-box;
   align-items: start;
 }
 
 .panel {
   background: rgba(0, 0, 0, 0.82);
+
   color: #fff;
+
   border-radius: 16px;
   padding: 18px;
+
   display: flex;
   flex-direction: column;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+
+  box-shadow:
+    0 10px 28px
+    rgba(0, 0, 0, 0.35);
+
   min-height: 520px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.05);
+
   min-width: 0;
 }
 
@@ -62,9 +91,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   gap: 12px;
   margin-bottom: 14px;
 }
+
+
+/* =========================================================
+   BOARD LISTA
+   ========================================================= */
 
 .board-add {
   display: flex;
@@ -100,24 +135,38 @@
 .scrollable-list li {
   padding: 10px 12px;
   margin-bottom: 8px;
-  background: rgba(255, 255, 255, 0.035);
+
+  background:
+    rgba(255, 255, 255, 0.035);
+
   border-radius: 10px;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   gap: 10px;
+
   min-height: 44px;
+
   box-sizing: border-box;
-  transition: background 0.12s ease, transform 0.12s ease;
+
+  transition:
+    background 0.12s ease,
+    transform 0.12s ease;
 }
 
 .scrollable-list li:hover {
-  background: rgba(255, 255, 255, 0.07);
+  background:
+    rgba(255, 255, 255, 0.07);
 }
 
 .scrollable-list li.active {
-  background: rgba(255, 215, 0, 0.14);
-  border-left: 3px solid #ffd700;
+  background:
+    rgba(255, 215, 0, 0.14);
+
+  border-left:
+    3px solid #ffd700;
 }
 
 .board-name,
@@ -144,116 +193,880 @@
   word-break: break-all;
 }
 
+
+/* =========================================================
+   SLOT GRID
+   ========================================================= */
+
 .slot-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
   gap: 14px;
   margin-top: 6px;
 }
 
+
+/* =========================================================
+   SLOT
+   ========================================================= */
+
 .slot-btn {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    rgba(255, 255, 255, 0.04);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.08);
+
   border-radius: 14px;
   padding: 14px;
-  text-align: left;
+
+  text-align: center;
   cursor: pointer;
   color: white;
+
   min-height: 110px;
-  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    border-color 0.12s ease;
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: space-between;
+  align-items: center;
+
+  position: relative;
+
+  overflow: visible;
+  outline: none;
+}
+
+
+/* Nyitott picker esetén az adott slot minden más fölé kerül */
+
+.slot-btn.picker-open {
+  z-index: 1000;
+  transform: none !important;
+}
+
+.slot-btn.picker-open:hover {
+  transform: none;
+}
+
+
+/* =========================================================
+   PICKER KATTINTÁSFOGÓ HÁTTÉR
+   ========================================================= */
+
+.picker-backdrop {
+  position: fixed;
+  inset: 0;
+
+  z-index: 900;
+
+  background: transparent;
+
+  cursor: default;
+
+  pointer-events: auto;
+}
+
+
+/* =========================================================
+   SZÍNES SLOT HÁTTÉR
+   ========================================================= */
+
+.slot-btn:not(.empty-slot) {
+  background:
+    var(
+      --slot-color,
+      #ffd700
+    );
+
+  background:
+    linear-gradient(
+      135deg,
+
+      color-mix(
+        in srgb,
+        var(
+          --slot-color,
+          #ffd700
+        ) 68%,
+        white
+      ) 0%,
+
+      var(
+        --slot-color,
+        #ffd700
+      ) 52%,
+
+      color-mix(
+        in srgb,
+        var(
+          --slot-color,
+          #ffd700
+        ) 72%,
+        black
+      ) 100%
+    );
+}
+
+.slot-btn:focus-visible {
+  box-shadow:
+    0 0 0 2px
+    rgba(255, 215, 0, 0.5);
 }
 
 .slot-btn:hover {
-  transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.08);
+  transform:
+    translateY(-2px);
 }
 
 .slot-btn.selected {
-  border-color: rgba(255, 215, 0, 0.45);
-  background: rgba(255, 215, 0, 0.10);
-  box-shadow: inset 0 0 0 1px rgba(255, 215, 0, 0.12);
+  border-color:
+    rgba(255, 255, 255, 0.55);
+
+  box-shadow:
+    inset
+      0 0 0 1px
+      rgba(255, 255, 255, 0.2),
+
+    0 0 18px
+      rgba(255, 255, 255, 0.08);
 }
+
+.slot-btn.empty-slot {
+  border-style: dashed;
+
+  background:
+    rgba(0, 0, 0, 0.25);
+}
+
+
+/* =========================================================
+   SLOT MŰVELETI GOMBOK
+   ========================================================= */
+
+.slot-action-group {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.slot-clear-inline,
+.slot-mini-btn {
+  pointer-events: auto;
+
+  position: absolute;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.25);
+
+  background:
+    rgba(12, 12, 12, 0.5);
+
+  color: white;
+
+  backdrop-filter:
+    blur(4px);
+
+  cursor: pointer;
+
+  transition:
+    all 0.15s ease;
+}
+
+.slot-clear-inline {
+  top: 8px;
+  right: 8px;
+
+  width: 20px;
+  height: 20px;
+
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.slot-mini-btn {
+  width: 24px;
+  height: 24px;
+
+  bottom: 8px;
+
+  background:
+    rgba(0, 0, 0, 0.72);
+
+  color: #ffffff;
+
+  box-shadow:
+    0 6px 18px
+    rgba(0, 0, 0, 0.22);
+}
+
+.slot-mini-btn .material-icons {
+  font-size: 14px;
+  color: #ffffff;
+}
+
+.color-mini {
+  left: 8px;
+
+  border-color:
+    rgba(255, 255, 255, 0.35);
+}
+
+.icon-mini {
+  right: 8px;
+
+  border-color:
+    rgba(255, 255, 255, 0.35);
+}
+
+.slot-clear-inline:hover,
+.slot-mini-btn:hover {
+  background:
+    rgba(255, 255, 255, 0.12);
+
+  transform:
+    scale(1.06);
+}
+
+
+/* =========================================================
+   PICKER POPOVER
+   ========================================================= */
+
+.slot-picker-popover {
+  position: absolute;
+
+  left: 50%;
+
+  transform:
+    translateX(-50%);
+
+  z-index: 1001;
+
+  background:
+    rgba(15, 15, 15, 0.98);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.12);
+
+  border-radius: 14px;
+  padding: 10px;
+
+  box-shadow:
+    0 18px 36px
+    rgba(0, 0, 0, 0.48);
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  pointer-events: auto;
+
+  overscroll-behavior: contain;
+
+  scrollbar-width: thin;
+  scrollbar-color: #ffd700 #222;
+}
+
+
+/* FELFELÉ NYÍLÁS */
+
+.slot-picker-popover.open-up {
+  bottom:
+    calc(100% + 8px);
+
+  top: auto;
+}
+
+
+/* LEFELÉ NYÍLÁS */
+
+.slot-picker-popover.open-down {
+  top:
+    calc(100% + 8px);
+
+  bottom: auto;
+}
+
+
+/* PICKER SCROLLBAR */
+
+.slot-picker-popover::-webkit-scrollbar {
+  width: 6px;
+}
+
+.slot-picker-popover::-webkit-scrollbar-track {
+  background: #222;
+  border-radius: 999px;
+}
+
+.slot-picker-popover::-webkit-scrollbar-thumb {
+  background: #ffd700;
+  border-radius: 999px;
+}
+
+
+/* =========================================================
+   SZÍNVÁLASZTÓ POPOVER
+   ========================================================= */
+
+.color-popover {
+  width: 220px;
+
+  max-width:
+    calc(100vw - 32px);
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+
+  gap: 8px;
+
+  padding: 8px;
+}
+
+
+/* =========================================================
+   ELŐRE DEFINIÁLT SZÍNEK
+   ========================================================= */
+
+.color-option {
+  width: 30px;
+  height: 30px;
+
+  border:
+    2px solid
+    rgba(255, 255, 255, 0.2);
+
+  border-radius: 50%;
+
+  cursor: pointer;
+
+  position: relative;
+
+  padding: 0;
+
+  transition:
+    transform 0.12s ease,
+    border-color 0.12s ease,
+    box-shadow 0.12s ease;
+
+  box-shadow:
+    inset
+    0 0 0 1px
+    rgba(0, 0, 0, 0.18);
+}
+
+.color-option:hover {
+  transform:
+    translateY(-1px)
+    scale(1.04);
+}
+
+.color-option.active {
+  transform:
+    scale(1.08);
+
+  border-color:
+    rgba(255, 255, 255, 0.95);
+
+  box-shadow:
+    0 0 0 2px
+      rgba(255, 255, 255, 0.18),
+
+    0 0 0 4px
+      rgba(0, 0, 0, 0.25);
+}
+
+.color-option.active::after {
+  content: '';
+
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+
+  background:
+    rgba(0, 0, 0, 0.5);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.85);
+
+  transform:
+    translate(-50%, -50%);
+}
+
+
+/* =========================================================
+   EGYEDI SZÍNVÁLASZTÓ
+   ========================================================= */
+
+.custom-color-row {
+  grid-column:
+    1 / -1;
+
+  display: grid;
+
+  /*
+    Már nincs HEX kód,
+    ezért csak a felirat és a picker van.
+  */
+  grid-template-columns:
+    1fr 48px;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin-top: 2px;
+
+  padding-top: 10px;
+
+  border-top:
+    1px solid
+    rgba(255, 255, 255, 0.08);
+}
+
+.custom-color-label {
+  font-size: 0.68rem;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+
+  color:
+    rgba(255, 255, 255, 0.75);
+
+  white-space: nowrap;
+}
+
+
+/*
+  Maga a böngésző színválasztó gomb.
+  A körülötte lévő háttér most fekete.
+*/
+
+.custom-color-input {
+  width: 48px;
+  height: 34px;
+
+  padding: 3px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.22);
+
+  border-radius: 9px;
+
+  background: #000;
+
+  cursor: pointer;
+
+  box-sizing: border-box;
+}
+
+
+/* CHROME / EDGE */
+
+.custom-color-input::-webkit-color-swatch-wrapper {
+  padding: 2px;
+
+  background: #000;
+
+  border-radius: 7px;
+}
+
+.custom-color-input::-webkit-color-swatch {
+  border: none;
+
+  border-radius: 6px;
+}
+
+
+/* FIREFOX */
+
+.custom-color-input::-moz-color-swatch {
+  border: none;
+
+  border-radius: 6px;
+}
+
+
+/* =========================================================
+   IKONVÁLASZTÓ
+   ========================================================= */
+
+.icon-popover {
+  width: 180px;
+
+  max-width:
+    calc(100vw - 32px);
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+}
+
+.icon-option {
+  width: 30px;
+  height: 30px;
+
+  border-radius: 10px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.12);
+
+  background:
+    rgba(0, 0, 0, 0.9);
+
+  color: #fff;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  transition:
+    all 0.15s ease;
+}
+
+.icon-option:hover,
+.icon-option.active {
+  background:
+    rgba(255, 255, 255, 0.08);
+
+  border-color:
+    rgba(255, 255, 255, 0.35);
+}
+
+.icon-option .material-icons {
+  font-size: 16px;
+}
+
+
+/* =========================================================
+   SLOT TARTALOM
+   ========================================================= */
 
 .slot-num {
   font-size: 0.72rem;
+
   color: #999;
-  margin-bottom: 10px;
+
   text-transform: uppercase;
+
   letter-spacing: 0.08em;
+
+  align-self: flex-start;
 }
 
 .slot-content {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  width: 100%;
+
+  flex: 1;
+}
+
+.slot-icon {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+
+  border-radius: 50%;
+
+  background:
+    rgba(0, 0, 0, 0.72);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.18);
+
+  box-shadow:
+    inset
+    0 0 0 1px
+    rgba(255, 255, 255, 0.08);
+}
+
+.slot-icon .material-icons {
+  font-size: 20px;
+  color: #ffffff;
 }
 
 .slot-title {
-  font-size: 1rem;
+  font-size: 0.9rem;
+
   font-weight: 700;
+
   line-height: 1.25;
+
   word-break: break-word;
+
+  text-align: center;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-height: 2.5em;
 }
 
-.slot-state {
-  display: inline-flex;
-  align-self: flex-start;
-  padding: 4px 8px;
-  border-radius: 999px;
-  font-size: 0.74rem;
-  background: rgba(255, 255, 255, 0.08);
-  color: #bbb;
+.slot-title.empty-label {
+  color:
+    rgba(255, 255, 255, 0.7);
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.08em;
+
+  font-size: 0.78rem;
 }
 
-.slot-state.filled {
-  background: rgba(255, 215, 0, 0.14);
-  color: #ffd700;
-}
+
+/* =========================================================
+   KIVÁLASZTOTT SLOT
+   ========================================================= */
 
 .selected-badge {
-  background: rgba(255, 215, 0, 0.14);
+  background:
+    rgba(255, 215, 0, 0.14);
+
   color: #ffd700;
-  border: 1px solid rgba(255, 215, 0, 0.25);
+
+  border:
+    1px solid
+    rgba(255, 215, 0, 0.25);
+
   border-radius: 999px;
+
   padding: 6px 10px;
+
   font-size: 0.8rem;
+
   font-weight: 600;
 }
 
 .now-playing-box {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 215, 0, 0.14);
+  background:
+    rgba(255, 255, 255, 0.04);
+
+  border:
+    1px solid
+    rgba(255, 215, 0, 0.14);
+
   border-radius: 12px;
+
   padding: 12px 14px;
+
   margin-bottom: 16px;
 }
 
 .now-playing-label {
   font-size: 0.75rem;
+
   color: #999;
+
   margin-bottom: 4px;
+
   text-transform: uppercase;
+
   letter-spacing: 0.08em;
 }
 
 .now-playing-title {
   font-size: 1rem;
+
   color: #fff;
+
   font-weight: 600;
+
   word-break: break-word;
 }
 
+
+/* =========================================================
+   RÉGEBBI / KIEGÉSZÍTŐ PICKER STÍLUSOK
+   ========================================================= */
+
 .slot-editor {
   display: flex;
+
   gap: 10px;
+
   margin-bottom: 16px;
+
   flex-wrap: wrap;
 }
 
-.actions {
+.custom-slot-editor {
+  position: relative;
+
   display: flex;
   flex-direction: column;
+
+  gap: 10px;
+
+  margin-bottom: 16px;
+
+  background:
+    rgba(255, 255, 255, 0.03);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.06);
+
+  border-radius: 12px;
+
+  padding: 12px;
+}
+
+.picker-row {
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap: 10px;
+}
+
+.picker-btn {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
   gap: 8px;
+
+  padding: 9px 12px;
+
+  border-radius: 10px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.09);
+
+  background:
+    rgba(255, 255, 255, 0.05);
+
+  color: #fff;
+
+  cursor: pointer;
+
+  font-weight: 600;
+
+  transition:
+    all 0.15s ease;
+}
+
+.picker-btn:hover {
+  transform:
+    translateY(-1px);
+
+  border-color:
+    rgba(255, 215, 0, 0.45);
+}
+
+.picker-btn .material-icons {
+  font-size: 18px;
+}
+
+.color-picker-btn {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 123, 114, 0.2),
+      rgba(87, 166, 255, 0.2)
+    );
+}
+
+.icon-picker-btn {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 215, 0, 0.18),
+      rgba(178, 140, 255, 0.18)
+    );
+}
+
+.picker-popover {
+  position: relative;
+
+  z-index: 3;
+
+  background:
+    rgba(20, 20, 20, 0.98);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.12);
+
+  border-radius: 14px;
+
+  padding: 10px;
+
+  box-shadow:
+    0 16px 32px
+    rgba(0, 0, 0, 0.4);
+}
+
+
+/* =========================================================
+   GOMBOK
+   ========================================================= */
+
+.actions {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+
   min-width: 122px;
 }
 
@@ -268,51 +1081,100 @@
 
 .plus-btn {
   background: #ffd700;
+
   color: #000;
+
   width: 30px;
   height: 30px;
-  border: none;
+
+  border:
+    2px solid transparent;
+
   font-weight: bold;
+
   cursor: pointer;
+
+  padding: 0;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  line-height: 1;
+
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .small-btn {
   border: none;
+
   padding: 8px 12px;
+
   cursor: pointer;
+
   font-weight: 600;
 }
 
 .primary-btn {
   background: #ffd700;
+
   color: #111;
 }
 
 .secondary-btn {
   background: #2c2c2c;
+
   color: #fff;
-  border: 1px solid #444;
+
+  border:
+    1px solid #444;
 }
 
 .small-btn:hover:not(:disabled),
 .plus-btn:hover {
-  transform: translateY(-1px);
+  transform:
+    scale(1.1);
+}
+
+.plus-btn.active-action {
+  background: #000;
+
+  color: #ffd700;
+
+  border-color: #fff;
 }
 
 .small-btn:disabled {
   opacity: 0.6;
+
   cursor: not-allowed;
 }
+
+
+/* =========================================================
+   INPUTOK
+   ========================================================= */
 
 .search-input,
 .board-add input,
 .time-row input,
 .jump-row input {
   width: 100%;
+
   background: #222;
+
   color: #fff;
-  border: 1px solid #444;
+
+  border:
+    1px solid #444;
+
   padding: 9px 10px;
+
   box-sizing: border-box;
 }
 
@@ -325,115 +1187,204 @@
   color: #777;
 }
 
+
+/* =========================================================
+   DELETE
+   ========================================================= */
+
 .delete-btn {
   background: none;
+
   border: none;
-  color: #ff6666;
+
+  color: #ffd700;
+
   cursor: pointer;
+
   font-size: 1rem;
+
   padding: 4px;
 }
 
 .delete-btn:hover {
-  color: #ff8c8c;
+  color: #fff;
+
+  transform:
+    scale(1.1);
 }
+
+
+/* =========================================================
+   CUTTER
+   ========================================================= */
 
 .cutter-box {
   margin-top: 18px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 215, 0, 0.10);
+
+  background:
+    rgba(255, 255, 255, 0.04);
+
+  border:
+    1px solid
+    rgba(255, 215, 0, 0.10);
+
   padding: 14px;
+
   border-radius: 12px;
 }
 
 .cutter-content {
   display: flex;
+
   flex-direction: column;
+
   gap: 14px;
 }
 
 .controls {
   display: flex;
+
   flex-direction: column;
+
   gap: 14px;
 }
 
 .playback-buttons {
   display: flex;
+
   justify-content: center;
+
   align-items: center;
 }
 
 .control-btn {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    rgba(255, 255, 255, 0.06);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.08);
+
   width: 64px;
   height: 64px;
+
   border-radius: 50%;
+
   font-size: 1.4rem;
+
   cursor: pointer;
+
   color: #ffd700;
-  transition: transform 0.12s ease, background 0.12s ease, opacity 0.12s ease;
+
+  transition:
+    transform 0.12s ease,
+    background 0.12s ease,
+    opacity 0.12s ease;
 }
 
 .control-btn:hover:not(:disabled) {
-  transform: scale(1.06);
-  background: rgba(255, 255, 255, 0.12);
+  transform:
+    scale(1.06);
+
+  background:
+    rgba(255, 255, 255, 0.12);
 }
 
+
+/* =========================================================
+   HANGERŐ
+   ========================================================= */
+
 .volume-control {
-  background: rgba(255, 255, 255, 0.04);
+  background:
+    rgba(255, 255, 255, 0.04);
+
   padding: 10px 12px;
+
   border-radius: 10px;
 }
 
 .volume-header {
   display: flex;
+
   justify-content: space-between;
+
   font-size: 0.8rem;
+
   color: #ffd700;
+
   margin-bottom: 6px;
 }
 
+
+/* =========================================================
+   UPLOAD
+   ========================================================= */
+
 .upload-box {
   display: flex;
+
   flex-direction: column;
+
   gap: 10px;
 }
 
 .upload-label {
   font-size: 0.92rem;
+
   color: #ffd700;
+
   cursor: pointer;
+
   text-align: center;
-  border: 1px dashed rgba(255, 215, 0, 0.3);
+
+  border:
+    1px dashed
+    rgba(255, 215, 0, 0.3);
+
   border-radius: 10px;
+
   padding: 10px 12px;
 }
 
 .selected-file {
   font-size: 0.85rem;
+
   color: #ccc;
+
   word-break: break-word;
 }
 
+
+/* =========================================================
+   SEEK
+   ========================================================= */
+
 .seek-section {
   display: flex;
+
   flex-direction: column;
+
   gap: 10px;
 }
 
 .jump-label {
   display: flex;
+
   flex-direction: column;
+
   gap: 6px;
+
   font-size: 0.88rem;
+
   color: #ddd;
 }
 
 .jump-row {
   display: flex;
+
   align-items: center;
+
   gap: 6px;
 }
 
@@ -443,72 +1394,109 @@
 
 .jump-row span {
   font-weight: bold;
+
   color: #ffd700;
 }
 
 .range-wrapper {
   position: relative;
+
   margin: 0;
 }
 
 .trim-range-wrapper {
   height: 28px;
+
   display: flex;
+
   align-items: center;
 }
 
 .seek-slider {
   width: 100%;
+
   -webkit-appearance: none;
   appearance: none;
+
   height: 6px;
+
   background: #444;
+
   border-radius: 999px;
+
   outline: none;
+
   position: relative;
+
   z-index: 3;
 }
 
 .seek-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
+
   width: 16px;
   height: 16px;
+
   background: #ffd700;
+
   border-radius: 50%;
+
   cursor: pointer;
+
   position: relative;
+
   z-index: 4;
 }
 
 .seek-slider::-moz-range-thumb {
   width: 16px;
   height: 16px;
+
   background: #ffd700;
+
   border-radius: 50%;
+
   cursor: pointer;
+
   border: none;
 }
 
 .selection {
   position: absolute;
+
   top: 50%;
+
   height: 6px;
-  background: rgba(0, 255, 160, 0.35);
+
+  background:
+    rgba(0, 255, 160, 0.35);
+
   border-radius: 999px;
-  transform: translateY(-50%);
+
+  transform:
+    translateY(-50%);
+
   pointer-events: none;
+
   z-index: 1;
 }
 
 .marker {
   position: absolute;
+
   top: 50%;
+
   width: 3px;
   height: 18px;
+
   border-radius: 2px;
-  transform: translate(-50%, -50%);
+
+  transform:
+    translate(-50%, -50%);
+
   pointer-events: none;
+
   z-index: 2;
 }
 
@@ -522,52 +1510,83 @@
 
 .time-display {
   display: flex;
+
   justify-content: space-between;
+
   font-size: 0.82rem;
+
   color: #999;
-  font-family: 'Courier New', monospace;
+
+  font-family:
+    'Courier New',
+    monospace;
 }
+
+
+/* =========================================================
+   IDŐ INPUTOK
+   ========================================================= */
 
 .time-inputs {
   display: flex;
+
   justify-content: space-between;
+
   gap: 14px;
+
   margin: 4px 0;
 }
 
 .time-inputs label {
   display: flex;
+
   flex-direction: column;
+
   gap: 6px;
+
   font-size: 0.88rem;
+
   color: #ddd;
+
   flex: 1;
 }
 
 .time-row {
   display: flex;
+
   align-items: center;
+
   gap: 6px;
 }
 
 .time-row input {
   width: 100%;
+
   max-width: 70px;
+
   padding: 8px 10px;
 }
 
 .time-row span {
   font-weight: bold;
+
   color: #ffd700;
 }
 
+
+/* =========================================================
+   CLIP
+   ========================================================= */
+
 .clip-summary {
   font-size: 0.9rem;
+
   color: #ddd;
 }
 
 .clip-limit {
   color: #999;
+
   margin-left: 6px;
 }
 
@@ -577,45 +1596,73 @@
 
 .status {
   font-size: 0.85rem;
+
   padding: 8px 10px;
+
   border-radius: 8px;
 }
 
 .status.success {
-  background: rgba(0, 180, 90, 0.15);
+  background:
+    rgba(0, 180, 90, 0.15);
+
   color: #7dffb0;
 }
 
 .status.error {
-  background: rgba(255, 70, 70, 0.12);
+  background:
+    rgba(255, 70, 70, 0.12);
+
   color: #ff9a9a;
 }
 
 .empty-state {
-  justify-content: center !important;
+  justify-content:
+    center !important;
+
   color: #999;
+
   font-style: italic;
 }
+
+
+/* =========================================================
+   ÁLTALÁNOS RANGE
+   ========================================================= */
 
 input[type='range'] {
   -webkit-appearance: none;
   appearance: none;
+
   width: 100%;
+
   height: 5px;
+
   background: #444;
+
   border-radius: 999px;
+
   outline: none;
 }
 
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
+
   width: 14px;
   height: 14px;
+
   background: #ffd700;
+
   border-radius: 50%;
+
   cursor: pointer;
 }
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
 
 @media (max-width: 1200px) {
   .soundboard-layout {
@@ -634,7 +1681,11 @@ input[type='range']::-webkit-slider-thumb {
 
 @media (max-width: 640px) {
   .slot-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
   }
 
   .time-inputs {
@@ -643,5 +1694,9 @@ input[type='range']::-webkit-slider-thumb {
 
   .actions {
     min-width: 100px;
+  }
+
+  .color-popover {
+    width: 200px;
   }
 }

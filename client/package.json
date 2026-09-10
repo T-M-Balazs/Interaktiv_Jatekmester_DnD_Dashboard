@@ -3,15 +3,11 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "prestart": "node aspnetcore-https",
-    "start": "run-script-os",
-    "start:windows": "ng serve --port 44491 --ssl --ssl-cert \"%APPDATA%\\ASP.NET\\https\\%npm_package_name%.pem\" --ssl-key \"%APPDATA%\\ASP.NET\\https\\%npm_package_name%.key\"",
-    "start:default": "ng serve --port 44491 --ssl --ssl-cert \"$HOME/.aspnet/https/${npm_package_name}.pem\" --ssl-key \"$HOME/.aspnet/https/${npm_package_name}.key\"",
+    "start": "ng serve --host localhost --port 44491 --disable-host-check --proxy-config proxy.conf.js",
     "build": "ng build",
-    "build:ssr": "ng run MyApp:server:dev",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-"seed": "ts-node -O \"{\\\"module\\\":\\\"CommonJS\\\"}\" src/app/data/run-seed.ts"
+    "seed": "ts-node -O \"{\\\"module\\\":\\\"CommonJS\\\"}\" src/app/data/run-seed.ts"
   },
   "private": true,
   "dependencies": {
@@ -26,17 +22,12 @@
     "@angular/platform-browser-dynamic": "^15.2.8",
     "@angular/platform-server": "^15.2.8",
     "@angular/router": "^15.2.8",
-    "@google-cloud/storage": "^7.18.0",
+    "@livekit/throws-transformer": "^0.1.8",
     "bootstrap": "^5.2.3",
-    "cors": "^2.8.5",
-    "express": "^5.2.1",
     "firebase": "^12.7.0",
     "html2canvas": "^1.4.1",
-    "jquery": "^3.6.4",
     "jspdf": "^3.0.3",
-    "multer": "^2.0.2",
-    "popper.js": "^1.16.0",
-    "run-script-os": "^1.1.6",
+    "livekit-client": "1.13.1",
     "rxjs": "~7.8.1",
     "tslib": "^2.5.0",
     "zone.js": "~0.13.0"
@@ -61,6 +52,7 @@
   },
   "overrides": {
     "autoprefixer": "10.4.5",
-    "webpack": "5.81.0"
+    "webpack": "5.81.0",
+    "jose": "5.9.0"
   }
 }

@@ -13,9 +13,8 @@
   overflow-y: auto;
 
   background:
-    radial-gradient(circle at top left, rgba(60, 179, 113, 0.18), transparent 26%),
-    radial-gradient(circle at bottom right, rgba(255, 165, 0, 0.12), transparent 28%),
-    linear-gradient(180deg, #050505 0%, #111 100%);
+    linear-gradient(rgba(8, 8, 8, 0.10), rgba(8, 8, 8, 0.10)),
+    url('/assets/Kepek/background%20feets%20picture.png') center / cover fixed no-repeat;
 
   color: #fff;
   font-family: 'Cinzel Decorative', system-ui, sans-serif;
@@ -55,7 +54,7 @@
   margin-bottom: 18px;
   padding: 18px;
   border-radius: 18px;
-  background: rgba(0, 0, 0, 0.72);
+  background: rgba(0, 0, 0, 0.90);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 14px 35px rgba(0, 0, 0, 0.45);
   box-sizing: border-box;
@@ -119,7 +118,7 @@
 
 .list-panel,
 .detail-panel {
-  background: rgba(0, 0, 0, 0.78);
+  background: rgba(0, 0, 0, 0.90);
   border-radius: 18px;
   padding: 14px;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -399,5 +398,140 @@ tbody tr.selected {
 
   .main-nav button {
     flex: 1 1 auto;
+  }
+}
+
+.toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.toolbar input {
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-family: system-ui, sans-serif;
+}
+
+.toolbar input:focus {
+  outline: none;
+  border-color: rgba(60, 179, 113, 0.9);
+  box-shadow: 0 0 0 3px rgba(60, 179, 113, 0.18);
+}
+
+.advanced-search-button,
+.clear-advanced-button {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  cursor: pointer;
+  font-family: system-ui, sans-serif;
+}
+
+.advanced-search-button {
+  width: 40px;
+  flex: 0 0 40px;
+  font-size: 1.1rem;
+}
+
+.advanced-search-button:hover,
+.advanced-search-button.active,
+.clear-advanced-button:hover {
+  border-color: rgba(60, 179, 113, 0.8);
+  background: rgba(60, 179, 113, 0.45);
+}
+
+.advanced-search-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: -4px 0 18px;
+  padding: 14px;
+  border: 1px solid rgba(60, 179, 113, 0.35);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  font-family: system-ui, sans-serif;
+}
+
+.advanced-filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  min-width: 180px;
+}
+
+.advanced-filter-group strong {
+  width: 100%;
+  color: #b9f5cf;
+}
+
+.advanced-filter-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #eee;
+  white-space: nowrap;
+}
+
+.advanced-filter-group input {
+  accent-color: mediumseagreen;
+}
+
+.clear-advanced-button {
+  align-self: flex-end;
+  padding: 8px 10px;
+}
+
+.source-label {
+  color: #b9f5cf;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+@media (min-width: 1251px) {
+  .backgrounds-feats-page {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .page-header {
+    flex: 0 0 auto;
+  }
+
+  .content-layout {
+    min-height: 0;
+    flex: 1 1 auto;
+    align-items: stretch;
+  }
+
+  .list-panel,
+  .detail-panel {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .list-panel,
+  .table-section {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .table-section,
+  .table-wrapper {
+    min-height: 0;
+    flex: 1 1 auto;
+  }
+
+  .table-wrapper,
+  .detail-panel {
+    overflow-y: auto;
   }
 }

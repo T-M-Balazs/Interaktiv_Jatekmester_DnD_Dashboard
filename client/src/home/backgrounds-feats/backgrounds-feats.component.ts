@@ -10,6 +10,9 @@ interface ContentEntry {
   contentType: 'background' | 'feat';
   sourceType: 'system' | 'user';
   data: any;
+  searchText: string;
+  source?: string;
+  ruleset?: string;
 }
 
 @Component({
@@ -20,6 +23,10 @@ interface ContentEntry {
 export class BackgroundsFeatsComponent implements OnInit {
   viewMode: ViewMode = 'backgrounds';
 
+  searchText = '';
+  showAdvancedSearch = false;
+  selectedSources: string[] = ['PHB'];
+  selectedRulesets: string[] = ['2014'];
   isLoading = false;
   allContent: ContentEntry[] = [];
   selectedEntry: ContentEntry | null = null;
@@ -48,7 +55,10 @@ export class BackgroundsFeatsComponent implements OnInit {
         name: item.name,
         contentType: 'background',
         sourceType: item.sourceType,
-        data: item.data || {}
+        data: item.data || {},
+        searchText: this.systemData.getSearchText(item),
+        source: item.source,
+        ruleset: item.ruleset
       }));
 
       const feats: ContentEntry[] = this.systemData.feats.map(item => ({
@@ -56,7 +66,10 @@ export class BackgroundsFeatsComponent implements OnInit {
         name: item.name,
         contentType: 'feat',
         sourceType: item.sourceType,
-        data: item.data || {}
+        data: item.data || {},
+        searchText: this.systemData.getSearchText(item),
+        source: item.source,
+        ruleset: item.ruleset
       }));
 
       this.allContent = [...backgrounds, ...feats];
@@ -83,6 +96,8 @@ export class BackgroundsFeatsComponent implements OnInit {
   setViewMode(mode: ViewMode): void {
     this.viewMode = mode;
     this.selectedEntry = null;
+    this.searchText = '';
+    this.showAdvancedSearch = false;
   }
 
   selectEntry(entry: ContentEntry): void {
@@ -101,9 +116,58 @@ export class BackgroundsFeatsComponent implements OnInit {
     return this.allContent.filter(item => item.contentType === 'feat');
   }
 
-  get filteredEntries(): ContentEntry[] {
-    const source = this.viewMode === 'backgrounds' ? this.backgrounds : this.feats;
+  get currentContent(): ContentEntry[] {
+    return this.viewMode === 'backgrounds' ? this.backgrounds : this.feats;
+  }
 
-    return source.sort((a, b) => a.name.localeCompare(b.name));
+  get availableSources(): string[] {
+    return Array.from(new Set(
+      this.currentContent
+        .map(item => item.source)
+        .filter((source): source is string => !!source)
+    )).sort();
+  }
+
+  get availableRulesets(): string[] {
+    return Array.from(new Set(
+      this.currentContent
+        .map(item => item.ruleset)
+        .filter((ruleset): ruleset is string => !!ruleset)
+    )).sort();
+  }
+
+  isFilterSelected(filter: 'source' | 'ruleset', value: string): boolean {
+    const selected = filter === 'source' ? this.selectedSources : this.selectedRulesets;
+    return selected.includes(value);
+  }
+
+  toggleFilter(filter: 'source' | 'ruleset', value: string): void {
+    const selected = filter === 'source' ? this.selectedSources : this.selectedRulesets;
+    const index = selected.indexOf(value);
+
+    if (index >= 0) {
+      selected.splice(index, 1);
+    } else {
+      selected.push(value);
+    }
+  }
+
+  clearAdvancedFilters(): void {
+    this.selectedSources = ['PHB'];
+    this.selectedRulesets = ['2014'];
+  }
+
+  get filteredEntries(): ContentEntry[] {
+    const text = this.searchText.trim().toLowerCase();
+
+    return this.currentContent
+      .filter(item => this.matchesAdvancedFilters(item))
+      .filter(item => !text || item.searchText.includes(text))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  private matchesAdvancedFilters(item: ContentEntry): boolean {
+    return (this.selectedSources.length === 0 || this.selectedSources.includes(item.source || '')) &&
+      (this.selectedRulesets.length === 0 || this.selectedRulesets.includes(item.ruleset || ''));
   }
 }

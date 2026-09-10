@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { SystemDataService } from '../../app/services/system-data.service';
 
 type ViewMode = 'spells' | 'items';
+type SortColumn = 'name' | 'school' | 'castingTime' | 'range' | 'duration' | 'components';
 
 interface ContentItem {
   id: string;
@@ -10,6 +11,9 @@ interface ContentItem {
   contentType: 'spell' | 'item';
   sourceType: 'system' | 'user';
   data: any;
+  searchText: string;
+  source?: string;
+  ruleset?: string;
 }
 
 @Component({
@@ -25,12 +29,18 @@ export class SpellsItemsComponent implements OnInit {
 
   allContent: ContentItem[] = [];
   selectedItem: ContentItem | null = null;
+  detailNeedsExpansion = false;
 
   selectedClass = 'all';
-  selectedSpellLevel = 0;
+  selectedSpellLevel: number | null = null;
 
   selectedItemCategory = 'all';
   selectedRarity = 'all';
+  showAdvancedSearch = false;
+  selectedSources: string[] = ['PHB'];
+  selectedRulesets: string[] = ['2014'];
+  sortColumn: SortColumn = 'name';
+  sortDirection: 'asc' | 'desc' = 'asc';
 
   spellClasses = [
     'all',
@@ -91,7 +101,10 @@ export class SpellsItemsComponent implements OnInit {
         name: item.name,
         contentType: 'spell',
         sourceType: item.sourceType,
-        data: item.data || {}
+        data: item.data || {},
+        searchText: this.systemData.getSearchText(item),
+        source: item.source,
+        ruleset: item.ruleset
       }));
 
       const items: ContentItem[] = this.systemData.items.map(item => ({
@@ -99,7 +112,10 @@ export class SpellsItemsComponent implements OnInit {
         name: item.name,
         contentType: 'item',
         sourceType: item.sourceType,
-        data: item.data || {}
+        data: item.data || {},
+        searchText: this.systemData.getSearchText(item),
+        source: item.source,
+        ruleset: item.ruleset
       }));
 
       this.allContent = [...spells, ...items];
@@ -121,6 +137,7 @@ export class SpellsItemsComponent implements OnInit {
 
     this.searchText = '';
     this.selectedItem = item;
+    this.detailNeedsExpansion = this.needsExpandedDetail(item);
 
     if (item.contentType === 'spell') {
       this.viewMode = 'spells';
@@ -137,24 +154,149 @@ export class SpellsItemsComponent implements OnInit {
 
   setViewMode(mode: ViewMode): void {
     this.viewMode = mode;
-    this.selectedItem = null;
+    this.clearDetailSelection();
     this.searchText = '';
-    this.selectedSpellLevel = 0;
+    this.selectedSpellLevel = null;
+    this.showAdvancedSearch = false;
   }
 
   selectClass(className: string): void {
     this.selectedClass = className;
-    this.selectedSpellLevel = 0;
-    this.selectedItem = null;
+    this.selectedSpellLevel = null;
+    this.clearDetailSelection();
   }
 
-  selectSpellLevel(level: number): void {
+  selectSpellLevel(level: number | null): void {
     this.selectedSpellLevel = level;
-    this.selectedItem = null;
+    this.clearDetailSelection();
   }
 
   selectItem(item: ContentItem): void {
     this.selectedItem = item;
+    this.detailNeedsExpansion = this.needsExpandedDetail(item);
+  }
+
+  isLongSpellName(spell: ContentItem): boolean {
+    return spell.name.length > 15;
+  }
+
+  clearDetailSelection(): void {
+    this.selectedItem = null;
+    this.detailNeedsExpansion = false;
+  }
+
+  private needsExpandedDetail(item: ContentItem): boolean {
+    const descriptionLength = String(item.data.description || '').length;
+    const higherLevelsLength = String(item.data.higherLevels || '').length;
+    return descriptionLength + higherLevelsLength > 700;
+  }
+
+  get availableSources(): string[] {
+    return Array.from(new Set(
+      this.currentContent
+        .map(item => item.source)
+        .filter((source): source is string => !!source)
+    )).sort();
+  }
+
+  get availableRulesets(): string[] {
+    return Array.from(new Set(
+      this.currentContent
+        .map(item => item.ruleset)
+        .filter((ruleset): ruleset is string => !!ruleset)
+    )).sort();
+  }
+
+  get currentContent(): ContentItem[] {
+    return this.viewMode === 'spells' ? this.spells : this.items;
+  }
+
+  isFilterSelected(filter: 'source' | 'ruleset', value: string): boolean {
+    const selected = filter === 'source' ? this.selectedSources : this.selectedRulesets;
+    return selected.includes(value);
+  }
+
+  toggleFilter(filter: 'source' | 'ruleset', value: string): void {
+    const selected = filter === 'source' ? this.selectedSources : this.selectedRulesets;
+    const index = selected.indexOf(value);
+
+    if (index >= 0) {
+      selected.splice(index, 1);
+    } else {
+      selected.push(value);
+    }
+  }
+
+  clearAdvancedFilters(): void {
+    this.selectedSources = ['PHB'];
+    this.selectedRulesets = ['2014'];
+  }
+
+  sortBy(column: SortColumn): void {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+  }
+
+  getSortIcon(column: SortColumn): string {
+    if (this.sortColumn !== column) return '↕';
+    return this.sortDirection === 'asc' ? '↑' : '↓';
+  }
+
+  getLevelShortTitle(level: number | null): string {
+    if (level === null) return 'All';
+    if (level === 0) return 'Cantrip';
+    const suffix = level === 1 ? 'st' : level === 2 ? 'nd' : level === 3 ? 'rd' : 'th';
+    return `${level}${suffix} lvl`;
+  }
+
+  getOrdinalLevel(level: number | null | undefined): string {
+    if (level === undefined || level === null) return '-';
+    if (level === 0) return 'Cantrip';
+    if (level === 1) return '1st';
+    if (level === 2) return '2nd';
+    if (level === 3) return '3rd';
+    return `${level}th`;
+  }
+
+  getAttackSave(spellData: any): string {
+    if (!spellData) return 'None';
+    if (spellData.attackSave) return spellData.attackSave;
+    if (Array.isArray(spellData.savingThrows) && spellData.savingThrows.length > 0) {
+      return spellData.savingThrows.join(', ');
+    }
+    return 'None';
+  }
+
+  getDamageEffect(spellData: any): string {
+    if (!spellData) return 'Utility';
+    if (spellData.damageEffect) return spellData.damageEffect;
+    if (Array.isArray(spellData.damageTypes) && spellData.damageTypes.length > 0) {
+      return spellData.damageTypes.join(', ');
+    }
+    if (spellData.school === 'Transmutation') return 'Creation (...)';
+    return 'Utility';
+  }
+
+  private sortSpells(spells: ContentItem[]): ContentItem[] {
+    return spells.sort((left, right) => {
+      const leftValue = this.sortColumn === 'name'
+        ? left.name
+        : String(left.data[this.sortColumn] || '');
+      const rightValue = this.sortColumn === 'name'
+        ? right.name
+        : String(right.data[this.sortColumn] || '');
+      const comparison = leftValue.localeCompare(rightValue, undefined, { numeric: true });
+      return this.sortDirection === 'asc' ? comparison : -comparison;
+    });
+  }
+
+  private matchesAdvancedFilters(item: ContentItem): boolean {
+    return (this.selectedSources.length === 0 || this.selectedSources.includes(item.source || '')) &&
+      (this.selectedRulesets.length === 0 || this.selectedRulesets.includes(item.ruleset || ''));
   }
 
   get spells(): ContentItem[] {
@@ -168,11 +310,12 @@ export class SpellsItemsComponent implements OnInit {
   get visibleSpells(): ContentItem[] {
     const text = this.searchText.trim().toLowerCase();
 
-    return this.spells
-      .filter(spell => Number(spell.data.level) === this.selectedSpellLevel)
+    return this.sortSpells(this.spells
+      .filter(spell => this.selectedSpellLevel === null || Number(spell.data.level) === this.selectedSpellLevel)
       .filter(spell => this.spellBelongsToSelectedClass(spell))
-      .filter(spell => !text || spell.name.toLowerCase().includes(text))
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .filter(spell => this.matchesAdvancedFilters(spell))
+      .filter(spell => !text || spell.searchText.includes(text))
+    );
   }
 
   spellBelongsToSelectedClass(spell: ContentItem): boolean {
@@ -184,6 +327,8 @@ export class SpellsItemsComponent implements OnInit {
     const classesArray = Array.isArray(spell.data.classes)
       ? spell.data.classes.map((x: string) => String(x).toLowerCase())
       : [];
+
+    if (!classesText && classesArray.length === 0) return true;
 
     return classesText.includes(selected) || classesArray.includes(selected);
   }
@@ -200,11 +345,13 @@ export class SpellsItemsComponent implements OnInit {
         this.selectedRarity === 'all' ||
         item.data.rarity === this.selectedRarity
       )
-      .filter(item => !text || item.name.toLowerCase().includes(text))
+      .filter(item => this.matchesAdvancedFilters(item))
+      .filter(item => !text || item.searchText.includes(text))
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  getLevelTitle(level: number): string {
+  getLevelTitle(level: number | null): string {
+    if (level === null) return 'All Levels';
     if (level === 0) return 'Cantrips';
     if (level === 1) return '1st Level';
     if (level === 2) return '2nd Level';
@@ -219,5 +366,6 @@ export class SpellsItemsComponent implements OnInit {
 
   closeDetailPanel(): void {
     this.selectedItem = null;
+    this.detailNeedsExpansion = false;
   }
 }

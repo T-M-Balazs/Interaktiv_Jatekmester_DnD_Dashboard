@@ -34,7 +34,10 @@
   </div>
 </header>
 
-  <main class="content-layout">
+    <main
+      class="content-layout"
+      [class.has-detail-panel]="selectedItem"
+      [class.expanded-detail]="detailNeedsExpansion">
 
     <aside class="side-panel">
 
@@ -60,7 +63,7 @@
             type="button"
             *ngFor="let category of itemCategories"
             [class.active]="selectedItemCategory === category"
-            (click)="selectedItemCategory = category; selectedItem = null">
+                (click)="selectedItemCategory = category; clearDetailSelection()">
             {{ category === 'all' ? 'All Categories' : category }}
           </button>
         </div>
@@ -86,29 +89,75 @@
       <ng-container *ngIf="!isLoading && viewMode === 'spells'">
         <section class="level-section">
           <div class="section-header">
-            <h2>{{ selectedClass }} - {{ getLevelTitle(selectedSpellLevel) }}</h2>
+            <div class="section-title-row">
+              <h2>{{ selectedClass }} - {{ getLevelTitle(selectedSpellLevel) }}</h2>
+              <button
+                type="button"
+                class="advanced-search-button"
+                [class.active]="showAdvancedSearch"
+                title="Advanced Search"
+                aria-label="Advanced Search"
+                (click)="showAdvancedSearch = !showAdvancedSearch">
+                ⚙
+              </button>
+            </div>
 
             <div class="inline-level-list">
+              <button
+                type="button"
+                [class.active]="selectedSpellLevel === null"
+                (click)="selectSpellLevel(null)">
+                {{ getLevelShortTitle(null) }}
+              </button>
+
               <button
                 type="button"
                 *ngFor="let level of spellLevels"
                 [class.active]="selectedSpellLevel === level"
                 (click)="selectSpellLevel(level)">
-                {{ getLevelTitle(level) }}
+                {{ getLevelShortTitle(level) }}
               </button>
             </div>
+          </div>
+
+          <div class="advanced-search-panel" *ngIf="showAdvancedSearch">
+            <div class="advanced-filter-group">
+              <strong>Ruleset / Edition</strong>
+              <label *ngFor="let ruleset of availableRulesets">
+                <input
+                  type="checkbox"
+                  [checked]="isFilterSelected('ruleset', ruleset)"
+                  (change)="toggleFilter('ruleset', ruleset)">
+                {{ ruleset }}
+              </label>
+            </div>
+
+            <div class="advanced-filter-group">
+              <strong>Source / Book</strong>
+              <label *ngFor="let source of availableSources">
+                <input
+                  type="checkbox"
+                  [checked]="isFilterSelected('source', source)"
+                  (change)="toggleFilter('source', source)">
+                {{ source }}
+              </label>
+            </div>
+
+            <button type="button" class="clear-advanced-button" (click)="clearAdvancedFilters()">
+              Clear advanced filters
+            </button>
           </div>
 
           <div class="table-wrapper" *ngIf="visibleSpells.length > 0; else noSpells">
             <table>
               <thead>
                 <tr>
-                  <th>Spell Name</th>
-                  <th>School</th>
-                  <th>Casting Time</th>
-                  <th>Range</th>
-                  <th>Duration</th>
-                  <th>Components</th>
+                  <th><button type="button" class="sort-header" (click)="sortBy('name')">Spell Name {{ getSortIcon('name') }}</button></th>
+                  <th><button type="button" class="sort-header" (click)="sortBy('school')">School {{ getSortIcon('school') }}</button></th>
+                  <th><button type="button" class="sort-header" (click)="sortBy('castingTime')">Casting Time {{ getSortIcon('castingTime') }}</button></th>
+                  <th><button type="button" class="sort-header" (click)="sortBy('range')">Range {{ getSortIcon('range') }}</button></th>
+                  <th><button type="button" class="sort-header" (click)="sortBy('duration')">Duration {{ getSortIcon('duration') }}</button></th>
+                  <th><button type="button" class="sort-header" (click)="sortBy('components')">Components {{ getSortIcon('components') }}</button></th>
                 </tr>
               </thead>
 
@@ -117,7 +166,17 @@
                   *ngFor="let spell of visibleSpells"
                   (click)="selectItem(spell)"
                   [class.selected]="selectedItem?.id === spell.id">
-                  <td>{{ spell.name }}</td>
+                  <td>
+                    <div
+                      class="spell-name-cell"
+                      [class.long-name]="isLongSpellName(spell)"
+                      [attr.title]="isLongSpellName(spell) ? 'Hover to read full spell name' : null">
+                      <span class="spell-name-scroll">
+                        {{ spell.name }}
+                        <small class="source-label" *ngIf="spell.source && spell.source !== 'PHB'">({{ spell.source }})</small>
+                      </span>
+                    </div>
+                  </td>
                   <td>{{ spell.data.school }}</td>
                   <td>{{ spell.data.castingTime }}</td>
                   <td>{{ spell.data.range }}</td>
@@ -137,17 +196,54 @@
       <ng-container *ngIf="!isLoading && viewMode === 'items'">
         <section class="level-section">
           <div class="section-header">
-            <h2>Items</h2>
+            <div class="section-title-row">
+              <h2>Items</h2>
+              <button
+                type="button"
+                class="advanced-search-button"
+                [class.active]="showAdvancedSearch"
+                (click)="showAdvancedSearch = !showAdvancedSearch">
+                ⚙
+              </button>
+            </div>
 
             <div class="inline-level-list">
               <button
                 type="button"
                 *ngFor="let rarity of rarities"
                 [class.active]="selectedRarity === rarity"
-                (click)="selectedRarity = rarity; selectedItem = null">
+                (click)="selectedRarity = rarity; clearDetailSelection()">
                 {{ rarity === 'all' ? 'All Rarities' : rarity }}
               </button>
             </div>
+          </div>
+
+          <div class="advanced-search-panel" *ngIf="showAdvancedSearch">
+            <div class="advanced-filter-group">
+              <strong>Ruleset / Edition</strong>
+              <label *ngFor="let ruleset of availableRulesets">
+                <input
+                  type="checkbox"
+                  [checked]="isFilterSelected('ruleset', ruleset)"
+                  (change)="toggleFilter('ruleset', ruleset)">
+                {{ ruleset }}
+              </label>
+            </div>
+
+            <div class="advanced-filter-group">
+              <strong>Source / Book</strong>
+              <label *ngFor="let source of availableSources">
+                <input
+                  type="checkbox"
+                  [checked]="isFilterSelected('source', source)"
+                  (change)="toggleFilter('source', source)">
+                {{ source }}
+              </label>
+            </div>
+
+            <button type="button" class="clear-advanced-button" (click)="clearAdvancedFilters()">
+              Clear advanced filters
+            </button>
           </div>
 
           <div class="table-wrapper" *ngIf="filteredItems.length > 0; else noItems">
@@ -193,6 +289,8 @@
         <div class="detail-meta" *ngIf="item.contentType === 'spell'">
           {{ item.data.level === 0 ? 'Cantrip' : item.data.level + '. level' }}
           {{ item.data.school }}
+          <span *ngIf="item.source"> • {{ item.source }}</span>
+          <span *ngIf="item.ruleset"> • {{ item.ruleset }}</span>
         </div>
 
         <div class="detail-meta" *ngIf="item.contentType === 'item'">
@@ -211,11 +309,11 @@
 
           <div class="detail-rule"></div>
 
-          <p class="description">{{ item.data.description }}</p>
+          <div class="description-body" [innerHTML]="item.data.description | formatDescription"></div>
 
           <ng-container *ngIf="item.data.higherLevels">
             <h3>At Higher Levels</h3>
-            <p class="description">{{ item.data.higherLevels }}</p>
+            <div class="description-body" [innerHTML]="item.data.higherLevels | formatDescription"></div>
           </ng-container>
         </ng-container>
 
@@ -228,7 +326,7 @@
 
           <div class="detail-rule"></div>
 
-          <p class="description">{{ item.data.description }}</p>
+          <div class="description-body" [innerHTML]="item.data.description | formatDescription"></div>
         </ng-container>
 
       </div>

@@ -56,11 +56,11 @@
 
       <div class="rule"></div>
 
-      <p class="description">{{ item.data.description }}</p>
+      <div class="description-body" [innerHTML]="item.data.description | formatDescription"></div>
 
       <ng-container *ngIf="item.data.higherLevels">
         <h3>At Higher Levels</h3>
-        <p class="description">{{ item.data.higherLevels }}</p>
+        <div class="description-body" [innerHTML]="item.data.higherLevels | formatDescription"></div>
       </ng-container>
     </ng-container>
 
@@ -83,7 +83,7 @@
 
       <div class="rule"></div>
 
-      <p class="description">{{ item.data.description }}</p>
+      <div class="description-body" [innerHTML]="item.data.description | formatDescription"></div>
     </ng-container>
 
     <!-- MONSTER -->
@@ -471,7 +471,7 @@
 
       <section class="info-section" *ngIf="item.data.description">
         <h3>Description</h3>
-        <p class="description">{{ item.data.description }}</p>
+        <div class="description-body" [innerHTML]="item.data.description | formatDescription"></div>
       </section>
 
       <section class="info-section" *ngIf="item.data.benefits?.length">

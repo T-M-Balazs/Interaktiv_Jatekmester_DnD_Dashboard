@@ -17,13 +17,33 @@ import {
   getDocs,
   writeBatch,
   Unsubscribe,
-  updateDoc
+  updateDoc,
+  arrayRemove,
+  arrayUnion
 } from 'firebase/firestore';
 import {
   ref,
   uploadBytes,
   getDownloadURL
 } from 'firebase/storage';
+
+export interface ConversationCall {
+  roomName?: string;
+  callerId?: string;
+  callerName?: string;
+  targetId?: string;
+  acceptedBy?: string;
+  participantIds?: string[];
+  status?: 'ringing' | 'active' | 'ended';
+  startedAt?: any;
+  endedAt?: any;
+}
+
+export interface ProfilePhotoSettings {
+  scale?: number;
+  x?: number;
+  y?: number;
+}
 
 export interface Conversation {
   id: string;
@@ -36,6 +56,7 @@ export interface Conversation {
   hiddenFor?: string[];
   removedMembers?: string[];
   unreadBy?: Record<string, number>;
+  call?: ConversationCall;
 }
 
 export interface ChatMessage {
@@ -47,6 +68,7 @@ export interface ChatMessage {
 
   senderName?: string;
   senderPhotoUrl?: string;
+  senderPhotoSettings?: ProfilePhotoSettings;
 }
 
 export interface UserResult {
@@ -54,10 +76,64 @@ export interface UserResult {
   username: string;
   displayName?: string;
   profilePhotoUrl?: string;
+  profilePhotoSettings?: ProfilePhotoSettings;
 }
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {
+  async setConversationCallMeta(convId: string, call: ConversationCall): Promise<void> {
+    const convRef = doc(db, 'conversations', convId);
+
+    await updateDoc(convRef, {
+      call: {
+        ...call,
+        startedAt: call.startedAt ?? serverTimestamp(),
+        status: call.status ?? 'active'
+      }
+    });
+  }
+
+  async clearConversationCallMeta(convId: string): Promise<void> {
+    const convRef = doc(db, 'conversations', convId);
+    await updateDoc(convRef, { call: null });
+  }
+
+  async rejectConversationCall(convId: string): Promise<void> {
+    await this.clearConversationCallMeta(convId);
+  }
+
+  async addCallParticipant(convId: string, uid: string): Promise<void> {
+    await updateDoc(doc(db, 'conversations', convId), {
+      'call.participantIds': arrayUnion(uid)
+    });
+  }
+
+  async markCallActiveIfReady(convId: string, requiredParticipants: number): Promise<void> {
+    const call = await this.getConversationCallMeta(convId);
+    if ((call?.participantIds?.length || 0) >= requiredParticipants) {
+      await updateDoc(doc(db, 'conversations', convId), {
+        'call.status': 'active'
+      });
+    }
+  }
+
+  async removeCallParticipant(convId: string, uid: string): Promise<void> {
+    await updateDoc(doc(db, 'conversations', convId), {
+      'call.participantIds': arrayRemove(uid)
+    });
+  }
+
+  async getConversationCallMeta(convId: string): Promise<ConversationCall | null> {
+    const convRef = doc(db, 'conversations', convId);
+    const snap = await getDoc(convRef);
+
+    if (!snap.exists()) {
+      return null;
+    }
+
+    return (snap.data() as Conversation | undefined)?.call ?? null;
+  }
+
   async sendFriendRequest(toUid: string): Promise<void> {
     const me = auth.currentUser?.uid;
 
@@ -595,6 +671,9 @@ await addDoc(msgCol, {
   senderPhotoUrl:
     meData.profilePhotoUrl || '',
 
+  senderPhotoSettings:
+    meData.profilePhotoSettings || null,
+
   createdAt: serverTimestamp()
 });
 
@@ -676,7 +755,8 @@ await addDoc(msgCol, {
     uid,
     username: data.username || data.displayName || 'Ismeretlen',
     displayName: data.displayName || data.username || 'Ismeretlen',
-    profilePhotoUrl: data.profilePhotoUrl || ''
+    profilePhotoUrl: data.profilePhotoUrl || '',
+    profilePhotoSettings: data.profilePhotoSettings || undefined
   };
 }
 }

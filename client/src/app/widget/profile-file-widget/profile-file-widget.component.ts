@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { auth, db } from '../../player/firebase-config';
 
 import {
@@ -40,9 +39,8 @@ interface UserFile {
   styleUrls: ['./profile-file-widget.component.css']
 })
 export class ProfileFileWidgetComponent implements OnInit, OnDestroy {
-  constructor(private sanitizer: DomSanitizer) {}
   currentUser: User | null = null;
-  safePdfUrl: SafeResourceUrl | null = null;
+  safePdfUrl: string | null = null;
   searchText = '';
   isLoading = false;
   openedFile: UserFile | null = null;
@@ -126,12 +124,17 @@ export class ProfileFileWidgetComponent implements OnInit, OnDestroy {
  openFile(file: UserFile): void {
   this.openedFile = file;
 
-  if (this.isPdf(file)) {
-    this.safePdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(file.url);
+  if (this.isPdf(file) && this.isAllowedStorageUrl(file.url)) {
+    this.safePdfUrl = file.url;
   } else {
     this.safePdfUrl = null;
   }
 }
+
+  private isAllowedStorageUrl(url: string): boolean {
+    return url.startsWith('https://firebasestorage.googleapis.com/') ||
+      url.startsWith('https://storage.googleapis.com/szakdoga1-2adc6.firebasestorage.app/');
+  }
 
   closeViewer(): void {
   this.openedFile = null;

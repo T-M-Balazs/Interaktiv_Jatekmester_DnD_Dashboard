@@ -3,7 +3,8 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  livekitUrl: 'wss://dnddashboard-w7r4054w.livekit.cloud'
 };
 
 /*

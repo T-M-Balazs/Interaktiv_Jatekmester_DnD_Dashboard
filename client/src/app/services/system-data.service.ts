@@ -16,7 +16,8 @@ export type SystemContentType =
   | 'background'
   | 'feat'
   | 'rule'
-  | 'monster';
+  | 'monster'
+  | 'content';
 
 export interface SystemContentItem {
   id: string;
@@ -25,6 +26,8 @@ export interface SystemContentItem {
   sourceType: 'system' | 'user';
   data: any;
   raw: any;
+  source?: string;
+  ruleset?: string;
 }
 
 @Injectable({
@@ -33,6 +36,8 @@ export interface SystemContentItem {
 export class SystemDataService {
   private loaded = false;
   private loadingPromise: Promise<void> | null = null;
+  private genericContentLoaded = false;
+  private genericContentLoadingPromise: Promise<void> | null = null;
 
   spells: SystemContentItem[] = [];
   items: SystemContentItem[] = [];
@@ -43,6 +48,7 @@ export class SystemDataService {
   feats: SystemContentItem[] = [];
   rules: SystemContentItem[] = [];
   monsters: SystemContentItem[] = [];
+  genericContent: SystemContentItem[] = [];
 
   async loadAllData(forceReload = false): Promise<void> {
     if (this.loaded && !forceReload) {
@@ -74,7 +80,7 @@ export class SystemDataService {
       feats,
       rules,
       monsters
-    ] = await Promise.all([
+      ] = await Promise.all([
       this.loadCollection('spells', 'spell'),
       this.loadCollection('items', 'item'),
       this.loadCollection('classes', 'class'),
@@ -97,6 +103,25 @@ export class SystemDataService {
     this.monsters = monsters;
   }
 
+  async loadGenericContent(forceReload = false): Promise<void> {
+    if (this.genericContentLoaded && !forceReload) return;
+    if (this.genericContentLoadingPromise && !forceReload) {
+      return this.genericContentLoadingPromise;
+    }
+
+    this.genericContentLoadingPromise = this.loadCollection('systemContent', 'content')
+      .then(items => {
+        this.genericContent = items;
+        this.genericContentLoaded = true;
+      });
+
+    try {
+      await this.genericContentLoadingPromise;
+    } finally {
+      this.genericContentLoadingPromise = null;
+    }
+  }
+
   private async loadCollection(
     collectionName: string,
     type: SystemContentType
@@ -115,7 +140,9 @@ export class SystemDataService {
         type,
         sourceType: raw.sourceType || 'system',
         data,
-        raw
+        raw,
+        source: raw.source,
+        ruleset: raw.ruleset
       };
     });
   }
@@ -130,9 +157,37 @@ export class SystemDataService {
       ...this.backgrounds,
       ...this.feats,
       ...this.rules,
-      ...this.monsters
+      ...this.monsters,
+      ...this.genericContent
     ];
   }
+
+  getSearchText(item: SystemContentItem): string {
+    return this.flattenText({
+      name: item.name,
+      type: item.type,
+      source: item.source,
+      ruleset: item.ruleset,
+      data: item.data,
+      raw: item.raw
+    }).toLowerCase();
+    }
+
+    private flattenText(value: any): string {
+      if (value === null || value === undefined) return '';
+      if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+        return String(value);
+      }
+      if (Array.isArray(value)) {
+        return value.map(item => this.flattenText(item)).join(' ');
+      }
+      if (typeof value === 'object') {
+        return Object.entries(value)
+          .map(([key, item]) => `${key} ${this.flattenText(item)}`)
+          .join(' ');
+      }
+      return '';
+    }
 
   getByTypeAndId(type: SystemContentType, id: string): SystemContentItem | null {
     const source = this.getCollectionByType(type);
@@ -159,6 +214,8 @@ export class SystemDataService {
         return this.rules;
       case 'monster':
         return this.monsters;
+      case 'content':
+        return this.genericContent;
       default:
         return [];
     }
@@ -181,5 +238,8 @@ export class SystemDataService {
     this.feats = [];
     this.rules = [];
     this.monsters = [];
+    this.genericContent = [];
+    this.genericContentLoaded = false;
+    this.genericContentLoadingPromise = null;
   }
 }

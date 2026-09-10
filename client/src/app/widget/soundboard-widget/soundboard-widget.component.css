@@ -2,57 +2,116 @@
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  background: 
-    radial-gradient(circle at top right, rgba(255, 87, 34, 0.12), transparent 35%),
-    linear-gradient(180deg, rgba(15, 15, 15, 0.98), rgba(10, 10, 10, 1));
+
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(255, 87, 34, 0.12),
+      transparent 35%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(15, 15, 15, 0.98),
+      rgba(10, 10, 10, 1)
+    );
+
   color: #eee;
+
   padding: 16px;
+
   border-radius: 14px;
+
   display: flex;
   flex-direction: column;
+
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+
+  box-shadow:
+    0 8px 32px
+    rgba(0, 0, 0, 0.6);
+
+  font-family:
+    'Segoe UI',
+    system-ui,
+    sans-serif;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.05);
 }
 
-/* --- EGYEDI LENYÍLÓ --- */
+
+/* LENYÍLÓ */
+
 select {
   width: 100%;
+
   background: #202020;
   color: #ffb199;
-  border: 1px solid #3d3d3d;
-  padding: 8px 12px;
+
+  border:
+    1px solid
+    #3d3d3d;
+
+  padding:
+    8px 12px;
+
   border-radius: 8px;
+
   margin-bottom: 12px;
+
   outline: none;
+
   font-size: 13px;
+
   cursor: pointer;
-  transition: all 0.2s;
+
+  transition:
+    all 0.2s;
 }
 
 select:focus {
   border-color: #ff5722;
-  box-shadow: 0 0 8px rgba(255, 87, 34, 0.2);
+
+  box-shadow:
+    0 0 8px
+    rgba(255, 87, 34, 0.2);
 }
 
-/* --- FELÜLSŐ GOMBOK --- */
+
+/* FELSŐ GOMBOK */
+
 .top-actions {
   display: flex;
+
   gap: 10px;
+
   margin-bottom: 16px;
 }
 
 .action-btn {
   flex: 1;
+
   height: 40px;
-  background: rgba(255, 87, 34, 0.08);
-  border: 1px solid rgba(255, 87, 34, 0.25);
+
+  background:
+    rgba(255, 87, 34, 0.08);
+
+  border:
+    1px solid
+    rgba(255, 87, 34, 0.25);
+
   color: #ff5722;
+
   border-radius: 10px;
+
   cursor: pointer;
-  transition: all 0.2s ease;
+
+  transition:
+    all 0.2s ease;
+
   display: flex;
+
   align-items: center;
   justify-content: center;
 }
@@ -62,21 +121,37 @@ select:focus {
 }
 
 .action-btn:hover:not(:disabled) {
-  background: rgba(255, 87, 34, 0.18);
-  border-color: #ff5722;
-  color: #ff8a65;
-  transform: translateY(-1px);
+  background:
+    rgba(255, 87, 34, 0.18);
+
+  border-color:
+    #ff5722;
+
+  color:
+    #ff8a65;
+
+  transform:
+    translateY(-1px);
 }
 
 .stop-btn {
-  color: #ff3d00;
-  border-color: rgba(255, 61, 0, 0.2);
+  color:
+    #ff3d00;
+
+  border-color:
+    rgba(255, 61, 0, 0.2);
 }
 
 .stop-btn:hover:not(:disabled) {
-  background: rgba(255, 61, 0, 0.12);
-  border-color: #ff3d00;
-  box-shadow: 0 0 15px rgba(255, 61, 0, 0.2);
+  background:
+    rgba(255, 61, 0, 0.12);
+
+  border-color:
+    #ff3d00;
+
+  box-shadow:
+    0 0 15px
+    rgba(255, 61, 0, 0.2);
 }
 
 .action-btn:disabled {
@@ -84,86 +159,307 @@ select:focus {
   cursor: not-allowed;
 }
 
-/* --- SOUNDBOARD MÁTRIX & SCROLL --- */
+
+/* SOUNDBOARD MÁTRIX */
+
 .slot-matrix {
   flex: 1;
+
   overflow-y: auto;
+
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
-  grid-auto-rows: 75px;
+
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+
+  grid-auto-rows:
+    90px;
+
   gap: 10px;
+
   padding-right: 6px;
-  
-  /* Scrollbar stílus */
+
   scrollbar-width: thin;
-  scrollbar-color: #ff5722 #1a1a1a;
+
+  scrollbar-color:
+    #ff5722
+    #1a1a1a;
 }
 
-.slot-matrix::-webkit-scrollbar { width: 6px; }
-.slot-matrix::-webkit-scrollbar-track { background: #1a1a1a; border-radius: 10px; }
-.slot-matrix::-webkit-scrollbar-thumb { 
-  background: linear-gradient(180deg, #ff5722 0%, #bf360c 100%);
-  border-radius: 10px; 
+.slot-matrix::-webkit-scrollbar {
+  width: 6px;
 }
 
-/* --- HANG GOMBOK --- */
+.slot-matrix::-webkit-scrollbar-track {
+  background:
+    #1a1a1a;
+
+  border-radius:
+    10px;
+}
+
+.slot-matrix::-webkit-scrollbar-thumb {
+  background:
+    linear-gradient(
+      180deg,
+      #ff5722 0%,
+      #bf360c 100%
+    );
+
+  border-radius:
+    10px;
+}
+
+
+/* SLOT */
+
 .slot-btn {
-  border-radius: 12px;
-  border: 1px solid rgba(255, 87, 34, 0.2);
-  background: linear-gradient(135deg, rgba(255, 87, 34, 0.1), rgba(0, 0, 0, 0.4));
-  color: #eee;
-  cursor: pointer;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
+  border-radius:
+    12px;
+
+  border:
+    1px solid
+    rgba(255, 87, 34, 0.2);
+
+  color:
+    #fff;
+
+  cursor:
+    pointer;
+
+  padding:
+    10px;
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  justify-content:
+    center;
+
+  align-items:
+    center;
+
+  text-align:
+    center;
+
+  transition:
+    all 0.2s
+    cubic-bezier(
+      0.4,
+      0,
+      0.2,
+      1
+    );
+
+  position:
+    relative;
+
+  overflow:
+    hidden;
 }
 
-.slot-btn:hover {
-  border-color: #ff5722;
-  background: rgba(255, 87, 34, 0.18);
-  transform: scale(1.02);
-  box-shadow: 0 4px 15px rgba(255, 87, 34, 0.15);
+
+/* SZÍNES SLOT - TELJES GRADIENT */
+
+.slot-btn:not(.empty-slot) {
+
+  background:
+    var(
+      --slot-color,
+      #ff5722
+    );
+
+  background:
+    linear-gradient(
+      135deg,
+
+      color-mix(
+        in srgb,
+        var(
+          --slot-color,
+          #ff5722
+        ) 68%,
+        white
+      ) 0%,
+
+      var(
+        --slot-color,
+        #ff5722
+      ) 52%,
+
+      color-mix(
+        in srgb,
+        var(
+          --slot-color,
+          #ff5722
+        ) 72%,
+        black
+      ) 100%
+    );
 }
 
-.slot-btn:active { transform: scale(0.96); }
+
+/* ÜRES SLOT */
+
+.slot-btn.empty-slot {
+  background:
+    rgba(0, 0, 0, 0.9);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.08);
+
+  cursor:
+    default;
+}
+
+
+/* SLOT HOVER */
+
+.slot-btn:hover:not(.empty-slot) {
+  transform:
+    scale(1.02);
+
+  box-shadow:
+    0 4px 15px
+    rgba(0, 0, 0, 0.25);
+}
+
+.slot-btn:active {
+  transform:
+    scale(0.96);
+}
+
+
+/* SLOT IKON */
+
+.slot-icon {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  width:
+    34px;
+
+  height:
+    34px;
+
+  border-radius:
+    50%;
+
+  background:
+    rgba(0, 0, 0, 0.72);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.12);
+
+  box-shadow:
+    inset 0 0 0 1px
+    rgba(255, 255, 255, 0.08);
+
+  margin-top:
+    10px;
+
+  margin-bottom:
+    6px;
+}
+
+.slot-icon .material-icons {
+  font-size:
+    24px;
+
+  color:
+    #fff;
+}
+
+
+/* SLOT SORSZÁM */
 
 .slot-number {
-  font-size: 9px;
-  color: #ffab91;
-  position: absolute;
-  top: 6px;
-  left: 8px;
-  font-weight: bold;
-  opacity: 0.6;
+  font-size:
+    9px;
+
+  color:
+    rgba(255, 255, 255, 0.8);
+
+  position:
+    absolute;
+
+  top:
+    6px;
+
+  left:
+    8px;
+
+  font-weight:
+    bold;
+
+  opacity:
+    0.75;
 }
 
-.slot-label {
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1.2;
-  max-width: 100%;
-  word-wrap: break-word;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+
+/* ÜRES FELIRAT */
+
+.empty-label {
+  color:
+    rgba(255, 255, 255, 0.55);
+
+  font-size:
+    11px;
+
+  letter-spacing:
+    0.08em;
+
+  text-transform:
+    uppercase;
+
+  margin-top:
+    16px;
 }
 
-/* Üres üzenet stílusa */
+
+/* ÜRES TÁBLA ÜZENET */
+
 .empty-msg {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  color: #666;
-  gap: 10px;
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  flex:
+    1;
+
+  color:
+    #666;
+
+  gap:
+    10px;
 }
 
-.empty-msg .material-icons { font-size: 40px; opacity: 0.5; }
+.empty-msg .material-icons {
+  font-size:
+    40px;
+
+  opacity:
+    0.5;
+}

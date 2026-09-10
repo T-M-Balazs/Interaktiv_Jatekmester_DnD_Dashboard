@@ -1,8 +1,13 @@
 {
+  "scripts": {
+    "import:5etools": "node import-5etools.js"
+  },
   "dependencies": {
     "@google-cloud/storage": "^7.18.0",
     "cors": "^2.8.5",
     "express": "^5.2.1",
+    "firebase-admin": "^13.6.0",
+    "livekit-server-sdk": "^2.15.0",
     "multer": "^2.0.2"
   }
 }

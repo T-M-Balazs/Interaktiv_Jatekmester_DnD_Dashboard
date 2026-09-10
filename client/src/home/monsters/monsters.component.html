@@ -22,116 +22,85 @@
 
     <section class="list-panel">
 
-      <div class="filters-panel">
+      <div class="toolbar">
         <input
           type="text"
           placeholder="Keresés név, típus vagy leírás alapján..."
           [(ngModel)]="searchText">
-
-        <select [(ngModel)]="selectedType">
-          <option value="">All Types</option>
-          <option *ngFor="let type of monsterTypes" [value]="type">
-            {{ type }}
-          </option>
-        </select>
-
-        <select [(ngModel)]="selectedSize">
-          <option value="">All Sizes</option>
-          <option *ngFor="let size of monsterSizes" [value]="size">
-            {{ size }}
-          </option>
-        </select>
-
-        <select [(ngModel)]="selectedAlignment">
-          <option value="">All Alignments</option>
-          <option *ngFor="let alignment of monsterAlignments" [value]="alignment">
-            {{ alignment }}
-          </option>
-        </select>
-
-        <input type="number" placeholder="Min CR" [(ngModel)]="minCr">
-        <input type="number" placeholder="Max CR" [(ngModel)]="maxCr">
-
-        <input type="number" placeholder="Min AC" [(ngModel)]="minAc">
-        <input type="number" placeholder="Max AC" [(ngModel)]="maxAc">
-
-        <div class="filter-actions">
-          <button
-            type="button"
-            class="advanced-toggle"
-            (click)="showAdvancedFilters = !showAdvancedFilters">
-            ⚙
-          </button>
-
-          <button type="button" (click)="clearFilters()">
-            Clear Filters
-          </button>
-        </div>
-      </div>
-
-      <div
-        class="advanced-filters-panel"
-        *ngIf="showAdvancedFilters">
-
-        <div class="advanced-grid">
-
-          <input
-            type="number"
-            placeholder="Min HP"
-            [(ngModel)]="minHp">
-
-          <input
-            type="number"
-            placeholder="Max HP"
-            [(ngModel)]="maxHp">
-
-          <input
-            type="text"
-            placeholder="Speed contains..."
-            [(ngModel)]="speedFilter">
-
-          <input
-            type="text"
-            placeholder="Language contains..."
-            [(ngModel)]="languageFilter">
-
-          <label class="checkbox-filter">
-            <input type="checkbox" [(ngModel)]="hasLegendaryActions">
-            Legendary Actions
-          </label>
-
-          <label class="checkbox-filter">
-            <input type="checkbox" [(ngModel)]="hasDamageResistances">
-            Damage Resistances
-          </label>
-
-          <label class="checkbox-filter">
-            <input type="checkbox" [(ngModel)]="hasDamageImmunities">
-            Damage Immunities
-          </label>
-
-          <label class="checkbox-filter">
-            <input type="checkbox" [(ngModel)]="hasConditionImmunities">
-            Condition Immunities
-          </label>
-
-          <label class="checkbox-filter">
-            <input type="checkbox" [(ngModel)]="hasSpellcasting">
-            Spellcasting
-          </label>
-
-        </div>
-      </div>
-
-      <div *ngIf="isLoading" class="loading">
-        Betöltés...
       </div>
 
       <ng-container *ngIf="!isLoading">
         <section class="table-section">
           <div class="section-header">
-            <h2>Monsters</h2>
+            <div class="section-title-row">
+              <h2>Monsters</h2>
+              <button
+                type="button"
+                class="advanced-search-button"
+                [class.active]="showAdvancedFilters"
+                title="Advanced Search"
+                aria-label="Advanced Search"
+                (click)="showAdvancedFilters = !showAdvancedFilters">
+                &#9881;
+              </button>
+            </div>
             <p>{{ filteredMonsters.length }} találat</p>
+          </div>
+
+          <div class="advanced-search-panel" *ngIf="showAdvancedFilters">
+            <div class="advanced-filter-group filter-fields">
+              <strong>Basic filters</strong>
+              <select [(ngModel)]="selectedType">
+                <option value="">All Types</option>
+                <option *ngFor="let type of monsterTypes" [value]="type">{{ type }}</option>
+              </select>
+
+              <select [(ngModel)]="selectedSize">
+                <option value="">All Sizes</option>
+                <option *ngFor="let size of monsterSizes" [value]="size">{{ size }}</option>
+              </select>
+
+              <select [(ngModel)]="selectedAlignment">
+                <option value="">All Alignments</option>
+                <option *ngFor="let alignment of monsterAlignments" [value]="alignment">{{ alignment }}</option>
+              </select>
+
+              <input type="number" placeholder="Min CR" [(ngModel)]="minCr">
+              <input type="number" placeholder="Max CR" [(ngModel)]="maxCr">
+              <input type="number" placeholder="Min AC" [(ngModel)]="minAc">
+              <input type="number" placeholder="Max AC" [(ngModel)]="maxAc">
+              <input type="number" placeholder="Min HP" [(ngModel)]="minHp">
+              <input type="number" placeholder="Max HP" [(ngModel)]="maxHp">
+              <input type="text" placeholder="Speed contains..." [(ngModel)]="speedFilter">
+              <input type="text" placeholder="Language contains..." [(ngModel)]="languageFilter">
+            </div>
+
+            <div class="advanced-filter-group">
+              <strong>Traits</strong>
+              <label><input type="checkbox" [(ngModel)]="hasLegendaryActions"> Legendary Actions</label>
+              <label><input type="checkbox" [(ngModel)]="hasDamageResistances"> Damage Resistances</label>
+              <label><input type="checkbox" [(ngModel)]="hasDamageImmunities"> Damage Immunities</label>
+              <label><input type="checkbox" [(ngModel)]="hasConditionImmunities"> Condition Immunities</label>
+              <label><input type="checkbox" [(ngModel)]="hasSpellcasting"> Spellcasting</label>
+            </div>
+
+          <div class="advanced-filter-group">
+            <strong>Ruleset / Edition</strong>
+            <label *ngFor="let ruleset of availableRulesets">
+              <input type="checkbox" [checked]="isFilterSelected('ruleset', ruleset)" (change)="toggleFilter('ruleset', ruleset)">
+              {{ ruleset }}
+            </label>
+          </div>
+
+          <div class="advanced-filter-group">
+            <strong>Source / Book</strong>
+            <label *ngFor="let source of availableSources">
+              <input type="checkbox" [checked]="isFilterSelected('source', source)" (change)="toggleFilter('source', source)">
+              {{ source }}
+            </label>
+          </div>
+
+            <button type="button" class="clear-advanced-button" (click)="clearFilters()">Clear filters</button>
           </div>
 
           <div class="table-wrapper" *ngIf="filteredMonsters.length > 0; else noMonsters">
@@ -174,7 +143,7 @@
                   (click)="selectMonster(monster)"
                   [class.selected]="selectedMonster?.id === monster.id">
 
-                  <td>{{ monster.name }}</td>
+                  <td>{{ monster.name }} <small class="source-label" *ngIf="monster.source && monster.source !== 'MM'">({{ monster.source }})</small></td>
                   <td>{{ monster.size || '—' }}</td>
                   <td>{{ monster.type || '—' }}</td>
                   <td>{{ monster.alignment || '—' }}</td>
@@ -192,6 +161,10 @@
         </section>
       </ng-container>
 
+      <div *ngIf="isLoading" class="loading">
+        Betöltés...
+      </div>
+
     </section>
 
     <aside class="detail-panel" *ngIf="selectedMonster as monster">
@@ -208,6 +181,8 @@
 
         <p class="detail-meta">
           {{ monster.size }} {{ monster.type }}, {{ monster.alignment }}
+          <span *ngIf="monster.source"> - {{ monster.source }}</span>
+          <span *ngIf="monster.ruleset"> - {{ monster.ruleset }}</span>
         </p>
 
         <div class="stat-grid">

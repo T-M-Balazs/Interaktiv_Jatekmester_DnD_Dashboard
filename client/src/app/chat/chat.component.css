@@ -28,32 +28,11 @@
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 215, 0, 0.75) transparent;
 
-  background:
-    radial-gradient(
-      circle at top left,
-      rgba(255, 215, 0, 0.1) 0%,
-      rgba(255, 215, 0, 0.04) 18%,
-      transparent 40%
-    ),
-    radial-gradient(
-      circle at top right,
-      rgba(255, 215, 0, 0.05) 0%,
-      transparent 30%
-    ),
-    linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 215, 0, 0.025) 22%,
-      rgba(255, 215, 0, 0.055) 50%,
-      rgba(255, 215, 0, 0.025) 78%,
-      transparent 100%
-    ),
-    linear-gradient(
-      180deg,
-      #0f0f0f 0%,
-      #151515 38%,
-      #1a1a1a 100%
-    );
+  background-image: url('/assets/Kepek/chat-background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 .chat-page-scroll::-webkit-scrollbar {
@@ -110,33 +89,7 @@
 
   color: var(--text);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-
-  background:
-    radial-gradient(
-      circle at top left,
-      rgba(255, 215, 0, 0.1) 0%,
-      rgba(255, 215, 0, 0.04) 18%,
-      transparent 40%
-    ),
-    radial-gradient(
-      circle at top right,
-      rgba(255, 215, 0, 0.05) 0%,
-      transparent 30%
-    ),
-    linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 215, 0, 0.025) 22%,
-      rgba(255, 215, 0, 0.055) 50%,
-      rgba(255, 215, 0, 0.025) 78%,
-      transparent 100%
-    ),
-    linear-gradient(
-      180deg,
-      #0f0f0f 0%,
-      #151515 38%,
-      #1a1a1a 100%
-    );
+  background: transparent;
 }
 
 .left,
@@ -383,6 +336,17 @@
 .header-action-btn.danger:hover,
 .kick-btn:hover {
   background: #bb2d3b;
+}
+
+.header-action-btn.voice,
+.header-action-btn.voice-muted {
+  background: linear-gradient(135deg, #2ea8ff, #1957a8);
+  color: white;
+}
+
+.header-action-btn.voice:hover,
+.header-action-btn.voice-muted:hover {
+  background: linear-gradient(135deg, #55b8ff, #246edf);
 }
 
 /* ============================= */
@@ -1171,6 +1135,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transform-origin: center;
 }
 
 .message-stack {
@@ -1198,4 +1163,81 @@
 
 .bubble {
   max-width: 100%;
+}
+
+.remote-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  background: rgba(255, 215, 0, 0.04);
+}
+
+.remote-control {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 210px;
+  padding: 5px 8px;
+  border: 1px solid var(--gold-border);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.46);
+}
+
+.remote-name {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remote-control input[type='range'] {
+  width: 80px;
+  accent-color: var(--gold);
+}
+
+.call-pending {
+  color: var(--gold);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.incoming-call-overlay {
+  z-index: 20;
+}
+
+.incoming-call-card {
+  width: min(400px, calc(100vw - 32px));
+  text-align: center;
+}
+
+.call-context {
+  display: block;
+  margin-top: 3px;
+  color: var(--gold);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.active-call-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 6px;
+  border: 1px solid rgba(76, 214, 123, 0.55);
+  border-radius: 6px;
+  background: rgba(76, 214, 123, 0.14);
+  color: #70e394;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.active-call-label {
+  display: block;
+  margin-top: 2px;
+  color: #70e394;
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
 }

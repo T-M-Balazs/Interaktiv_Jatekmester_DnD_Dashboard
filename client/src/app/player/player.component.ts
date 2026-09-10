@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { UploadService } from '../uppload.service';
+import { UploadService } from '../services/upload.service';
 import { PlayerSharedService, Track } from '../services/player-shared.service';
 
 import {
@@ -12,7 +12,8 @@ import {
   arrayUnion,
   arrayRemove
 } from 'firebase/firestore';
-import { db } from './firebase-config';
+import { auth, db, storage } from './firebase-config';
+import { deleteObject, ref } from 'firebase/storage';
 
 @Component({
   selector: 'app-player',
@@ -53,9 +54,13 @@ export class PlayerComponent implements OnInit {
     if (!trimmedName) return;
 
     try {
+      const ownerId = auth.currentUser?.uid;
+      if (!ownerId) return;
+
       await addDoc(collection(db, 'playlists'), {
         name: trimmedName,
         trackUrls: [],
+        ownerId,
         createdAt: serverTimestamp()
       });
 
@@ -71,6 +76,8 @@ export class PlayerComponent implements OnInit {
 
   async deletePlaylist(id: string): Promise<void> {
     if (id === 'all') return;
+    const playlist = this.player.playlists.find(item => item.id === id);
+    if (!playlist || playlist.ownerId !== auth.currentUser?.uid) return;
     if (!confirm('Törlöd ezt a listát?')) return;
 
     try {
@@ -104,6 +111,8 @@ export class PlayerComponent implements OnInit {
 
     try {
       const playlistRef = doc(db, 'playlists', playlistId);
+      const playlist = this.player.playlists.find(item => item.id === playlistId);
+      if (!playlist || playlist.ownerId !== auth.currentUser?.uid) return;
 
       await updateDoc(playlistRef, {
         trackUrls: arrayUnion(track.url)
@@ -126,6 +135,10 @@ export class PlayerComponent implements OnInit {
 
     try {
       const playlistRef = doc(db, 'playlists', this.player.selectedPlaylistId);
+      const playlist = this.player.playlists.find(
+        item => item.id === this.player.selectedPlaylistId
+      );
+      if (!playlist || playlist.ownerId !== auth.currentUser?.uid) return;
 
       await updateDoc(playlistRef, {
         trackUrls: arrayRemove(track.url)
@@ -146,20 +159,42 @@ export class PlayerComponent implements OnInit {
     }
   }
 
-  onTrackActionChange(action: string, track: Track): void {
-    if (action === 'add') {
-      this.pendingTrackUrlForPlaylist =
-        this.pendingTrackUrlForPlaylist === track.url ? null : track.url;
+  togglePlaylistMenu(track: Track): void {
+    this.pendingTrackUrlForPlaylist =
+      this.pendingTrackUrlForPlaylist === track.url ? null : track.url;
+  }
+
+  async deleteTrack(track: Track): Promise<void> {
+    const ownerId = auth.currentUser?.uid;
+
+    if (!ownerId || !confirm(`Biztosan törlöd ezt a zenét?\n\n${this.player.cleanTitle(track.title)}`)) {
       return;
     }
 
-    if (action === 'delete') {
-      alert('Törlés funkció fejlesztés alatt.');
+    try {
+      await deleteObject(ref(storage, track.path));
+
+      const ownPlaylists = this.player.playlists.filter(
+        playlist => playlist.id !== 'all' && playlist.ownerId === ownerId
+      );
+
+      await Promise.all(
+        ownPlaylists
+          .filter(playlist => playlist.trackUrls.includes(track.url))
+          .map(playlist =>
+            updateDoc(doc(db, 'playlists', playlist.id), {
+              trackUrls: arrayRemove(track.url)
+            })
+          )
+      );
+
+      this.player.clearCache();
+      await this.player.refreshAll(true);
       this.pendingTrackUrlForPlaylist = null;
-      return;
+    } catch (err) {
+      console.error('Hiba a zene törlésekor:', err);
+      this.uploadError = 'A zene törlése sikertelen.';
     }
-
-    this.pendingTrackUrlForPlaylist = null;
   }
 
   onFileSelected(event: Event): void {

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { db, storage } from '../player/firebase-config';
+import { auth, db, storage } from '../player/firebase-config';
 import { AudioStateService, AudioSource } from './audio-state.service';
 
 import {
@@ -18,7 +18,7 @@ import {
   doc,
   serverTimestamp,
   query,
-  orderBy
+  where
 } from 'firebase/firestore';
 
 export interface SfxTrack {
@@ -31,12 +31,15 @@ export interface SfxTrack {
 export interface BoardSlot {
   sfxUrl: string | null;
   label: string | null;
+  color: string | null;
+  icon: string | null;
 }
 
 export interface Soundboard {
   id: string;
   name: string;
   slots: BoardSlot[];
+  ownerId?: string;
 }
 
 @Injectable({
@@ -51,6 +54,7 @@ private static boardsLoadingPromise: Promise<void> | null = null;
 private static sfxLoadingPromise: Promise<void> | null = null;
 
 private static cachedBoards: Soundboard[] = [];
+private static cachedBoardsOwnerId: string | null = null;
 private static cachedSfx: SfxTrack[] = [];
   boards: Soundboard[] = [];
   selectedBoardId: string | null = null;
@@ -67,6 +71,7 @@ private static cachedSfx: SfxTrack[] = [];
   private previousVolume = 1;
 
   private audio: HTMLAudioElement | null = null;
+  private readonly audioInstanceId = `soundboard-${Math.random().toString(36).slice(2)}`;
   constructor(private audioState: AudioStateService) {}
 setAudioSource(source: AudioSource): void {
   this.audioSource = source;
@@ -78,7 +83,9 @@ setAudioSource(source: AudioSource): void {
   createEmptySlots(): BoardSlot[] {
     return Array.from({ length: 12 }, () => ({
       sfxUrl: null,
-      label: null
+      label: null,
+      color: '#ffd700',
+      icon: 'music_note'
     }));
   }
 
@@ -96,7 +103,9 @@ setAudioSource(source: AudioSource): void {
 
       empty[i] = {
         sfxUrl: slot.sfxUrl || slot.url || null,
-        label: slot.label || slot.title || slot.name || null
+        label: slot.label || slot.title || slot.name || null,
+        color: slot.color || '#ffd700',
+        icon: slot.icon || 'music_note'
       };
     }
 
@@ -104,7 +113,19 @@ setAudioSource(source: AudioSource): void {
   }
 
 async loadBoards(forceReload = false): Promise<void> {
-  if (SoundboardSharedService.boardsLoaded && !forceReload) {
+  const ownerId = auth.currentUser?.uid;
+
+  if (!ownerId) {
+    this.boards = [];
+    this.selectedBoardId = null;
+    return;
+  }
+
+  if (
+    SoundboardSharedService.boardsLoaded &&
+    SoundboardSharedService.cachedBoardsOwnerId === ownerId &&
+    !forceReload
+  ) {
     this.boards = [...SoundboardSharedService.cachedBoards];
 
     if (!this.selectedBoardId && this.boards.length) {
@@ -134,8 +155,18 @@ async loadBoards(forceReload = false): Promise<void> {
   }
 }
 private async loadBoardsInternal(): Promise<void> {
+  const ownerId = auth.currentUser?.uid;
+
+  if (!ownerId) {
+    this.boards = [];
+    return;
+  }
+
   const snap = await getDocs(
-    query(collection(db, 'soundboards'), orderBy('createdAt'))
+    query(
+      collection(db, 'soundboards'),
+      where('ownerId', '==', ownerId)
+    )
   );
 
   this.boards = snap.docs.map(d => {
@@ -144,11 +175,14 @@ private async loadBoardsInternal(): Promise<void> {
     return {
       id: d.id,
       name: data.name || 'Névtelen board',
-      slots: this.normalizeSlots(data.slots)
+      slots: this.normalizeSlots(data.slots),
+      ownerId: typeof data.ownerId === 'string' ? data.ownerId : undefined
     };
   });
 
+  this.boards.sort((a, b) => a.name.localeCompare(b.name));
   SoundboardSharedService.cachedBoards = [...this.boards];
+  SoundboardSharedService.cachedBoardsOwnerId = auth.currentUser?.uid || null;
   SoundboardSharedService.boardsLoaded = true;
 
   if (!this.selectedBoardId && this.boards.length) {
@@ -166,22 +200,25 @@ private async loadBoardsInternal(): Promise<void> {
   }
 
   async createBoard(name: string): Promise<Soundboard | null> {
+    const ownerId = auth.currentUser?.uid;
     const cleanName = name.trim();
 
-    if (!cleanName) return null;
+    if (!cleanName || !ownerId) return null;
 
     const slots = this.createEmptySlots();
 
     const newRef = await addDoc(collection(db, 'soundboards'), {
       name: cleanName,
       slots,
+      ownerId,
       createdAt: serverTimestamp()
     });
 
     const board: Soundboard = {
       id: newRef.id,
       name: cleanName,
-      slots
+      slots,
+      ownerId
     };
 
     this.boards.push(board);
@@ -191,6 +228,10 @@ private async loadBoardsInternal(): Promise<void> {
   }
 
   async deleteBoard(id: string): Promise<void> {
+    const board = this.boards.find(item => item.id === id);
+
+    if (!board || board.ownerId !== auth.currentUser?.uid) return;
+
     await deleteDoc(doc(db, 'soundboards', id));
 
     this.boards = this.boards.filter(b => b.id !== id);
@@ -202,6 +243,8 @@ private async loadBoardsInternal(): Promise<void> {
   }
 
   async saveBoard(board: Soundboard): Promise<void> {
+    if (board.ownerId !== auth.currentUser?.uid) return;
+
     await updateDoc(doc(db, 'soundboards', board.id), {
       name: board.name,
       slots: board.slots
@@ -231,7 +274,9 @@ private async loadBoardsInternal(): Promise<void> {
 
     board.slots[this.selectedSlotIndex] = {
       sfxUrl: track.url || track.path,
-      label: track.title
+      label: track.title,
+      color: board.slots[this.selectedSlotIndex]?.color || '#ffd700',
+      icon: board.slots[this.selectedSlotIndex]?.icon || 'music_note'
     };
 
     await this.saveBoard(board);
@@ -244,7 +289,9 @@ private async loadBoardsInternal(): Promise<void> {
 
     board.slots[this.selectedSlotIndex] = {
       sfxUrl: null,
-      label: null
+      label: null,
+      color: board.slots[this.selectedSlotIndex]?.color || '#ffd700',
+      icon: board.slots[this.selectedSlotIndex]?.icon || 'music_note'
     };
 
     await this.saveBoard(board);
@@ -286,18 +333,18 @@ private async loadBoardsInternal(): Promise<void> {
 
       audio.onended = () => {
         this.isPlaying = false;
-        this.audioState.stop(this.audioSource);
+        this.audioState.stopForInstance(this.audioSource, this.audioInstanceId);
       };
 
       audio.onerror = () => {
         console.error('Audio betöltési hiba:', audioUrl);
         this.isPlaying = false;
-        this.audioState.stop(this.audioSource);
+        this.audioState.stopForInstance(this.audioSource, this.audioInstanceId);
       };
 
       this.audio = audio;
       this.isPlaying = true;
-      this.audioState.setPlaying(this.audioSource);
+      this.audioState.setPlayingForInstance(this.audioSource, this.audioInstanceId);
 
       await audio.play();
     } catch (err) {
@@ -314,7 +361,7 @@ private async loadBoardsInternal(): Promise<void> {
     }
 
     this.isPlaying = false;
-    this.audioState.stop(this.audioSource);
+    this.audioState.stopForInstance(this.audioSource, this.audioInstanceId);
   }
 
   setVolume(value: number): void {
@@ -407,6 +454,7 @@ clearCache(): void {
   SoundboardSharedService.boardsLoadingPromise = null;
   SoundboardSharedService.sfxLoadingPromise = null;
   SoundboardSharedService.cachedBoards = [];
+  SoundboardSharedService.cachedBoardsOwnerId = null;
   SoundboardSharedService.cachedSfx = [];
 }
   updateFiltered(): void {

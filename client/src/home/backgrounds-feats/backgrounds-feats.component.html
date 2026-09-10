@@ -40,6 +40,51 @@
 
     <section class="list-panel">
 
+      <div class="toolbar">
+        <input
+          type="text"
+          placeholder="Kereses nev, leiras vagy tulajdonsag alapjan..."
+          [(ngModel)]="searchText">
+
+        <button
+          type="button"
+          class="advanced-search-button"
+          [class.active]="showAdvancedSearch"
+          title="Advanced Search"
+          aria-label="Advanced Search"
+          (click)="showAdvancedSearch = !showAdvancedSearch">
+          &#9881;
+        </button>
+      </div>
+
+      <div class="advanced-search-panel" *ngIf="showAdvancedSearch">
+        <div class="advanced-filter-group">
+          <strong>Ruleset / Edition</strong>
+          <label *ngFor="let ruleset of availableRulesets">
+            <input
+              type="checkbox"
+              [checked]="isFilterSelected('ruleset', ruleset)"
+              (change)="toggleFilter('ruleset', ruleset)">
+            {{ ruleset }}
+          </label>
+        </div>
+
+        <div class="advanced-filter-group">
+          <strong>Source / Book</strong>
+          <label *ngFor="let source of availableSources">
+            <input
+              type="checkbox"
+              [checked]="isFilterSelected('source', source)"
+              (change)="toggleFilter('source', source)">
+            {{ source }}
+          </label>
+        </div>
+
+        <button type="button" class="clear-advanced-button" (click)="clearAdvancedFilters()">
+          Clear advanced filters
+        </button>
+      </div>
+
       <div *ngIf="isLoading" class="loading">
         Betöltés...
       </div>
@@ -69,7 +114,10 @@
                   *ngFor="let entry of filteredEntries"
                   (click)="selectEntry(entry)"
                   [class.selected]="selectedEntry?.id === entry.id">
-                  <td>{{ entry.name }}</td>
+                  <td>
+                    {{ entry.name }}
+                    <small class="source-label" *ngIf="entry.source && entry.source !== 'PHB'">({{ entry.source }})</small>
+                  </td>
 
                   <td *ngIf="viewMode === 'backgrounds'">
                     {{ entry.data.skillProficiencies || '—' }}
@@ -117,6 +165,8 @@
 
         <p class="detail-meta">
           {{ entry.contentType === 'background' ? 'Background' : 'Feat' }}
+          <span *ngIf="entry.source"> - {{ entry.source }}</span>
+          <span *ngIf="entry.ruleset"> - {{ entry.ruleset }}</span>
         </p>
 
         <p class="description" *ngIf="entry.data.shortDescription">
@@ -124,6 +174,11 @@
         </p>
 
         <div class="detail-rule"></div>
+
+        <section class="info-section" *ngIf="entry.data.description">
+          <h3>Description</h3>
+          <div class="description-body" [innerHTML]="entry.data.description | formatDescription"></div>
+        </section>
 
         <ng-container *ngIf="entry.contentType === 'background'">
 

@@ -31,32 +31,23 @@
     <div
       class="hokusz-container"
       #hokuszContainer
-      [style.gridTemplateRows]="getGridTemplateRows()"
+      [style.height.px]="getCanvasHeight()"
+      [style.width.px]="getCanvasWidth()"
     >
-      <ng-container *ngFor="let row of rows; let rowIndex = index; trackBy: trackByRowId">
-        <div class="row-wrapper">
-          <div class="hokusz-row" [attr.data-row-id]="row.id">
-            <ng-container *ngFor="let panel of row.panels; let panelIndex = index; trackBy: trackByPanelId">
-              <div class="segment" [style.flex]="'1 1 ' + (panel.widthPx || 0) + 'px'">
-                <div class="panel">
-                  <ng-container *ngTemplateOutlet="panelContent; context: { panel: panel }"></ng-container>
-                </div>
-
-                <div
-                  *ngIf="panelIndex < row.panels.length - 1"
-                  class="resizer"
-                  (mousedown)="startColResize($event, row, panelIndex)"
-                ></div>
-              </div>
-            </ng-container>
+      <ng-container *ngFor="let panel of panels; trackBy: trackByPanelId">
+        <div
+          class="panel-position"
+          [style.left.px]="panel.x"
+          [style.top.px]="panel.y"
+          [style.width.px]="panel.widthPx"
+          [style.height.px]="panel.heightPx"
+          [style.zIndex]="panel.zIndex"
+          (mousedown)="startPanelMove($event, panel)">
+          <div class="panel" [attr.data-widget]="panel.widget">
+            <ng-container *ngTemplateOutlet="panelContent; context: { panel: panel }"></ng-container>
+            <div class="panel-size-handle" title="Widget méretezése" (mousedown)="startPanelResize($event, panel)"></div>
           </div>
         </div>
-
-        <div
-          *ngIf="rowIndex < rows.length - 1"
-          class="row-resizer"
-          (mousedown)="startRowResize($event, rowIndex)"
-        ></div>
       </ng-container>
     </div>
   </div>
@@ -86,16 +77,18 @@
         class="panel-action remove-widget-btn"
         type="button"
         title="Widget törlése"
+        aria-label="Widget cseréje"
         (click)="clearWidget(panel.id)">
-        ↺
+        <span class="material-icons">sync_alt</span>
       </button>
 
       <button
         class="panel-action remove-panel-btn"
         type="button"
         title="Panel törlése"
+        aria-label="Panel törlése"
         (click)="removePanel(panel.id)">
-        ×
+        <span class="material-icons">close</span>
       </button>
     </div>
 
@@ -119,8 +112,9 @@
       class="panel-action remove-panel-btn"
       type="button"
       title="Panel törlése"
+      aria-label="Panel törlése"
       (click)="removePanel(panel.id)">
-      ×
+      <span class="material-icons">close</span>
     </button>
   </div>
 </ng-template>

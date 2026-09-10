@@ -3,8 +3,9 @@
     <div class="panel playlist-panel">
       <div class="panel-header">
         <h2 class="panel-title">Listák</h2>
-        <button
-          class="small-btn plus-btn"
+          <button
+            class="small-btn plus-btn"
+            [class.active-action]="isAddingPlaylist"
           (click)="toggleAddPlaylist()"
           title="Új lista létrehozása">
           {{ isAddingPlaylist ? '−' : '+' }}
@@ -21,24 +22,27 @@
       </div>
 
       <ul class="scrollable-list">
-        <li
-          *ngFor="let pl of player.playlists"
-          [class.active]="pl.id === player.selectedPlaylistId"
-          (click)="player.selectPlaylist(pl.id)">
-          <span class="pl-name">{{ pl.name }}</span>
-
-          <button
+        <ng-container *ngFor="let pl of player.playlists">
+          <li
             *ngIf="pl.id !== 'all'"
-            class="delete-btn"
-            (click)="deletePlaylist(pl.id); $event.stopPropagation()">
-            ✖
-          </button>
-        </li>
+            [class.active]="pl.id === player.selectedPlaylistId"
+            (click)="player.selectPlaylist(pl.id)">
+            <span class="pl-name">{{ pl.name }}</span>
+
+            <button
+              class="playlist-delete-btn"
+              (click)="deletePlaylist(pl.id); $event.stopPropagation()"
+              title="Playlist törlése"
+              aria-label="Playlist törlése">
+              <span class="material-icons">delete_outline</span>
+            </button>
+          </li>
+        </ng-container>
       </ul>
     </div>
 
     <div class="panel main-player-panel">
-      <h2 class="panel-title">Player</h2>
+      <h2 class="panel-title">Zenelejátszó</h2>
 
       <div class="now-playing-box">
         <div class="now-playing-label">Most szól</div>
@@ -48,7 +52,10 @@
       </div>
 
       <div class="controls">
-        <div class="main-controls">
+          <div class="main-controls">
+        <button class="control-btn mode-btn" [class.mode-active]="player.isShuffleEnabled" (click)="player.toggleShuffle()" title="Véletlenszerű lejátszás">
+          <span class="material-icons">shuffle</span>
+        </button>
   <button class="control-btn" (click)="player.prevTrack()">
     <span class="material-icons">skip_previous</span>
   </button>
@@ -59,6 +66,9 @@
   
   <button class="control-btn" (click)="player.nextTrack()">
     <span class="material-icons">skip_next</span>
+  </button>
+  <button class="control-btn mode-btn" [class.mode-active]="player.isRepeatEnabled" (click)="player.toggleRepeat()" title="Playlist ismétlése">
+    <span class="material-icons">repeat</span>
   </button>
 </div>
 
@@ -95,7 +105,7 @@
       </div>
 
       <div class="current-playlist-section">
-        <h3>Aktuális playlist</h3>
+        <h3>Aktuális playlist: <span>{{ player.getSelectedPlaylistName() }}</span></h3>
 
         <ul class="scrollable-list player-list">
           <li *ngFor="let t of player.playlist; let i = index" [class.active]="i === player.currentTrackIndex">
@@ -123,7 +133,7 @@
     </div>
 
     <div class="panel library-panel">
-      <h2 class="panel-title">Fájltár</h2>
+      <h2 class="panel-title">Zenetár</h2>
 
       <input
         type="text"
@@ -141,20 +151,34 @@
           </div>
 
           <div class="actions">
-            <select class="track-action" (change)="onTrackActionChange($any($event.target).value, t)">
-              <option value="">Művelet</option>
-              <option value="add">Hozzáadás listához</option>
-              <option value="delete">Törlés</option>
-            </select>
+            <button
+              type="button"
+              class="library-action-btn add-track-btn"
+              [class.active-action]="pendingTrackUrlForPlaylist === t.url"
+              (click)="togglePlaylistMenu(t); $event.stopPropagation()"
+              title="Hozzáadás playlisthez">
+              <span class="material-icons">add</span>
+            </button>
+
+            <button
+              type="button"
+              class="library-action-btn delete-track-btn"
+              (click)="deleteTrack(t); $event.stopPropagation()"
+              title="Zene törlése">
+              <span class="material-icons">delete</span>
+            </button>
 
             <select
               *ngIf="pendingTrackUrlForPlaylist === t.url"
-              class="playlist-select"
+              class="playlist-select playlist-picker"
+              aria-label="Playlist kiválasztása"
               (change)="onAddTrackToPlaylist(t, $any($event.target).value)">
               <option value="">Válassz listát</option>
-              <option *ngFor="let pl of player.playlists" [value]="pl.id" [disabled]="pl.id === 'all'">
-                {{ pl.name }}
-              </option>
+              <ng-container *ngFor="let pl of player.playlists">
+                <option *ngIf="pl.id !== 'all'" [value]="pl.id">
+                  {{ pl.name }}
+                </option>
+              </ng-container>
             </select>
           </div>
         </li>

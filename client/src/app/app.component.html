@@ -8,6 +8,7 @@
       *ngIf="currentUser?.profilePhotoUrl; else defaultAvatar"
       class="profile-avatar"
       [src]="currentUser.profilePhotoUrl"
+      [style.transform]="getProfilePhotoTransform(currentUser.profilePhotoSettings)"
       alt="Profilkép"
     >
 
@@ -56,7 +57,7 @@
           <span class="icon">🔢</span>
           <span class="label">
   Counter
-  <span *ngIf="audioState.isPlaying && audioState.source === 'dashboard'" class="audio-indicator">
+  <span *ngIf="audioState.activeSources.includes('dashboard')" class="audio-indicator">
     🔊
   </span>
 </span>
@@ -64,13 +65,19 @@
       </li>
       <li>
         <a routerLink="/player" routerLinkActive="active">
-          <span class="icon">📊</span>
+            <span class="icon">🎵</span>
           <span class="label">
-  Adatok
-  <span *ngIf="audioState.isPlaying && audioState.source === 'player'" class="audio-indicator">
+          Zenelejátszó
+  <span *ngIf="audioState.activeSources.includes('player')" class="audio-indicator">
     🔊
   </span>
 </span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/session" routerLinkActive="active">
+          <span class="icon">🗺️</span>
+          <span class="label">Session kezelő</span>
         </a>
       </li>
       <li>
@@ -78,7 +85,7 @@
           <span class="icon">🎹</span>
           <span class="label">
   Hangkeverő
-  <span *ngIf="audioState.isPlaying && audioState.source === 'soundboard'" class="audio-indicator">
+  <span *ngIf="audioState.activeSources.includes('soundboard')" class="audio-indicator">
     🔊
   </span>
 </span>
@@ -88,6 +95,12 @@
         <a routerLink="/statblock" routerLinkActive="active">
           <span class="icon">🛡️</span>
           <span class="label">Karakterkészítő</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/system-content" routerLinkActive="active">
+          <span class="icon">📚</span>
+          <span class="label">System Content</span>
         </a>
       </li>
       <li>
